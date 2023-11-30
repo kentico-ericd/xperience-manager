@@ -22,7 +22,16 @@ namespace Xperience.Xman.Commands
 
         public void Execute()
         {
-            var options = InstallOptionsHelper.GetOptions();
+            InstallOptions? options = ConfigFileHelper.GetOptionsFromConfig();
+            if (options is null)
+            {
+                options = InstallOptionsHelper.GetOptions();
+            }
+            else
+            {
+                XConsole.WriteSuccessLine("Configuration loaded from file, proceeding with install...");
+            }
+
             try
             {
                 InstallTemplate(options);
@@ -35,6 +44,7 @@ namespace Xperience.Xman.Commands
                 else
                 {
                     XConsole.WriteSuccessLine("Installation complete!");
+                    ConfigFileHelper.CreateConfigFile(options);
                 }
             }
             catch (Exception e)

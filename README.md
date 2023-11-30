@@ -22,7 +22,7 @@ The following commands can be executed using the `xman` tool name:
 - `?`, `help`
 - `i`, `install`
 
-### Installing a new Xperience by Kentico project
+### Installing a project with the wizard
 
 1. Create an empty directory in the location you wish to install Xperience by Kentico
 1. In a command prompt, navigate to the empty directory
@@ -36,3 +36,19 @@ The following commands can be executed using the `xman` tool name:
    ```bash
    xman install
    ```
+
+### Installing a project with a configuration file
+
+Whenever you install a new project with the wizard, a `config.json` file is automatically generated. When you run the `install` command, the wizard is skipped if the tool detects a `config.json` file in the installation directory. You can also manually create the file before installation, e.g.:
+
+```json
+{
+    "AdminPassword": "test",
+    "DatabaseName": "xbk28",
+    "ProjectName": "xbk28",
+    "ServerName": "my-server",
+    "Template": "kentico-xperience-sample-mvc",
+    "UseCloud": false,
+    "Version": "28.0.0"
+}
+```

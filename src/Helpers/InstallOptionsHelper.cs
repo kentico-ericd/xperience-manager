@@ -7,7 +7,7 @@ namespace Xperience.Xman.Helpers
     /// </summary>
     public static class InstallOptionsHelper
     {
-        private static readonly Dictionary<string, string> TEMPLATES = new Dictionary<string, string> {
+        private static readonly Dictionary<string, string> TEMPLATES = new() {
             { "Dancing Goat", "kentico-xperience-sample-mvc" },
             { "Boilerplate", "kentico-xperience-mvc" },
             { "Admin customization boilerplate", "kentico-xperience-admin-sample" }

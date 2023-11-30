@@ -22,24 +22,14 @@ namespace Xperience.Xman.Helpers
         public ScriptBuilder(ScriptType type)
         {
             currentScriptType = type;
-            switch (type)
+            currentScript = type switch
             {
-                case ScriptType.ProjectInstall:
-                    currentScript = INSTALL_PROJECT_SCRIPT;
-                    break;
-                case ScriptType.DatabaseInstall:
-                    currentScript = INSTALL_DATABASE_SCRIPT;
-                    break;
-                case ScriptType.TemplateUninstall:
-                    currentScript = UNINSTALL_TEMPLATE_SCRIPT;
-                    break;
-                case ScriptType.TemplateInstall:
-                    currentScript = INSTALL_TEMPLATE_SCRIPT;
-                    break;
-                default:
-                    currentScript = String.Empty;
-                    break;
-            }
+                ScriptType.ProjectInstall => INSTALL_PROJECT_SCRIPT,
+                ScriptType.DatabaseInstall => INSTALL_DATABASE_SCRIPT,
+                ScriptType.TemplateUninstall => UNINSTALL_TEMPLATE_SCRIPT,
+                ScriptType.TemplateInstall => INSTALL_TEMPLATE_SCRIPT,
+                _ => String.Empty,
+            };
         }
 
 

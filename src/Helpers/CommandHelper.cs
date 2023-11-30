@@ -19,13 +19,10 @@ namespace Xperience.Xman.Helpers
         {
             get
             {
-                if (commands is null)
-                {
-                    commands = AppDomain.CurrentDomain.GetAssemblies()
+                commands ??= AppDomain.CurrentDomain.GetAssemblies()
                         .SelectMany(assembly => assembly.GetTypes())
                         .Where(c => typeof(ICommand).IsAssignableFrom(c) && !c.IsInterface)
                         .Select(c => Activator.CreateInstance(c) as ICommand);
-                }
 
                 return commands;
             }
@@ -59,7 +56,7 @@ namespace Xperience.Xman.Helpers
         /// <returns>The script process.</returns>
         public static Process ExecuteShell(string script, bool keepOpen = false)
         {
-            Process cmd = new Process();
+            Process cmd = new();
             cmd.StartInfo.FileName = "powershell.exe";
             cmd.StartInfo.RedirectStandardInput = true;
             cmd.StartInfo.RedirectStandardError = true;
