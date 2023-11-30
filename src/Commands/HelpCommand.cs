@@ -31,8 +31,8 @@ namespace Xperience.Xman.Commands
                 if (command is null) continue;
 
                 var keywords = command.Keywords.Where(k => !string.IsNullOrEmpty(k));
-                Console.WriteLine($"{string.Join(", ", keywords)}");
-                Console.WriteLine($"\t{command.Description}");
+                Console.WriteLine($"\n{string.Join(", ", keywords)}");
+                Console.WriteLine($"\t-{command.Description}");
             }
         }
     }
