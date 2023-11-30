@@ -4,11 +4,17 @@ using Xperience.Xman.Commands;
 
 namespace Xperience.Xman.Helpers
 {
+    /// <summary>
+    /// Contains methods to assist with <see cref="ICommand"/>s and scripts.
+    /// </summary>
     public static class CommandHelper
     {
         private static IEnumerable<ICommand?>? commands;
 
 
+        /// <summary>
+        /// A list of all registered commands.
+        /// </summary>
         public static IEnumerable<ICommand?> Commands
         {
             get
@@ -26,6 +32,11 @@ namespace Xperience.Xman.Helpers
         }
 
 
+        /// <summary>
+        /// Gets the command whose <see cref="ICommand.Keywords"/> matches the first argument passed.
+        /// </summary>
+        /// <param name="args">The arguments passed from the CLI.</param>
+        /// <returns>The requested command, or <c>null</c>.</returns>
         public static ICommand? GetCommand(string[] args)
         {
             if (!args.Any())
@@ -39,7 +50,14 @@ namespace Xperience.Xman.Helpers
         }
 
 
-        public static Process ExecuteShell(string command, bool keepOpen = false)
+        /// <summary>
+        /// Executes a script in a hidden shell with redirected streams.
+        /// </summary>
+        /// <param name="script">The script to execute.</param>
+        /// <param name="keepOpen">If <c>true</c>, the <see cref="Process.StandardInput"/> is left open after the script executes to
+        /// allow further input.</param>
+        /// <returns>The script process.</returns>
+        public static Process ExecuteShell(string script, bool keepOpen = false)
         {
             Process cmd = new Process();
             cmd.StartInfo.FileName = "powershell.exe";
@@ -52,7 +70,7 @@ namespace Xperience.Xman.Helpers
             cmd.Start();
 
             cmd.StandardInput.AutoFlush = true;
-            cmd.StandardInput.WriteLine(command);
+            cmd.StandardInput.WriteLine(script);
             if (!keepOpen)
             {
                 cmd.StandardInput.Close();

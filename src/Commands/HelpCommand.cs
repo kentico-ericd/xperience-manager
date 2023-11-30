@@ -4,6 +4,9 @@ using Xperience.Xman.Helpers;
 
 namespace Xperience.Xman.Commands
 {
+    /// <summary>
+    /// A command which displays the current tool version, a list of commands, and their descriptions.
+    /// </summary>
     public class HelpCommand : ICommand
     {
         public IEnumerable<string> Keywords => new string[] { "?", "help" };

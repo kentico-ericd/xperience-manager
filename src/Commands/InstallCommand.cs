@@ -5,6 +5,9 @@ using Xperience.Xman.Models;
 
 namespace Xperience.Xman.Commands
 {
+    /// <summary>
+    /// A command which installs new Xperience by Kentico project files and database in the current directory.
+    /// </summary>
     public class InstallCommand : ICommand
     {
         public IEnumerable<string> Keywords => new string[] { "i", "install" };
@@ -37,7 +40,7 @@ namespace Xperience.Xman.Commands
 
             var databaseScript = new ScriptBuilder(ScriptType.DatabaseInstall).WithOptions(options).Build();
             var databaseCmd = CommandHelper.ExecuteShell(databaseScript);
-            databaseCmd.ErrorDataReceived += ErrorRecieved;
+            databaseCmd.ErrorDataReceived += ErrorReceived;
             databaseCmd.BeginErrorReadLine();
             databaseCmd.WaitForExit();
         }
@@ -50,7 +53,7 @@ namespace Xperience.Xman.Commands
             var installComplete = false;
             var installScript = new ScriptBuilder(ScriptType.ProjectInstall).WithOptions(options).Build();
             var installCmd = CommandHelper.ExecuteShell(installScript, true);
-            installCmd.ErrorDataReceived += ErrorRecieved;
+            installCmd.ErrorDataReceived += ErrorReceived;
             installCmd.OutputDataReceived += (o, e) =>
             {
                 if (e.Data?.Contains("Do you want to run this action", StringComparison.OrdinalIgnoreCase) ?? false)
@@ -91,7 +94,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private void ErrorRecieved(object sender, DataReceivedEventArgs e)
+        private void ErrorReceived(object sender, DataReceivedEventArgs e)
         {
             Console.WriteLine(e.Data);
         }

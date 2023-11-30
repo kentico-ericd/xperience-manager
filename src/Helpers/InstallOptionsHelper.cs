@@ -2,6 +2,9 @@ using Xperience.Xman.Models;
 
 namespace Xperience.Xman.Helpers
 {
+    /// <summary>
+    /// Contains methods for parsing user input into <see cref="InstallOptions"/>.
+    /// </summary>
     public static class InstallOptionsHelper
     {
         private static readonly Dictionary<string, string> TEMPLATES = new Dictionary<string, string> {
@@ -11,6 +14,9 @@ namespace Xperience.Xman.Helpers
         };
 
 
+        /// <summary>
+        /// Requests user input to generate an <see cref="InstallOptions"/>.
+        /// </summary>
         public static InstallOptions GetOptions()
         {
             var options = new InstallOptions();

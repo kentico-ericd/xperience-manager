@@ -5,6 +5,9 @@ using Xperience.Xman.Models;
 
 namespace Xperience.Xman.Tests
 {
+    /// <summary>
+    /// Tests for the <see cref="ScriptBuilder"/> class.
+    /// </summary>
     public class ScriptBuilderTests
     {
         [Test]
