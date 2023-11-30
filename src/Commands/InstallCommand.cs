@@ -10,7 +10,7 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class InstallCommand : ICommand
     {
-        private IList<string> errors = new List<string>();
+        private readonly IList<string> errors = new List<string>();
 
 
         public IEnumerable<string> Keywords => new string[] { "i", "install" };
