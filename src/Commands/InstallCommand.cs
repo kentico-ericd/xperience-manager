@@ -10,6 +10,7 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class InstallCommand : ICommand
     {
+        private bool stopProcessing = false;
         private readonly IList<string> errors = new List<string>();
 
 
@@ -45,11 +46,13 @@ namespace Xperience.Xman.Commands
 
         private void CreateDatabase(InstallOptions options)
         {
+            if (stopProcessing) return;
+
             XConsole.WriteEmphasisLine("Running database creation script...");
 
             var databaseScript = new ScriptBuilder(ScriptType.DatabaseInstall).WithOptions(options).Build();
             var databaseCmd = CommandHelper.ExecuteShell(databaseScript);
-            databaseCmd.ErrorDataReceived += ErrorReceived;
+            databaseCmd.ErrorDataReceived += ErrorDataReceived;
             databaseCmd.BeginErrorReadLine();
             databaseCmd.WaitForExit();
         }
@@ -57,12 +60,14 @@ namespace Xperience.Xman.Commands
 
         private void CreateProjectFiles(InstallOptions options)
         {
+            if (stopProcessing) return;
+
             XConsole.WriteEmphasisLine("Running project creation script...");
 
             var installComplete = false;
             var installScript = new ScriptBuilder(ScriptType.ProjectInstall).WithOptions(options).Build();
             var installCmd = CommandHelper.ExecuteShell(installScript, true);
-            installCmd.ErrorDataReceived += ErrorReceived;
+            installCmd.ErrorDataReceived += ErrorDataReceived;
             installCmd.OutputDataReceived += (o, e) =>
             {
                 if (e.Data?.Contains("Do you want to run this action", StringComparison.OrdinalIgnoreCase) ?? false)
@@ -88,27 +93,39 @@ namespace Xperience.Xman.Commands
 
         private void InstallTemplate(InstallOptions options)
         {
-            // TODO: Exit process if specified version can't be found
+            if (stopProcessing) return;
+
             XConsole.WriteEmphasisLine("Uninstalling previous template version...");
 
             var uninstallScript = new ScriptBuilder(ScriptType.TemplateUninstall).Build();
             CommandHelper.ExecuteShell(uninstallScript).WaitForExit();
 
-            var installScript = new ScriptBuilder(ScriptType.TemplateInstall).WithOptions(options).Build();
             var message = options.Version is null ? "Installing latest template version..." : $"Installing template version {options.Version}...";
-            
             XConsole.WriteEmphasisLine(message);
-            CommandHelper.ExecuteShell(installScript).WaitForExit();
-            
+
+            var installScript = new ScriptBuilder(ScriptType.TemplateInstall).WithOptions(options).Build();
+            var installCmd = CommandHelper.ExecuteShell(installScript);
+            installCmd.WaitForExit();
+            if (installCmd.ExitCode != 0)
+            {
+                LogError("Template installation failed. Please check version number");
+            }
         }
 
 
-        private void ErrorReceived(object sender, DataReceivedEventArgs e)
+        private void ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (!String.IsNullOrEmpty(e.Data))
             {
-                errors.Add(e.Data);
+                LogError(e.Data);
             }
+        }
+
+
+        private void LogError(string message)
+        {
+            stopProcessing = true;
+            errors.Add(message);
         }
     }
 }
