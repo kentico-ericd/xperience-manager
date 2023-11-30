@@ -7,7 +7,7 @@ namespace Xperience.Xman.Commands
 {
     public class HelpCommand : Command
     {
-        private static readonly string[] KEYWORDS = new string[] { String.Empty, "help" };
+        private static readonly string[] KEYWORDS = new string[] { "help" };
         private static readonly string DESCRIPTION = "Displays the help menu (this screen)";
 
 
@@ -30,10 +30,9 @@ namespace Xperience.Xman.Commands
             {
                 if (command is null) continue;
 
-                var keywords = command.Keywords.Where(k => !string.IsNullOrEmpty(k))
-                    .Select(k => $"--{k}");
-                Console.WriteLine($"  {string.Join(", ", keywords)}");
-                Console.WriteLine($"    {command.Description}");
+                var keywords = command.Keywords.Where(k => !string.IsNullOrEmpty(k));
+                Console.WriteLine($"{string.Join(", ", keywords)}");
+                Console.WriteLine($"\t{command.Description}");
             }
         }
     }

@@ -77,6 +77,7 @@ namespace Xperience.Xman.Commands
 
         private void InstallTemplate(InstallOptions options)
         {
+            // TODO: Exit process if specified version can't be found
             Console.WriteLine("Uninstalling previous template version...");
             CommandHelper.ExecuteShell("dotnet new uninstall kentico.xperience.templates").WaitForExit();
             if (options.Version.Major == 0)
