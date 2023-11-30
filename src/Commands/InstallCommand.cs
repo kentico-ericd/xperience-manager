@@ -10,6 +10,9 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class InstallCommand : ICommand
     {
+        private IList<string> errors = new List<string>();
+
+
         public IEnumerable<string> Keywords => new string[] { "i", "install" };
 
 
@@ -24,19 +27,25 @@ namespace Xperience.Xman.Commands
                 InstallTemplate(options);
                 CreateProjectFiles(options);
                 CreateDatabase(options);
-
-                Console.WriteLine("Installation complete!");
+                if (errors.Any())
+                {
+                    XConsole.WriteErrorLine($"Installation failed with errors:\n{String.Join("\n", errors)}");
+                }
+                else
+                {
+                    XConsole.WriteSuccessLine("Installation complete!");
+                }
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Installation failed with the error: {e.Message}");
+                XConsole.WriteErrorLine($"Installation failed with the error: {e.Message}");
             }
         }
 
 
         private void CreateDatabase(InstallOptions options)
         {
-            Console.WriteLine("Running database creation script...");
+            XConsole.WriteEmphasisLine("Running database creation script...");
 
             var databaseScript = new ScriptBuilder(ScriptType.DatabaseInstall).WithOptions(options).Build();
             var databaseCmd = CommandHelper.ExecuteShell(databaseScript);
@@ -48,7 +57,7 @@ namespace Xperience.Xman.Commands
 
         private void CreateProjectFiles(InstallOptions options)
         {
-            Console.WriteLine("Running project creation script...");
+            XConsole.WriteEmphasisLine("Running project creation script...");
 
             var installComplete = false;
             var installScript = new ScriptBuilder(ScriptType.ProjectInstall).WithOptions(options).Build();
@@ -80,7 +89,7 @@ namespace Xperience.Xman.Commands
         private void InstallTemplate(InstallOptions options)
         {
             // TODO: Exit process if specified version can't be found
-            Console.WriteLine("Uninstalling previous template version...");
+            XConsole.WriteEmphasisLine("Uninstalling previous template version...");
 
             var uninstallScript = new ScriptBuilder(ScriptType.TemplateUninstall).Build();
             CommandHelper.ExecuteShell(uninstallScript).WaitForExit();
@@ -88,7 +97,7 @@ namespace Xperience.Xman.Commands
             var installScript = new ScriptBuilder(ScriptType.TemplateInstall).WithOptions(options).Build();
             var message = options.Version is null ? "Installing latest template version..." : $"Installing template version {options.Version}...";
             
-            Console.WriteLine(message);
+            XConsole.WriteEmphasisLine(message);
             CommandHelper.ExecuteShell(installScript).WaitForExit();
             
         }
@@ -96,7 +105,10 @@ namespace Xperience.Xman.Commands
 
         private void ErrorReceived(object sender, DataReceivedEventArgs e)
         {
-            Console.WriteLine(e.Data);
+            if (!String.IsNullOrEmpty(e.Data))
+            {
+                errors.Add(e.Data);
+            }
         }
     }
 }

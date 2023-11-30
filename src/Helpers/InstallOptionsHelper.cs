@@ -26,29 +26,34 @@ namespace Xperience.Xman.Helpers
                 options.Version = version;
             }
 
+            XConsole.WriteLine("\n");
             if (GetTemplate(out var template, options.Template) && !string.IsNullOrEmpty(template))
             {
                 options.Template = template;
             }
 
+            XConsole.WriteLine("\n");
             if (GetProjectName(out var name, options.ProjectName) && !string.IsNullOrEmpty(name))
             {
                 options.ProjectName = name;
             }
 
+            XConsole.WriteLine("\n");
             if (GetCloud(out var useCloud, options.UseCloud) && useCloud is not null)
             {
                 options.UseCloud = (bool)useCloud;
             }
 
+            XConsole.WriteLine("\n");
             options.ServerName = GetServerName();
 
+            XConsole.WriteLine("\n");
             if (GetDatabaseName(out var dbName, options.DatabaseName) && !string.IsNullOrEmpty(dbName))
             {
                 options.DatabaseName = dbName;
             }
 
-
+            XConsole.WriteLine("\n");
             if (GetPassword(out var password, options.AdminPassword) && !string.IsNullOrEmpty(password))
             {
                 options.AdminPassword = password;
@@ -60,7 +65,7 @@ namespace Xperience.Xman.Helpers
 
         private static bool GetPassword(out string? password, string defaultOption)
         {
-            Console.WriteLine($"Enter the admin password. Leave empty to use '{defaultOption}'");
+            XConsole.WriteLine($"Enter the admin password. Leave empty to use '{defaultOption}'");
             var pw = Console.ReadLine();
             if (String.IsNullOrEmpty(pw))
             {
@@ -75,7 +80,7 @@ namespace Xperience.Xman.Helpers
 
         private static bool GetDatabaseName(out string? databaseName, string defaultOption)
         {
-            Console.WriteLine($"Enter the database name. Leave empty to use '{defaultOption}'");
+            XConsole.WriteLine($"Enter the database name. Leave empty to use '{defaultOption}'");
             var name = Console.ReadLine();
             if (String.IsNullOrEmpty(name))
             {
@@ -90,7 +95,7 @@ namespace Xperience.Xman.Helpers
 
         private static string GetServerName()
         {
-            Console.WriteLine("Enter the SQL server name");
+            XConsole.WriteLine("Enter the SQL server name");
             var name = Console.ReadLine();
             if (String.IsNullOrEmpty(name))
             {
@@ -103,12 +108,18 @@ namespace Xperience.Xman.Helpers
 
         private static bool GetCloud(out bool? useCloud, bool defaultOption)
         {
-            Console.WriteLine($"Use cloud (Y/N)? Push Enter to use '{defaultOption}'");
+            XConsole.WriteLine($"Use cloud (Y/N)? Push Enter to use '{defaultOption}'");
             var keyInfo = Console.ReadKey();
             if (keyInfo.Key.Equals(ConsoleKey.Enter))
             {
                 useCloud = null;
                 return false;
+            }
+
+            if (!(keyInfo.Key.Equals(ConsoleKey.Y) || keyInfo.Key.Equals(ConsoleKey.N)))
+            {
+                XConsole.WriteErrorLine("\nPress Y, N, or Enter");
+                return GetCloud(out useCloud, defaultOption);
             }
 
             useCloud = keyInfo.Key.Equals(ConsoleKey.Y);
@@ -118,7 +129,7 @@ namespace Xperience.Xman.Helpers
 
         private static bool GetProjectName(out string? projectName, string? defaultOption)
         {
-            Console.WriteLine($"Name your project. Leave empty to use '{defaultOption}'");
+            XConsole.WriteLine($"Name your project. Leave empty to use '{defaultOption}'");
             var name = Console.ReadLine();
             if (String.IsNullOrEmpty(name))
             {
@@ -133,7 +144,7 @@ namespace Xperience.Xman.Helpers
 
         private static bool GetVersion(out Version? version)
         {
-            Console.WriteLine("Which version? Leave empty to use latest version");
+            XConsole.WriteLine("Which version? Leave empty to use latest version");
             var versionString = Console.ReadLine();
             if (String.IsNullOrEmpty(versionString))
             {
@@ -148,7 +159,7 @@ namespace Xperience.Xman.Helpers
             }
             else
             {
-                Console.WriteLine("Please enter a valid version, ie '27.0.0'");
+                XConsole.WriteErrorLine("Please enter a valid version, ie '27.0.0'");
                 return GetVersion(out version);
             }
         }
@@ -156,28 +167,28 @@ namespace Xperience.Xman.Helpers
 
         private static bool GetTemplate(out string? template, string? defaultOption)
         {
-            Console.WriteLine($"Which template? Leave empty to use '{defaultOption}'");
+            XConsole.WriteLine($"Which template? Leave empty to use '{defaultOption}'");
             for (var i = 0; i < TEMPLATES.Count; i++)
             {
                 var t = TEMPLATES.ElementAt(i);
-                Console.WriteLine($"[{i}] {t.Key}");
+                XConsole.WriteLine($"[{i}] {t.Key}");
             }
 
-            var templateString = Console.ReadLine();
-            if (String.IsNullOrEmpty(templateString))
+            var templateKey = Console.ReadKey();
+            if (templateKey.Key.Equals(ConsoleKey.Enter))
             {
                 template = null;
                 return false;
             }
 
-            if (int.TryParse(templateString, out var index) && index < TEMPLATES.Count && index >= 0)
+            if (int.TryParse(templateKey.KeyChar.ToString(), out var index) && index < TEMPLATES.Count && index >= 0)
             {
                 template = TEMPLATES.Values.ElementAt(index);
                 return true;
             }
             else
             {
-                Console.WriteLine($"Enter a number between 0 and {TEMPLATES.Count - 1}");
+                XConsole.WriteErrorLine($"\nEnter a number between 0 and {TEMPLATES.Count - 1}");
                 return GetTemplate(out template, defaultOption);
             }
 

@@ -22,16 +22,16 @@ namespace Xperience.Xman.Commands
                 .InformationalVersion
                 .ToString();
 
-            Console.WriteLine($"xman v{version}");
-            Console.WriteLine("-------------");
+            XConsole.WriteLine($"xman v{version}");
+            XConsole.WriteLine("-------------");
 
             foreach (var command in CommandHelper.Commands)
             {
                 if (command is null) continue;
 
                 var keywords = command.Keywords.Where(k => !string.IsNullOrEmpty(k));
-                Console.WriteLine($"\n{string.Join(", ", keywords)}");
-                Console.WriteLine($"\t-{command.Description}");
+                XConsole.WriteEmphasisLine($"\n{string.Join(", ", keywords)}");
+                XConsole.WriteLine($"\t-{command.Description}");
             }
         }
     }
