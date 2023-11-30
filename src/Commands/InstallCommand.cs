@@ -5,18 +5,15 @@ using Xperience.Xman.Models;
 
 namespace Xperience.Xman.Commands
 {
-    public class InstallCommand : Command
+    public class InstallCommand : ICommand
     {
-        private static readonly string[] KEYWORDS = new string[] { "install" };
-        private static readonly string DESCRIPTION = "Installs a new XbK instance";
+        public IEnumerable<string> Keywords => new string[] { "install" };
 
 
-        public InstallCommand() : base(KEYWORDS, DESCRIPTION)
-        {
-        }
+        public string Description => "Installs a new XbK instance";
 
 
-        public override void Execute()
+        public void Execute()
         {
             var options = InstallHelper.GetOptions();
             try

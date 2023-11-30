@@ -1,16 +1,15 @@
 using System.Diagnostics;
 
 using Xperience.Xman.Commands;
-using Xperience.Xman.Models;
 
 namespace Xperience.Xman.Helpers
 {
     public static class CommandHelper
     {
-        private static IEnumerable<Command?>? commands;
+        private static IEnumerable<ICommand?>? commands;
 
 
-        public static IEnumerable<Command?> Commands
+        public static IEnumerable<ICommand?> Commands
         {
             get
             {
@@ -18,8 +17,8 @@ namespace Xperience.Xman.Helpers
                 {
                     commands = AppDomain.CurrentDomain.GetAssemblies()
                         .SelectMany(assembly => assembly.GetTypes())
-                        .Where(type => type.IsSubclassOf(typeof(Command)))
-                        .Select(type => Activator.CreateInstance(type) as Command);
+                        .Where(c => typeof(ICommand).IsAssignableFrom(c) && !c.IsInterface)
+                        .Select(c => Activator.CreateInstance(c) as ICommand);
                 }
 
                 return commands;
@@ -27,9 +26,8 @@ namespace Xperience.Xman.Helpers
         }
 
 
-        public static Command? GetCommand(string[] args)
+        public static ICommand? GetCommand(string[] args)
         {
-            Console.WriteLine(String.Join(';', args));
             if (!args.Any())
             {
                 return new HelpCommand();

@@ -1,22 +1,18 @@
 using System.Reflection;
 
 using Xperience.Xman.Helpers;
-using Xperience.Xman.Models;
 
 namespace Xperience.Xman.Commands
 {
-    public class HelpCommand : Command
+    public class HelpCommand : ICommand
     {
-        private static readonly string[] KEYWORDS = new string[] { "help" };
-        private static readonly string DESCRIPTION = "Displays the help menu (this screen)";
+        public IEnumerable<string> Keywords => new string[] { "help" };
 
 
-        public HelpCommand() : base(KEYWORDS, DESCRIPTION)
-        {
-        }
+        public string Description => "Displays the help menu (this screen)";
 
 
-        public override void Execute()
+        public void Execute()
         {
             var version = Assembly.GetEntryAssembly()?
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
