@@ -2,13 +2,13 @@ using Xperience.Xman.Models;
 
 namespace Xperience.Xman.Helpers
 {
-    public static class InstallHelper
+    public static class InstallOptionsHelper
     {
         private static readonly Dictionary<string, string> TEMPLATES = new Dictionary<string, string> {
-        { "Dancing Goat", "kentico-xperience-sample-mvc" },
-        { "Boilerplate", "kentico-xperience-mvc" },
-        { "Admin customization boilerplate", "kentico-xperience-admin-sample" }
-    };
+            { "Dancing Goat", "kentico-xperience-sample-mvc" },
+            { "Boilerplate", "kentico-xperience-mvc" },
+            { "Admin customization boilerplate", "kentico-xperience-admin-sample" }
+        };
 
 
         public static InstallOptions GetOptions()

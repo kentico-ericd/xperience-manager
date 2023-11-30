@@ -2,7 +2,7 @@ namespace Xperience.Xman.Models
 {
     public class InstallOptions
     {
-        public Version Version { get; set; } = new Version(0, 0, 0);
+        public Version? Version { get; set; }
 
 
         public string Template { get; set; } = "kentico-xperience-sample-mvc";

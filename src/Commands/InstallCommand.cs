@@ -7,7 +7,7 @@ namespace Xperience.Xman.Commands
 {
     public class InstallCommand : ICommand
     {
-        public IEnumerable<string> Keywords => new string[] { "install" };
+        public IEnumerable<string> Keywords => new string[] { "i", "install" };
 
 
         public string Description => "Installs a new XbK instance";
@@ -15,7 +15,7 @@ namespace Xperience.Xman.Commands
 
         public void Execute()
         {
-            var options = InstallHelper.GetOptions();
+            var options = InstallOptionsHelper.GetOptions();
             try
             {
                 InstallTemplate(options);
@@ -35,7 +35,8 @@ namespace Xperience.Xman.Commands
         {
             Console.WriteLine("Running database creation script...");
 
-            var databaseCmd = CommandHelper.ExecuteShell($"dotnet kentico-xperience-dbmanager -- -s \"{options.ServerName}\" -d \"{options.DatabaseName}\" -a \"{options.AdminPassword}\"");
+            var databaseScript = new ScriptBuilder(ScriptType.DatabaseInstall).WithOptions(options).Build();
+            var databaseCmd = CommandHelper.ExecuteShell(databaseScript);
             databaseCmd.ErrorDataReceived += ErrorRecieved;
             databaseCmd.BeginErrorReadLine();
             databaseCmd.WaitForExit();
@@ -47,7 +48,8 @@ namespace Xperience.Xman.Commands
             Console.WriteLine("Running project creation script...");
 
             var installComplete = false;
-            var installCmd = CommandHelper.ExecuteShell($"dotnet new {options.Template} -n {options.ProjectName} {(options.UseCloud ? "--cloud" : string.Empty)}", true);
+            var installScript = new ScriptBuilder(ScriptType.ProjectInstall).WithOptions(options).Build();
+            var installCmd = CommandHelper.ExecuteShell(installScript, true);
             installCmd.ErrorDataReceived += ErrorRecieved;
             installCmd.OutputDataReceived += (o, e) =>
             {
@@ -76,17 +78,16 @@ namespace Xperience.Xman.Commands
         {
             // TODO: Exit process if specified version can't be found
             Console.WriteLine("Uninstalling previous template version...");
-            CommandHelper.ExecuteShell("dotnet new uninstall kentico.xperience.templates").WaitForExit();
-            if (options.Version.Major == 0)
-            {
-                Console.WriteLine("Installing latest template version...");
-                CommandHelper.ExecuteShell("dotnet new install kentico.xperience.templates").WaitForExit();
-            }
-            else
-            {
-                Console.WriteLine($"Installing template version {options.Version}...");
-                CommandHelper.ExecuteShell($"dotnet new install kentico.xperience.templates::{options.Version}").WaitForExit();
-            }
+
+            var uninstallScript = new ScriptBuilder(ScriptType.TemplateUninstall).Build();
+            CommandHelper.ExecuteShell(uninstallScript).WaitForExit();
+
+            var installScript = new ScriptBuilder(ScriptType.TemplateInstall).WithOptions(options).Build();
+            var message = options.Version is null ? "Installing latest template version..." : $"Installing template version {options.Version}...";
+            
+            Console.WriteLine(message);
+            CommandHelper.ExecuteShell(installScript).WaitForExit();
+            
         }
 
 
