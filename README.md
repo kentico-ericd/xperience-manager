@@ -1,3 +1,5 @@
+[![Nuget](https://img.shields.io/nuget/v/Xperience.Xman)](https://www.nuget.org/packages/Xperience.Xman#versions-body-tab)
+
 # Xperience Manager (xman)
 
 ## Installation
