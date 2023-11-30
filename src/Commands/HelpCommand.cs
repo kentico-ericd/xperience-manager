@@ -6,7 +6,7 @@ namespace Xperience.Xman.Commands
 {
     public class HelpCommand : ICommand
     {
-        public IEnumerable<string> Keywords => new string[] { "help" };
+        public IEnumerable<string> Keywords => new string[] { "?", "help" };
 
 
         public string Description => "Displays the help menu (this screen)";

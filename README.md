@@ -18,7 +18,7 @@ dotnet tool install Xperience.Xman -g
 
 The following commands can be executed using the `xman` tool name:
 
-- `help`
+- `?`, `help`
 - `i`, `install`
 
 ### Installing a new Xperience by Kentico project

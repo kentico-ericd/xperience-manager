@@ -38,19 +38,24 @@ namespace Xperience.Xman.Helpers
 
         public string Build()
         {
+            if (!ValidateScript())
+            {
+                throw new InvalidOperationException("The script is empty or contains placeholder values.");
+            }
+
             return currentScript;
         }
 
 
         public ScriptBuilder WithOptions(InstallOptions options)
         {
-            // Replace all placeholders in script with option values
+            // Replace all placeholders in script with option values if non-null or empty
             foreach (var prop in options.GetType().GetProperties())
             {
-                var value = prop.GetValue(options);
-                if (value is not null)
+                var value = prop.GetValue(options)?.ToString() ?? String.Empty;
+                if (!String.IsNullOrEmpty(value))
                 {
-                    currentScript = currentScript.Replace(prop.Name, value.ToString());
+                    currentScript = currentScript.Replace(prop.Name, value);
                 }
             }
 
@@ -65,6 +70,14 @@ namespace Xperience.Xman.Helpers
             }
 
             return this;
+        }
+
+
+        private bool ValidateScript()
+        {
+            var propertyNames = typeof(InstallOptions).GetProperties().Select(p => p.Name);
+
+            return !String.IsNullOrEmpty(currentScript) && !propertyNames.Any(currentScript.Contains);
         }
     }
 

@@ -14,7 +14,7 @@ namespace Xperience.Xman.Models
         public bool UseCloud { get; set; } = false;
 
 
-        public string? DatabaseName { get; set; }
+        public string DatabaseName { get; set; } = "xperience";
 
 
         public string? ServerName { get; set; }

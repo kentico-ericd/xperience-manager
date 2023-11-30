@@ -36,7 +36,12 @@ namespace Xperience.Xman.Helpers
             }
 
             options.ServerName = GetServerName();
-            options.DatabaseName = GetDatabaseName();
+
+            if (GetDatabaseName(out var dbName, options.DatabaseName) && !string.IsNullOrEmpty(dbName))
+            {
+                options.DatabaseName = dbName;
+            }
+
 
             if (GetPassword(out var password, options.AdminPassword) && !string.IsNullOrEmpty(password))
             {
@@ -51,7 +56,7 @@ namespace Xperience.Xman.Helpers
         {
             Console.WriteLine($"Enter the admin password. Leave empty to use '{defaultOption}'");
             var pw = Console.ReadLine();
-            if (string.IsNullOrEmpty(pw))
+            if (String.IsNullOrEmpty(pw))
             {
                 password = null;
                 return false;
@@ -62,12 +67,18 @@ namespace Xperience.Xman.Helpers
         }
 
 
-        private static string? GetDatabaseName()
+        private static bool GetDatabaseName(out string? databaseName, string defaultOption)
         {
-            Console.WriteLine("Enter the database name. Leave empty to use the deafult name");
+            Console.WriteLine($"Enter the database name. Leave empty to use '{defaultOption}'");
             var name = Console.ReadLine();
+            if (String.IsNullOrEmpty(name))
+            {
+                databaseName = null;
+                return false;
+            }
 
-            return string.IsNullOrEmpty(name) ? null : name;
+            databaseName = name;
+            return true;
         }
 
 
@@ -75,7 +86,7 @@ namespace Xperience.Xman.Helpers
         {
             Console.WriteLine("Enter the SQL server name");
             var name = Console.ReadLine();
-            if (string.IsNullOrEmpty(name))
+            if (String.IsNullOrEmpty(name))
             {
                 return GetServerName();
             }
@@ -99,11 +110,11 @@ namespace Xperience.Xman.Helpers
         }
 
 
-        private static bool GetProjectName(out string? projectName, string defaultOption)
+        private static bool GetProjectName(out string? projectName, string? defaultOption)
         {
             Console.WriteLine($"Name your project. Leave empty to use '{defaultOption}'");
             var name = Console.ReadLine();
-            if (string.IsNullOrEmpty(name))
+            if (String.IsNullOrEmpty(name))
             {
                 projectName = null;
                 return false;
@@ -118,7 +129,7 @@ namespace Xperience.Xman.Helpers
         {
             Console.WriteLine("Which version? Leave empty to use latest version");
             var versionString = Console.ReadLine();
-            if (string.IsNullOrEmpty(versionString))
+            if (String.IsNullOrEmpty(versionString))
             {
                 version = null;
                 return false;
@@ -137,7 +148,7 @@ namespace Xperience.Xman.Helpers
         }
 
 
-        private static bool GetTemplate(out string? template, string defaultOption)
+        private static bool GetTemplate(out string? template, string? defaultOption)
         {
             Console.WriteLine($"Which template? Leave empty to use '{defaultOption}'");
             for (var i = 0; i < TEMPLATES.Count; i++)
@@ -147,7 +158,7 @@ namespace Xperience.Xman.Helpers
             }
 
             var templateString = Console.ReadLine();
-            if (string.IsNullOrEmpty(templateString))
+            if (String.IsNullOrEmpty(templateString))
             {
                 template = null;
                 return false;
