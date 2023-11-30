@@ -84,6 +84,11 @@ namespace Xperience.Xman.Commands
                 Console.WriteLine("Installing latest template version...");
                 CommandHelper.ExecuteShell("dotnet new install kentico.xperience.templates").WaitForExit();
             }
+            else
+            {
+                Console.WriteLine($"Installing template version {options.Version}...");
+                CommandHelper.ExecuteShell($"dotnet new install kentico.xperience.templates::{options.Version}").WaitForExit();
+            }
         }
 
 
