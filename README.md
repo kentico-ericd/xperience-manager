@@ -2,6 +2,8 @@
 
 # Xperience Manager (xman)
 
+<img src="./img/screenshot.png" width="350">
+
 ## Installation
 
 Run the following command from a command prompt such as Powershell:
