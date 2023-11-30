@@ -2,6 +2,8 @@
 
 # Xperience Manager (xman)
 
+This tool simplifies the process of installing new Xperience by Kentico instances by providing an installation wizard.
+
 <img src="./img/screenshot.png" width="350">
 
 ## Installation
