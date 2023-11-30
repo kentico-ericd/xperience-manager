@@ -10,7 +10,7 @@ This tool simplifies the process of installing new Xperience by Kentico instance
 
 Run the following command from a command prompt such as Powershell:
 
-```cs
+```bash
 dotnet tool install Xperience.Xman -g
 ```
 
@@ -26,10 +26,12 @@ The following commands can be executed using the `xman` tool name:
 1. Create an empty directory in the location you wish to install Xperience by Kentico
 1. In a command prompt, navigate to the empty directory
 
-    `cd C:\inetpub\wwwroot\xbk`
+   ```bash
+   cd C:\inetpub\wwwroot\xbk
+   ```
 
 1. Run the `install` command which will begin the installation wizard:
 
-   ```cs
+   ```bash
    xman install
    ```
