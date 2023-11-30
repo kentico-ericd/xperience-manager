@@ -25,7 +25,7 @@ namespace Xperience.Xman.Commands
             InstallOptions? options = ConfigFileHelper.GetOptionsFromConfig();
             if (options is null)
             {
-                options = InstallOptionsHelper.GetOptions();
+                options = new InstallOptionsHelper().GetOptions();
             }
             else
             {
@@ -34,6 +34,7 @@ namespace Xperience.Xman.Commands
 
             try
             {
+                Console.WriteLine("\n");
                 InstallTemplate(options);
                 CreateProjectFiles(options);
                 CreateDatabase(options);

@@ -1,197 +1,159 @@
+using System.Text;
+
 using Xperience.Xman.Models;
+using Xperience.Xman.Steps;
 
 namespace Xperience.Xman.Helpers
 {
     /// <summary>
     /// Contains methods for parsing user input into <see cref="InstallOptions"/>.
     /// </summary>
-    public static class InstallOptionsHelper
+    public class InstallOptionsHelper
     {
-        private static readonly Dictionary<string, string> TEMPLATES = new() {
+        private readonly StepList steps = new();
+        private readonly InstallOptions options = new();
+        private readonly Dictionary<string, string> TEMPLATES = new() {
             { "Dancing Goat", "kentico-xperience-sample-mvc" },
             { "Boilerplate", "kentico-xperience-mvc" },
             { "Admin customization boilerplate", "kentico-xperience-admin-sample" }
         };
+        
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="InstallOptionsHelper"/>.
+        /// </summary>
+        public InstallOptionsHelper()
+        {
+            var templatePrompt = new StringBuilder($"Which template? Leave empty to use '{options.Template}'\n");
+            for (var i = 0; i < TEMPLATES.Count; i++)
+            {
+                var t = TEMPLATES.ElementAt(i);
+                templatePrompt.AppendLine($"[{i}] {t.Key}");
+            }
+
+            steps.AddRange(new Step[] {
+                new Step($"Which version? Leave empty to use the latest version", SetVersion, "Please enter a valid version, ie '27.0.0'"),
+                new Step(templatePrompt.ToString(), SetTemplate, $"\nEnter a number between 0 and {TEMPLATES.Count - 1}", true),
+                new Step($"Name your project. Leave empty to use '{options.ProjectName}'", SetProjectName),
+                new Step($"Use cloud (Y/N)? Leave empty to use '{options.UseCloud}'", SetCloud, "\nPress Y, N, or Enter", true),
+                new Step("Enter the SQL server name", SetServerName, "You must enter a SQL server"),
+                new Step($"Enter the database name. Leave empty to use '{options.DatabaseName}'", SetDatabaseName),
+                new Step($"Enter the admin password. Leave empty to use '{options.AdminPassword}'", SetPassword)
+            });
+        }
 
 
         /// <summary>
         /// Requests user input to generate an <see cref="InstallOptions"/>.
         /// </summary>
-        public static InstallOptions GetOptions()
+        public InstallOptions GetOptions()
         {
-            var options = new InstallOptions();
-
-            if (GetVersion(out var version) && version is not null)
+            while (steps.HasNext())
             {
-                options.Version = version;
-            }
-
-            XConsole.WriteLine("\n");
-            if (GetTemplate(out var template, options.Template) && !string.IsNullOrEmpty(template))
-            {
-                options.Template = template;
-            }
-
-            XConsole.WriteLine("\n");
-            if (GetProjectName(out var name, options.ProjectName) && !string.IsNullOrEmpty(name))
-            {
-                options.ProjectName = name;
-            }
-
-            XConsole.WriteLine("\n");
-            if (GetCloud(out var useCloud, options.UseCloud) && useCloud is not null)
-            {
-                options.UseCloud = (bool)useCloud;
-            }
-
-            XConsole.WriteLine("\n");
-            options.ServerName = GetServerName();
-
-            XConsole.WriteLine("\n");
-            if (GetDatabaseName(out var dbName, options.DatabaseName) && !string.IsNullOrEmpty(dbName))
-            {
-                options.DatabaseName = dbName;
-            }
-
-            XConsole.WriteLine("\n");
-            if (GetPassword(out var password, options.AdminPassword) && !string.IsNullOrEmpty(password))
-            {
-                options.AdminPassword = password;
+                steps.Current.Execute();
+                steps.Next();
             }
 
             return options;
         }
 
 
-        private static bool GetPassword(out string? password, string defaultOption)
+        private bool SetCloud(string inputKey)
         {
-            XConsole.WriteLine($"Enter the admin password. Leave empty to use '{defaultOption}'");
-            var pw = Console.ReadLine();
-            if (String.IsNullOrEmpty(pw))
+            if (inputKey.Equals(ConsoleKey.Enter.ToString()))
             {
-                password = null;
+                return true;
+            }
+
+            if (!(inputKey.Equals(ConsoleKey.Y.ToString()) || inputKey.Equals(ConsoleKey.N.ToString())))
+            {
                 return false;
             }
 
-            password = pw;
+            options.UseCloud = inputKey.Equals(ConsoleKey.Y.ToString());
+
             return true;
         }
 
 
-        private static bool GetDatabaseName(out string? databaseName, string defaultOption)
+        private bool SetDatabaseName(string name)
         {
-            XConsole.WriteLine($"Enter the database name. Leave empty to use '{defaultOption}'");
-            var name = Console.ReadLine();
-            if (String.IsNullOrEmpty(name))
+            if (!String.IsNullOrEmpty(name))
             {
-                databaseName = null;
-                return false;
+                options.DatabaseName = name;
             }
 
-            databaseName = name;
             return true;
         }
 
 
-        private static string GetServerName()
+        private bool SetPassword(string password)
         {
-            XConsole.WriteLine("Enter the SQL server name");
-            var name = Console.ReadLine();
-            if (String.IsNullOrEmpty(name))
+            if (!String.IsNullOrEmpty(password))
             {
-                return GetServerName();
+                options.AdminPassword = password;
             }
 
-            return name;
-        }
-
-
-        private static bool GetCloud(out bool? useCloud, bool defaultOption)
-        {
-            XConsole.WriteLine($"Use cloud (Y/N)? Push Enter to use '{defaultOption}'");
-            var keyInfo = Console.ReadKey();
-            if (keyInfo.Key.Equals(ConsoleKey.Enter))
-            {
-                useCloud = null;
-                return false;
-            }
-
-            if (!(keyInfo.Key.Equals(ConsoleKey.Y) || keyInfo.Key.Equals(ConsoleKey.N)))
-            {
-                XConsole.WriteErrorLine("\nPress Y, N, or Enter");
-                return GetCloud(out useCloud, defaultOption);
-            }
-
-            useCloud = keyInfo.Key.Equals(ConsoleKey.Y);
             return true;
         }
 
 
-        private static bool GetProjectName(out string? projectName, string? defaultOption)
+        private bool SetProjectName(string name)
         {
-            XConsole.WriteLine($"Name your project. Leave empty to use '{defaultOption}'");
-            var name = Console.ReadLine();
-            if (String.IsNullOrEmpty(name))
+            if (!String.IsNullOrEmpty(name))
             {
-                projectName = null;
-                return false;
+                options.ProjectName = name;
             }
 
-            projectName = name;
             return true;
         }
 
 
-        private static bool GetVersion(out Version? version)
+        private bool SetVersion(string versionString)
         {
-            XConsole.WriteLine("Which version? Leave empty to use latest version");
-            var versionString = Console.ReadLine();
             if (String.IsNullOrEmpty(versionString))
             {
-                version = null;
-                return false;
+                return true;
             }
 
             if (Version.TryParse(versionString, out var ver))
             {
-                version = ver;
+                options.Version = ver;
                 return true;
             }
-            else
-            {
-                XConsole.WriteErrorLine("Please enter a valid version, ie '27.0.0'");
-                return GetVersion(out version);
-            }
+
+            return false;
         }
 
 
-        private static bool GetTemplate(out string? template, string? defaultOption)
+        private bool SetServerName(string name)
         {
-            XConsole.WriteLine($"Which template? Leave empty to use '{defaultOption}'");
-            for (var i = 0; i < TEMPLATES.Count; i++)
+            if (String.IsNullOrEmpty(name))
             {
-                var t = TEMPLATES.ElementAt(i);
-                XConsole.WriteLine($"[{i}] {t.Key}");
-            }
-
-            var templateKey = Console.ReadKey();
-            if (templateKey.Key.Equals(ConsoleKey.Enter))
-            {
-                template = null;
                 return false;
             }
 
-            if (int.TryParse(templateKey.KeyChar.ToString(), out var index) && index < TEMPLATES.Count && index >= 0)
+            options.ServerName = name;
+
+            return true;
+        }
+
+
+        private bool SetTemplate(string inputKey)
+        {
+            if (inputKey.Equals(ConsoleKey.Enter.ToString()))
             {
-                template = TEMPLATES.Values.ElementAt(index);
                 return true;
             }
-            else
+
+            var keyNum = inputKey.TrimStart('D');
+            if (int.TryParse(keyNum, out var index) && index < TEMPLATES.Count && index >= 0)
             {
-                XConsole.WriteErrorLine($"\nEnter a number between 0 and {TEMPLATES.Count - 1}");
-                return GetTemplate(out template, defaultOption);
+                options.Template = TEMPLATES.Values.ElementAt(index);
+                return true;
             }
 
+            return false;
         }
     }
 }
