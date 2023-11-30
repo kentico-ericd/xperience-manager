@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<Version>0.0.1</Version>
-	<Authors>Eric Dugre</Authors>
-	<Company>Kentico</Company>
-	<Product>Xperience by Kentico</Product>
+	  <Version>0.0.1</Version>
+	  <Authors>Eric Dugre</Authors>
+	  <Company>Kentico</Company>
+	  <Product>Xperience by Kentico</Product>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

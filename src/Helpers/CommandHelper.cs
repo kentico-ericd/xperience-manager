@@ -1,55 +1,66 @@
 using System.Diagnostics;
 
-public static class CommandHelper
+using Xperience.Xman.Commands;
+using Xperience.Xman.Models;
+
+namespace Xperience.Xman.Helpers
 {
-    private static IEnumerable<Command?>? commands;
-
-
-    public static IEnumerable<Command?> Commands
+    public static class CommandHelper
     {
-        get
+        private static IEnumerable<Command?>? commands;
+
+
+        public static IEnumerable<Command?> Commands
         {
-            if (commands is null) {
-                commands = AppDomain.CurrentDomain.GetAssemblies()
-                    .SelectMany(assembly => assembly.GetTypes())
-                    .Where(type => type.IsSubclassOf(typeof(Command)))
-                    .Select(type => Activator.CreateInstance(type) as Command);
+            get
+            {
+                if (commands is null)
+                {
+                    commands = AppDomain.CurrentDomain.GetAssemblies()
+                        .SelectMany(assembly => assembly.GetTypes())
+                        .Where(type => type.IsSubclassOf(typeof(Command)))
+                        .Select(type => Activator.CreateInstance(type) as Command);
+                }
+
+                return commands;
+            }
+        }
+
+
+        public static Command? GetCommand(string[] args)
+        {
+            Console.WriteLine(String.Join(';', args));
+            if (!args.Any())
+            {
+                return new HelpCommand();
             }
 
-            return commands;
-        }
-    }
+            var commandArg = args[0];
 
-
-    public static Command? GetCommand(string[] args) {
-        if (!args.Any()) {
-            return new HelpCommand();
+            return Commands.FirstOrDefault(c => c?.Keywords.Contains(commandArg, StringComparer.OrdinalIgnoreCase) ?? false);
         }
 
-        var commandArg = args[0];
 
-        return Commands.FirstOrDefault(c => c?.Keywords.Contains(commandArg, StringComparer.OrdinalIgnoreCase) ?? false);
-    }
-
-
-    public static Process ExecuteShell(string command, bool keepOpen = false) {
-        Process cmd = new Process();
-        cmd.StartInfo.FileName = "powershell.exe";
-        cmd.StartInfo.RedirectStandardInput = true;
-        cmd.StartInfo.RedirectStandardError = true;
-        cmd.StartInfo.RedirectStandardOutput = true;
-        cmd.StartInfo.CreateNoWindow = true;
-        cmd.StartInfo.UseShellExecute = false;
-        cmd.EnableRaisingEvents = true;
-        cmd.Start();
-
-        cmd.StandardInput.AutoFlush = true;
-        cmd.StandardInput.WriteLine(command);
-        if (!keepOpen)
+        public static Process ExecuteShell(string command, bool keepOpen = false)
         {
-            cmd.StandardInput.Close();
-        }
+            Process cmd = new Process();
+            cmd.StartInfo.FileName = "powershell.exe";
+            cmd.StartInfo.RedirectStandardInput = true;
+            cmd.StartInfo.RedirectStandardError = true;
+            cmd.StartInfo.RedirectStandardOutput = true;
+            cmd.StartInfo.CreateNoWindow = true;
+            cmd.StartInfo.UseShellExecute = false;
+            cmd.EnableRaisingEvents = true;
+            cmd.Start();
 
-        return cmd;
+            cmd.StandardInput.AutoFlush = true;
+            cmd.StandardInput.WriteLine(command);
+            if (!keepOpen)
+            {
+                cmd.StandardInput.Close();
+            }
+
+            return cmd;
+        }
     }
 }

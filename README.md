@@ -16,6 +16,7 @@ Run the following command from a command prompt such as Powershell:
 
 The following commands can be executed using the `xman` tool name:
 
+- `help`
 - `install`
 
 ### Installing a new Xperience by Kentico project

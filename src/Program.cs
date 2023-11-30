@@ -1,10 +1,16 @@
-﻿public class Program
+﻿using Xperience.Xman.Helpers;
+
+namespace Xperience.Xman
 {
-    static void Main(string[] args)
+    public static class Program
     {
-        var command = CommandHelper.GetCommand(args);
-        if (command is not null) {
-            command.Execute();
+        static void Main(string[] args)
+        {
+            var command = CommandHelper.GetCommand(args);
+            if (command is not null)
+            {
+                command.Execute();
+            }
         }
     }
 }
