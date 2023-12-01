@@ -24,3 +24,8 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
       working-directory: test
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: NuGet
+        path: ./dist/*.nupkg
