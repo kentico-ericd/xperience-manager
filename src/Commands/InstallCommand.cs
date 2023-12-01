@@ -3,7 +3,8 @@ using Spectre.Console;
 using System.Diagnostics;
 
 using Xperience.Xman.Helpers;
-using Xperience.Xman.Models;
+using Xperience.Xman.Options;
+using Xperience.Xman.Wizards;
 
 namespace Xperience.Xman.Commands
 {
@@ -27,7 +28,7 @@ namespace Xperience.Xman.Commands
             InstallOptions? options = ConfigFileHelper.GetOptionsFromConfig();
             if (options is null)
             {
-                options = new InstallOptionsHelper().GetOptions();
+                options = new InstallWizard().Run();
             }
             else
             {
@@ -78,7 +79,10 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running project creation script...[/]");
 
             var installComplete = false;
-            var installScript = new ScriptBuilder(ScriptType.ProjectInstall).WithOptions(options).Build();
+            var installScript = new ScriptBuilder(ScriptType.ProjectInstall)
+                .WithOptions(options)
+                .AppendCloud(options.UseCloud)
+                .Build();
             var installCmd = CommandHelper.ExecuteShell(installScript, true);
             installCmd.ErrorDataReceived += ErrorDataReceived;
             installCmd.OutputDataReceived += (o, e) =>
@@ -116,7 +120,10 @@ namespace Xperience.Xman.Commands
             var message = options.Version is null ? "Installing latest template version..." : $"Installing template version {options.Version}...";
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]{message}[/]");
 
-            var installScript = new ScriptBuilder(ScriptType.TemplateInstall).WithOptions(options).Build();
+            var installScript = new ScriptBuilder(ScriptType.TemplateInstall)
+                .WithOptions(options)
+                .AppendVersion(options.Version)
+                .Build();
             var installCmd = CommandHelper.ExecuteShell(installScript);
             installCmd.WaitForExit();
             if (installCmd.ExitCode != 0)

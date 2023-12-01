@@ -3,7 +3,7 @@
 
 # Xperience Manager (xman)
 
-This tool simplifies the process of installing new Xperience by Kentico instances by providing an installation wizard.
+This tool simplifies the process of installing and managing Xperience by Kentico instances by providing step-by-step wizards with default options provided.
 
 <img src="./img/screenshot.png" width="350">
 
@@ -29,6 +29,7 @@ The following commands can be executed using the `xman` tool name:
 
 - `?`, `help`
 - `i`, `install`
+- `u`, `update`
 
 ### Installing a project with the wizard
 
@@ -60,3 +61,13 @@ Whenever you install a new project with the wizard, a `config.json` file is auto
     "Version": "28.0.0"
 }
 ```
+
+### Updating a project version
+
+Currently, there is a bug with updating the project's database version, so the tool only updates the NuGet packages and builds the project. However, the database update command is provided in the UI for easy copy-pasting.
+
+1. Run the `update` command from the Xperience by Kentico root directory which will begin the update wizard:
+
+   ```bash
+   xman update
+   ```

@@ -24,7 +24,11 @@ namespace Xperience.Xman.Commands
                 .InformationalVersion
                 .ToString();
 
-            AnsiConsole.MarkupLineInterpolated($"\n [orange3]xman[/] v{version}");
+            AnsiConsole.Write(
+                new FigletText("xman")
+                    .LeftJustified()
+                    .Color(Color.Orange3));
+            AnsiConsole.WriteLine($" v{version}");
 
             var table = new Table().AddColumn("Command").AddColumn("Description");
             foreach (var command in CommandHelper.Commands)

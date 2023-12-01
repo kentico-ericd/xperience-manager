@@ -1,11 +1,11 @@
 using Xperience.Xman.Commands;
 
-namespace Xperience.Xman.Models
+namespace Xperience.Xman.Options
 {
     /// <summary>
     /// The options used to install Xperience by Kentico project files and databases, used by <see cref="InstallCommand"/>.
     /// </summary>
-    public class InstallOptions
+    public class InstallOptions : IWizardOptions
     {
         /// <summary>
         /// The version of the Xperience by Kentico templates and database to install. If <c>null</c>, the
