@@ -7,12 +7,20 @@ This tool simplifies the process of installing new Xperience by Kentico instance
 
 <img src="./img/screenshot.png" width="350">
 
-## Installation
+## Installing the tool
 
 Run the following command from a command prompt such as Powershell:
 
 ```bash
 dotnet tool install Xperience.Xman -g
+```
+
+## Updating the tool
+
+Run the following command from a command prompt such as Powershell:
+
+```bash
+dotnet tool update xperience.xman -g
 ```
 
 ## Usage
