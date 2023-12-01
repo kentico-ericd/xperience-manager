@@ -1,7 +1,7 @@
 using NUnit.Framework;
 
 using Xperience.Xman.Helpers;
-using Xperience.Xman.Models;
+using Xperience.Xman.Options;
 
 namespace Xperience.Xman.Tests
 {

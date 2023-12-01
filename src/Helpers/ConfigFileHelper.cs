@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 
-using Xperience.Xman.Models;
 using Xperience.Xman.Commands;
+using Xperience.Xman.Options;
 
 namespace Xperience.Xman.Helpers
 {

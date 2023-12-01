@@ -3,7 +3,8 @@ using Spectre.Console;
 using System.Diagnostics;
 
 using Xperience.Xman.Helpers;
-using Xperience.Xman.Models;
+using Xperience.Xman.Options;
+using Xperience.Xman.Wizards;
 
 namespace Xperience.Xman.Commands
 {
@@ -27,7 +28,7 @@ namespace Xperience.Xman.Commands
             InstallOptions? options = ConfigFileHelper.GetOptionsFromConfig();
             if (options is null)
             {
-                options = new InstallOptionsHelper().GetOptions();
+                options = new InstallWizard().Run();
             }
             else
             {

@@ -1,4 +1,4 @@
-﻿using Xperience.Xman.Models;
+﻿using Xperience.Xman.Options;
 
 namespace Xperience.Xman.Helpers
 {
