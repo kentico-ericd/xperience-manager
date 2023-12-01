@@ -1,3 +1,5 @@
+using Spectre.Console;
+
 using System.Diagnostics;
 
 using Xperience.Xman.Helpers;
@@ -29,7 +31,7 @@ namespace Xperience.Xman.Commands
             }
             else
             {
-                XConsole.WriteSuccessLine("Configuration loaded from file, proceeding with install...");
+                AnsiConsole.MarkupInterpolated($"[{Constants.SUCCESS_COLOR}]Configuration loaded from file, proceeding with install...[/]");
             }
 
             try
@@ -40,17 +42,17 @@ namespace Xperience.Xman.Commands
                 CreateDatabase(options);
                 if (errors.Any())
                 {
-                    XConsole.WriteErrorLine($"Installation failed with errors:\n{String.Join("\n", errors)}");
+                    AnsiConsole.MarkupInterpolated($"[{Constants.ERROR_COLOR}]Installation failed with errors:\n{String.Join("\n", errors)}[/]");
                 }
                 else
                 {
-                    XConsole.WriteSuccessLine("Installation complete!");
+                    AnsiConsole.MarkupInterpolated($"[{Constants.SUCCESS_COLOR}]Installation complete![/]");
                     ConfigFileHelper.CreateConfigFile(options);
                 }
             }
             catch (Exception e)
             {
-                XConsole.WriteErrorLine($"Installation failed with the error: {e.Message}");
+                AnsiConsole.MarkupInterpolated($"[{Constants.ERROR_COLOR}]Installation failed with the error: {e.Message}[/]");
             }
         }
 
@@ -59,7 +61,7 @@ namespace Xperience.Xman.Commands
         {
             if (stopProcessing) return;
 
-            XConsole.WriteEmphasisLine("Running database creation script...");
+            AnsiConsole.MarkupInterpolated($"[{Constants.EMPHASIS_COLOR}]Running database creation script...[/]");
 
             var databaseScript = new ScriptBuilder(ScriptType.DatabaseInstall).WithOptions(options).Build();
             var databaseCmd = CommandHelper.ExecuteShell(databaseScript);
@@ -73,7 +75,7 @@ namespace Xperience.Xman.Commands
         {
             if (stopProcessing) return;
 
-            XConsole.WriteEmphasisLine("Running project creation script...");
+            AnsiConsole.MarkupInterpolated($"[{Constants.EMPHASIS_COLOR}]Running project creation script...[/]");
 
             var installComplete = false;
             var installScript = new ScriptBuilder(ScriptType.ProjectInstall).WithOptions(options).Build();
@@ -106,13 +108,13 @@ namespace Xperience.Xman.Commands
         {
             if (stopProcessing) return;
 
-            XConsole.WriteEmphasisLine("Uninstalling previous template version...");
+            AnsiConsole.MarkupInterpolated($"[{Constants.EMPHASIS_COLOR}]Uninstalling previous template version...[/]");
 
             var uninstallScript = new ScriptBuilder(ScriptType.TemplateUninstall).Build();
             CommandHelper.ExecuteShell(uninstallScript).WaitForExit();
 
             var message = options.Version is null ? "Installing latest template version..." : $"Installing template version {options.Version}...";
-            XConsole.WriteEmphasisLine(message);
+            AnsiConsole.MarkupInterpolated($"[{Constants.EMPHASIS_COLOR}]{message}[/]");
 
             var installScript = new ScriptBuilder(ScriptType.TemplateInstall).WithOptions(options).Build();
             var installCmd = CommandHelper.ExecuteShell(installScript);

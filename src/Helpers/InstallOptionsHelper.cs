@@ -1,4 +1,4 @@
-using System.Text;
+using Spectre.Console;
 
 using Xperience.Xman.Models;
 using Xperience.Xman.Steps;
@@ -12,10 +12,10 @@ namespace Xperience.Xman.Helpers
     {
         private readonly StepList steps = new();
         private readonly InstallOptions options = new();
-        private readonly Dictionary<string, string> TEMPLATES = new() {
-            { "Dancing Goat", "kentico-xperience-sample-mvc" },
-            { "Boilerplate", "kentico-xperience-mvc" },
-            { "Admin customization boilerplate", "kentico-xperience-admin-sample" }
+        private readonly IEnumerable<string> TEMPLATES = new string[] {
+            "kentico-xperience-sample-mvc",
+            "kentico-xperience-mvc",
+            "kentico-xperience-admin-sample"
         };
         
 
@@ -24,22 +24,42 @@ namespace Xperience.Xman.Helpers
         /// </summary>
         public InstallOptionsHelper()
         {
-            var templatePrompt = new StringBuilder($"Which template? Leave empty to use '{options.Template}'\n");
-            for (var i = 0; i < TEMPLATES.Count; i++)
-            {
-                var t = TEMPLATES.ElementAt(i);
-                templatePrompt.AppendLine($"[{i}] {t.Key}");
-            }
+            steps.Add(new Step<string>(
+                new TextPrompt<string>("Which [green]version[/]? [green](latest)[/]")
+                    .AllowEmpty()
+                    .ValidationErrorMessage($"[{Constants.ERROR_COLOR}]Please enter a valid version, ie '27.0.0'[/]")
+                    .Validate(SetVersion)));
 
-            steps.AddRange(new Step[] {
-                new Step($"Which version? Leave empty to use the latest version", SetVersion, "Please enter a valid version, ie '27.0.0'"),
-                new Step(templatePrompt.ToString(), SetTemplate, $"\nEnter a number between 0 and {TEMPLATES.Count - 1}", true),
-                new Step($"Name your project. Leave empty to use '{options.ProjectName}'", SetProjectName),
-                new Step($"Use cloud (Y/N)? Leave empty to use '{options.UseCloud}'", SetCloud, "\nPress Y, N, or Enter", true),
-                new Step("Enter the SQL server name", SetServerName, "You must enter a SQL server"),
-                new Step($"Enter the database name. Leave empty to use '{options.DatabaseName}'", SetDatabaseName),
-                new Step($"Enter the admin password. Leave empty to use '{options.AdminPassword}'", SetPassword)
-            });
+            steps.Add(new Step<string>(
+                new SelectionPrompt<string>()
+                    .Title("Which [green]template[/]?")
+                    .AddChoices(TEMPLATES),
+                (v) => options.Template = v.ToString()));
+
+            steps.Add(new Step<string>(
+                new TextPrompt<string>("Give your project a [green]name[/]?")
+                    .DefaultValue(options.ProjectName),
+                (v) => options.ProjectName = v));
+
+            var cloudPrompt = new ConfirmationPrompt("Prepare for [green]cloud[/] deployment?");
+            cloudPrompt.DefaultValue = options.UseCloud;
+            steps.Add(new Step<bool>(cloudPrompt, (v) => options.UseCloud = v));
+
+            steps.Add(new Step<string>(
+                new TextPrompt<string>("Enter the [green]SQL server[/] name"),
+                (v) => options.ServerName = v));
+
+            steps.Add(new Step<string>(
+                new TextPrompt<string>("Enter the [green]database[/] name")
+                    .AllowEmpty()
+                    .DefaultValue(options.DatabaseName),
+                (v) => options.ServerName = v));
+
+            steps.Add(new Step<string>(
+                new TextPrompt<string>("Enter the admin [green]password[/]")
+                    .AllowEmpty()
+                    .DefaultValue(options.AdminPassword),
+                (v) => options.AdminPassword = v));
         }
 
 
@@ -48,64 +68,12 @@ namespace Xperience.Xman.Helpers
         /// </summary>
         public InstallOptions GetOptions()
         {
-            while (steps.HasNext())
+            do
             {
                 steps.Current.Execute();
-                steps.Next();
-            }
+            } while (steps.Next());
 
             return options;
-        }
-
-
-        private bool SetCloud(string inputKey)
-        {
-            if (inputKey.Equals(ConsoleKey.Enter.ToString()))
-            {
-                return true;
-            }
-
-            if (!(inputKey.Equals(ConsoleKey.Y.ToString()) || inputKey.Equals(ConsoleKey.N.ToString())))
-            {
-                return false;
-            }
-
-            options.UseCloud = inputKey.Equals(ConsoleKey.Y.ToString());
-
-            return true;
-        }
-
-
-        private bool SetDatabaseName(string name)
-        {
-            if (!String.IsNullOrEmpty(name))
-            {
-                options.DatabaseName = name;
-            }
-
-            return true;
-        }
-
-
-        private bool SetPassword(string password)
-        {
-            if (!String.IsNullOrEmpty(password))
-            {
-                options.AdminPassword = password;
-            }
-
-            return true;
-        }
-
-
-        private bool SetProjectName(string name)
-        {
-            if (!String.IsNullOrEmpty(name))
-            {
-                options.ProjectName = name;
-            }
-
-            return true;
         }
 
 
@@ -119,37 +87,6 @@ namespace Xperience.Xman.Helpers
             if (Version.TryParse(versionString, out var ver))
             {
                 options.Version = ver;
-                return true;
-            }
-
-            return false;
-        }
-
-
-        private bool SetServerName(string name)
-        {
-            if (String.IsNullOrEmpty(name))
-            {
-                return false;
-            }
-
-            options.ServerName = name;
-
-            return true;
-        }
-
-
-        private bool SetTemplate(string inputKey)
-        {
-            if (inputKey.Equals(ConsoleKey.Enter.ToString()))
-            {
-                return true;
-            }
-
-            var keyNum = inputKey.TrimStart('D');
-            if (int.TryParse(keyNum, out var index) && index < TEMPLATES.Count && index >= 0)
-            {
-                options.Template = TEMPLATES.Values.ElementAt(index);
                 return true;
             }
 

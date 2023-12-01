@@ -1,38 +1,49 @@
 ﻿namespace Xperience.Xman.Steps
 {
-    public class StepList : List<Step>
+    /// <summary>
+    /// A collection of <see cref="AbstractStep"/>s which can be navigated forward and back.
+    /// </summary>
+    public class StepList : List<AbstractStep>
     {
         private int _currentIndex = 0;
 
 
-        public Step Current => this[_currentIndex];
+        /// <summary>
+        /// The current step.
+        /// </summary>
+        public AbstractStep Current => this[_currentIndex];
 
 
-        public bool HasNext()
+        /// <summary>
+        /// Navigates forward if there is a next element.
+        /// </summary>
+        /// <returns><c>False</c> if there is no next element.</returns>
+        public bool Next()
         {
-            return _currentIndex < Count - 1;
-        }
-
-
-        public bool HasPrevious()
-        {
-            return _currentIndex > 0;
-        }
-
-
-        public Step Next()
-        {
-            Step(1);
+            if (_currentIndex < Count - 1)
+            {
+                Step(1);
+                return true;
+            }
             
-            return this[_currentIndex];
+            
+            return false;
         }
 
 
-        public Step Previous()
+        /// <summary>
+        /// Navigates backward if there is a previous element.
+        /// </summary>
+        /// <returns><c>False</c> if there is no previous element.</returns>
+        public bool Previous()
         {
-            Step(-1);
+            if (_currentIndex > 0)
+            {
+                Step(-1);
+                return true;
+            }
 
-            return this[_currentIndex];
+            return false;
         }
 
         

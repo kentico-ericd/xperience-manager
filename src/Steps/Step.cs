@@ -1,57 +1,35 @@
-﻿namespace Xperience.Xman.Steps
+﻿using Spectre.Console;
+
+namespace Xperience.Xman.Steps
 {
     /// <summary>
-    /// Represents a step that requires user input during a command execution.
+    /// A step used to display a prompt for user interaction and optionally return the value.
     /// </summary>
-    public class Step
+    public class Step<T> : AbstractStep
     {
-        private readonly bool isReadKey;
-        private readonly string prompt;
-        private readonly string? errorMessage;
-        private readonly Func<string, bool> callback;
+        private readonly IPrompt<T> prompt;
+        private readonly Action<T>? valueReceiver;
 
 
         /// <summary>
-        /// Initializes a new instance of <see cref="Step"/>.
+        /// Initializes a new instance of <see cref="Step{T}"/>.
         /// </summary>
-        /// <param name="prompt">The text to show the user when the step begins.</param>
-        /// <param name="callback">A function that validates and processes the user input.</param>
-        /// <param name="errorMessage">The text to display when the <paramref name="callback"/> returns <c>false</c>.</param>
-        /// <param name="isReadKey">If <c>true</c>, <see cref="Console.ReadKey()"/> is used.</param>
-        public Step(string prompt, Func<string, bool> callback, string? errorMessage = null, bool isReadKey = false)
+        /// <param name="prompt">The prompt to show the user when the step begins.</param>
+        /// <param name="valueReceiver">A function that is passed the user input.</param>
+        public Step(IPrompt<T> prompt, Action<T>? valueReceiver = null)
         {
             this.prompt = prompt;
-            this.errorMessage = errorMessage;
-            this.isReadKey = isReadKey;
-            this.callback = callback;
+            this.valueReceiver = valueReceiver;
         }
 
 
-        /// <summary>
-        /// Displays the step to the user and waits for input.
-        /// </summary>
-        /// <returns>The user input.</returns>
-        public string? Execute()
+        public override void Execute()
         {
-            XConsole.WriteLine($"\n{prompt}");
-
-            string? input;
-            if (isReadKey)
+            var input = AnsiConsole.Prompt(prompt);
+            if (valueReceiver is not null)
             {
-                input = Console.ReadKey().Key.ToString();
+                valueReceiver(input);
             }
-            else
-            {
-                input = Console.ReadLine();
-            }
-
-            if (input is not null && !callback.Invoke(input))
-            {
-                XConsole.WriteErrorLine(errorMessage ?? "There was an error processing the input");
-                return Execute();
-            }
-
-            return input;
         }
     }
 }
