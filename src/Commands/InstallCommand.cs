@@ -31,28 +31,28 @@ namespace Xperience.Xman.Commands
             }
             else
             {
-                AnsiConsole.MarkupInterpolated($"[{Constants.SUCCESS_COLOR}]Configuration loaded from file, proceeding with install...[/]");
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Configuration loaded from file, proceeding with install...[/]");
             }
 
             try
             {
-                Console.WriteLine("\n");
+                AnsiConsole.WriteLine();
                 InstallTemplate(options);
                 CreateProjectFiles(options);
                 CreateDatabase(options);
                 if (errors.Any())
                 {
-                    AnsiConsole.MarkupInterpolated($"[{Constants.ERROR_COLOR}]Installation failed with errors:\n{String.Join("\n", errors)}[/]");
+                    AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Installation failed with errors:\n{String.Join("\n", errors)}[/]");
                 }
                 else
                 {
-                    AnsiConsole.MarkupInterpolated($"[{Constants.SUCCESS_COLOR}]Installation complete![/]");
+                    AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Installation complete![/]");
                     ConfigFileHelper.CreateConfigFile(options);
                 }
             }
             catch (Exception e)
             {
-                AnsiConsole.MarkupInterpolated($"[{Constants.ERROR_COLOR}]Installation failed with the error: {e.Message}[/]");
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Installation failed with the error: {e.Message}[/]");
             }
         }
 
@@ -61,7 +61,7 @@ namespace Xperience.Xman.Commands
         {
             if (stopProcessing) return;
 
-            AnsiConsole.MarkupInterpolated($"[{Constants.EMPHASIS_COLOR}]Running database creation script...[/]");
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running database creation script...[/]");
 
             var databaseScript = new ScriptBuilder(ScriptType.DatabaseInstall).WithOptions(options).Build();
             var databaseCmd = CommandHelper.ExecuteShell(databaseScript);
@@ -75,7 +75,7 @@ namespace Xperience.Xman.Commands
         {
             if (stopProcessing) return;
 
-            AnsiConsole.MarkupInterpolated($"[{Constants.EMPHASIS_COLOR}]Running project creation script...[/]");
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running project creation script...[/]");
 
             var installComplete = false;
             var installScript = new ScriptBuilder(ScriptType.ProjectInstall).WithOptions(options).Build();
@@ -108,13 +108,13 @@ namespace Xperience.Xman.Commands
         {
             if (stopProcessing) return;
 
-            AnsiConsole.MarkupInterpolated($"[{Constants.EMPHASIS_COLOR}]Uninstalling previous template version...[/]");
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Uninstalling previous template version...[/]");
 
             var uninstallScript = new ScriptBuilder(ScriptType.TemplateUninstall).Build();
             CommandHelper.ExecuteShell(uninstallScript).WaitForExit();
 
             var message = options.Version is null ? "Installing latest template version..." : $"Installing template version {options.Version}...";
-            AnsiConsole.MarkupInterpolated($"[{Constants.EMPHASIS_COLOR}]{message}[/]");
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]{message}[/]");
 
             var installScript = new ScriptBuilder(ScriptType.TemplateInstall).WithOptions(options).Build();
             var installCmd = CommandHelper.ExecuteShell(installScript);

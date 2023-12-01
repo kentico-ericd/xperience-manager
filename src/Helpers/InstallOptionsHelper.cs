@@ -53,7 +53,7 @@ namespace Xperience.Xman.Helpers
                 new TextPrompt<string>("Enter the [green]database[/] name")
                     .AllowEmpty()
                     .DefaultValue(options.DatabaseName),
-                (v) => options.ServerName = v));
+                (v) => options.DatabaseName = v));
 
             steps.Add(new Step<string>(
                 new TextPrompt<string>("Enter the admin [green]password[/]")
