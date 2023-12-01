@@ -1,3 +1,5 @@
+using Spectre.Console;
+
 using System.Reflection;
 
 using Xperience.Xman.Helpers;
@@ -22,17 +24,18 @@ namespace Xperience.Xman.Commands
                 .InformationalVersion
                 .ToString();
 
-            XConsole.WriteLine($"xman v{version}");
-            XConsole.WriteLine("-------------");
+            AnsiConsole.MarkupLineInterpolated($"\n [orange3]xman[/] v{version}");
 
+            var table = new Table().AddColumn("Command").AddColumn("Description");
             foreach (var command in CommandHelper.Commands)
             {
                 if (command is null) continue;
 
                 var keywords = command.Keywords.Where(k => !string.IsNullOrEmpty(k));
-                XConsole.WriteEmphasisLine($"\n{string.Join(", ", keywords)}");
-                XConsole.WriteLine($"\t-{command.Description}");
+                table.AddRow(String.Join(", ", keywords), command.Description);
             }
+
+            AnsiConsole.Write(table);
         }
     }
 }

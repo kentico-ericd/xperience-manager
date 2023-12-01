@@ -10,15 +10,12 @@ namespace Xperience.Xman.Helpers
     /// </summary>
     public static class ConfigFileHelper
     {
-        private const string CONFIG_FILENAME = "config.json";
-
-
         /// <summary>
         /// Stores the <see cref="InstallOptions"/> in the configuration file.
         /// </summary>
         public static void CreateConfigFile(InstallOptions options)
         {
-            File.WriteAllText(CONFIG_FILENAME, JsonConvert.SerializeObject(options));
+            File.WriteAllText(Constants.CONFIG_FILENAME, JsonConvert.SerializeObject(options));
         }
 
 
@@ -28,14 +25,14 @@ namespace Xperience.Xman.Helpers
         /// <returns></returns>
         public static InstallOptions? GetOptionsFromConfig()
         {
-            if (!File.Exists(CONFIG_FILENAME))
+            if (!File.Exists(Constants.CONFIG_FILENAME))
             {
                 return null;
             }
 
             try
             {
-                var text = File.ReadAllText(CONFIG_FILENAME);
+                var text = File.ReadAllText(Constants.CONFIG_FILENAME);
 
                 return JsonConvert.DeserializeObject<InstallOptions>(text);
             }
