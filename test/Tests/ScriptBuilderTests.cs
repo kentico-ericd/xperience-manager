@@ -10,13 +10,17 @@ namespace Xperience.Xman.Tests
     /// </summary>
     public class ScriptBuilderTests
     {
+        private readonly InstallOptions validInstallOptions = new InstallOptions { ServerName = "TESTSERVER" };
+        private readonly UpdateOptions validUpdateOptions = new UpdateOptions { PackageName = "kentico.xperience.webapp" };
+
+
         [Test]
         public void ProjectInstallScript_WithValidOptions_ReturnsValidScript()
         {
-            var options = new InstallOptions();
-            var script = new ScriptBuilder(ScriptType.ProjectInstall).WithOptions(options).Build();
+            var script = new ScriptBuilder(ScriptType.ProjectInstall).WithOptions(validInstallOptions).Build();
+            var expected = $"dotnet new {validInstallOptions.Template} -n {validInstallOptions.ProjectName}";
 
-            Assert.That(script, Is.EqualTo($"dotnet new {options.Template} -n {options.ProjectName}"));
+            Assert.That(script, Is.EqualTo(expected));
         }
 
 
@@ -31,12 +35,40 @@ namespace Xperience.Xman.Tests
 
 
         [Test]
+        public void TemplateInstall_AppendVersion_AddsParameter()
+        {
+            var version = new Version(1, 0, 0);
+            var script = new ScriptBuilder(ScriptType.TemplateInstall)
+                .WithOptions(validInstallOptions)
+                .AppendVersion(version)
+                .Build();
+            var expected = $"dotnet new install kentico.xperience.templates::{version}";
+
+            Assert.That(script, Is.EqualTo(expected));
+        }
+
+
+        [Test]
+        public void PackageUpdate_AppendVersion_AddsParameter()
+        {
+            var version = new Version(1, 0, 0);
+            var script = new ScriptBuilder(ScriptType.PackageUpdate)
+                .WithOptions(validUpdateOptions)
+                .AppendVersion(version)
+                .Build();
+            var expected = $"dotnet add package {validUpdateOptions.PackageName} --version {version}";
+
+            Assert.That(script, Is.EqualTo(expected));
+        }
+
+
+        [Test]
         public void DatabaseInstallScript_WithValidOptions_ReturnsValidScript()
         {
-            var options = new InstallOptions { ServerName = "TESTSERVER" };
-            var script = new ScriptBuilder(ScriptType.DatabaseInstall).WithOptions(options).Build();
-
-            Assert.That(script, Is.EqualTo($"dotnet kentico-xperience-dbmanager -- -s \"{options.ServerName}\" -d \"{options.DatabaseName}\" -a \"{options.AdminPassword}\""));
+            var script = new ScriptBuilder(ScriptType.DatabaseInstall).WithOptions(validInstallOptions).Build();
+            var expected = $"dotnet kentico-xperience-dbmanager -- -s \"{validInstallOptions.ServerName}\" -d \"{validInstallOptions.DatabaseName}\" -a \"{validInstallOptions.AdminPassword}\"";
+            
+            Assert.That(script, Is.EqualTo(expected));
         }
 
 
