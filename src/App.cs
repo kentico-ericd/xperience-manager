@@ -1,5 +1,6 @@
 using Spectre.Console;
 
+using Xperience.Xman.Commands;
 using Xperience.Xman.Repositories;
 
 namespace Xperience.Xman
@@ -49,7 +50,10 @@ namespace Xperience.Xman
                 return;
             }
 
-            AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Process complete![/]");
+            if (command is not HelpCommand)
+            {
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Process complete![/]");
+            }
         }
     }
 }

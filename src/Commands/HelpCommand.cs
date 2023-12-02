@@ -26,7 +26,7 @@ namespace Xperience.Xman.Commands
                 new FigletText("xman")
                     .LeftJustified()
                     .Color(Color.Orange3));
-            if (v is not null) AnsiConsole.WriteLine($" v{v.Major}.{v.Minor}.{v.Revision}");
+            if (v is not null) AnsiConsole.WriteLine($" v{v.Major}.{v.Minor}.{v.Revision}\n");
         }
     }
 }
