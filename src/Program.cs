@@ -1,35 +1,33 @@
-﻿using Spectre.Console;
+﻿using System.Reflection;
 
-using Xperience.Xman.Helpers;
+using Autofac;
 
-namespace Xperience.Xman
-{
-    public static class Program
-    {
-        static void Main(string[] args)
-        {
-            var command = CommandHelper.GetCommand(args);
-            if (command is null)
-            {
-                return;
-            }
+using Xperience.Xman;
+using Xperience.Xman.Commands;
+using Xperience.Xman.Repositories;
+using Xperience.Xman.Services;
 
-            try
-            {
-                command.Execute(args);
-            }
-            catch (Exception e)
-            {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with error:\n{e.Message}[/]");
-            }
+var builder = new ContainerBuilder();
+var assemblies = Assembly.GetExecutingAssembly();
 
-            if (command.Errors.Any())
-            {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with errors:\n{String.Join("\n", command.Errors)}[/]");
-                return;
-            }
+builder.RegisterType<App>();
+builder.RegisterAssemblyTypes(assemblies)
+    .Where(t => t.IsClass
+        && !t.IsAbstract
+        && typeof(IRepository).IsAssignableFrom(t))
+    .AsImplementedInterfaces()
+    .InstancePerLifetimeScope();
+builder.RegisterAssemblyTypes(assemblies)
+    .Where(t => t.IsClass
+        && !t.IsAbstract
+        && typeof(ICommand).IsAssignableFrom(t))
+    .AsImplementedInterfaces()
+    .InstancePerLifetimeScope();
+builder.RegisterAssemblyTypes(assemblies)
+    .Where(t => t.IsClass
+        && !t.IsAbstract
+        && typeof(IService).IsAssignableFrom(t))
+    .AsImplementedInterfaces()
+    .InstancePerLifetimeScope();
 
-            AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Process complete![/]");
-        }
-    }
-}
+builder.Build().Resolve<App>().Run(args);

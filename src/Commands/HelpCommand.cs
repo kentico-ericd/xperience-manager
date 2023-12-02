@@ -2,7 +2,7 @@ using Spectre.Console;
 
 using System.Reflection;
 
-using Xperience.Xman.Helpers;
+using Xperience.Xman.Repositories;
 
 namespace Xperience.Xman.Commands
 {
@@ -11,6 +11,9 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class HelpCommand : AbstractCommand
     {
+        private readonly ICommandRepository commandRepository;
+
+
         public override IEnumerable<string> Keywords => new string[] { "?", "help" };
 
 
@@ -18,6 +21,13 @@ namespace Xperience.Xman.Commands
 
 
         public override string Description => "Displays the help menu (this screen)";
+
+
+        // TODO: This command is currently broken due to circular dependency
+        public HelpCommand(/*ICommandRepository commandRepository*/)
+        {
+            //this.commandRepository = commandRepository;
+        }
 
 
         public override void Execute(string[] args)
@@ -33,7 +43,7 @@ namespace Xperience.Xman.Commands
                 .AddColumn("Command")
                 .AddColumn("Parameters")
                 .AddColumn("Description");
-            foreach (var command in CommandHelper.Commands)
+            foreach (var command in commandRepository.GetAll())
             {
                 if (command is null) continue;
 

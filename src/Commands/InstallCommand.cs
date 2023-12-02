@@ -2,6 +2,7 @@ using Spectre.Console;
 
 using Xperience.Xman.Helpers;
 using Xperience.Xman.Options;
+using Xperience.Xman.Services;
 using Xperience.Xman.Wizards;
 
 namespace Xperience.Xman.Commands
@@ -11,6 +12,9 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class InstallCommand : AbstractCommand
     {
+        private readonly IShellRunner shellRunner;
+
+
         public override IEnumerable<string> Keywords => new string[] { "i", "install" };
 
 
@@ -18,6 +22,12 @@ namespace Xperience.Xman.Commands
 
 
         public override string Description => "Installs a new XbK instance";
+
+
+        public InstallCommand(IShellRunner shellRunner)
+        {
+            this.shellRunner = shellRunner;
+        }
 
 
         public override void Execute(string[] args)
@@ -50,10 +60,7 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running database creation script...[/]");
 
             var databaseScript = new ScriptBuilder(ScriptType.DatabaseInstall).WithOptions(options).Build();
-            var databaseCmd = CommandHelper.ExecuteShell(databaseScript);
-            databaseCmd.ErrorDataReceived += ErrorDataReceived;
-            databaseCmd.BeginErrorReadLine();
-            databaseCmd.WaitForExit();
+            shellRunner.Execute(databaseScript, ErrorDataReceived).WaitForExit();
         }
 
 
@@ -68,8 +75,7 @@ namespace Xperience.Xman.Commands
                 .WithOptions(options)
                 .AppendCloud(options.UseCloud)
                 .Build();
-            var installCmd = CommandHelper.ExecuteShell(installScript, true);
-            installCmd.ErrorDataReceived += ErrorDataReceived;
+            var installCmd = shellRunner.Execute(installScript, ErrorDataReceived);
             installCmd.OutputDataReceived += (o, e) =>
             {
                 if (e.Data?.Contains("Do you want to run this action", StringComparison.OrdinalIgnoreCase) ?? false)
@@ -83,8 +89,6 @@ namespace Xperience.Xman.Commands
                     installComplete = true;
                 }
             };
-            installCmd.BeginErrorReadLine();
-            installCmd.BeginOutputReadLine();
             while (!installComplete)
             {
                 installCmd.WaitForExit(100);
@@ -100,7 +104,7 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Uninstalling previous template version...[/]");
 
             var uninstallScript = new ScriptBuilder(ScriptType.TemplateUninstall).Build();
-            CommandHelper.ExecuteShell(uninstallScript).WaitForExit();
+            shellRunner.Execute(uninstallScript, ErrorDataReceived).WaitForExit();
 
             var message = options.Version is null ? "Installing latest template version..." : $"Installing template version {options.Version}...";
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]{message}[/]");
@@ -109,7 +113,7 @@ namespace Xperience.Xman.Commands
                 .WithOptions(options)
                 .AppendVersion(options.Version)
                 .Build();
-            var installCmd = CommandHelper.ExecuteShell(installScript);
+            var installCmd = shellRunner.Execute(installScript, ErrorDataReceived);
             installCmd.WaitForExit();
 
             if (installCmd.ExitCode != 0)

@@ -1,6 +1,7 @@
 ﻿using Spectre.Console;
 
 using Xperience.Xman.Helpers;
+using Xperience.Xman.Services;
 
 namespace Xperience.Xman.Commands
 {
@@ -11,6 +12,7 @@ namespace Xperience.Xman.Commands
     {
         private const string STORE = "store";
         private const string RESTORE = "restore";
+        private readonly IShellRunner shellRunner;
         
 
         public override IEnumerable<string> Keywords => new string[] { "ci" };
@@ -20,6 +22,12 @@ namespace Xperience.Xman.Commands
 
 
         public override string Description => "Stores or restores CI data";
+
+
+        public ContinuousIntegrationCommand(IShellRunner shellRunner)
+        {
+            this.shellRunner = shellRunner;
+        }
 
 
         public override void Execute(string[] args)
@@ -54,8 +62,7 @@ namespace Xperience.Xman.Commands
 
             var storeStarted = false;
             var ciScript = new ScriptBuilder(ScriptType.StoreContinuousIntegration).Build();
-            var ciCmd = CommandHelper.ExecuteShell(ciScript);
-            ciCmd.ErrorDataReceived += ErrorDataReceived;
+            var ciCmd = shellRunner.Execute(ciScript, ErrorDataReceived);
             ciCmd.OutputDataReceived += (o, e) =>
             {
                 if (e.Data?.Contains("Storing objects...", StringComparison.OrdinalIgnoreCase) ?? false)
@@ -64,8 +71,6 @@ namespace Xperience.Xman.Commands
                     storeStarted = true;
                 }
             };
-            ciCmd.BeginOutputReadLine();
-            ciCmd.BeginErrorReadLine();
             ciCmd.WaitForExit();
             if (!storeStarted)
             {
@@ -79,8 +84,7 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running the CI restore script...[/]");
 
             var ciScript = new ScriptBuilder(ScriptType.RestoreContinuousIntegration).Build();
-            var ciCmd = CommandHelper.ExecuteShell(ciScript);
-            ciCmd.ErrorDataReceived += ErrorDataReceived;
+            var ciCmd = shellRunner.Execute(ciScript, ErrorDataReceived);
             ciCmd.OutputDataReceived += (o, e) =>
             {
                 if (e.Data?.Contains("The Continuous Integration repository is either not initialized or in an incorrect location on the file system.", StringComparison.OrdinalIgnoreCase) ?? false)
@@ -90,8 +94,6 @@ namespace Xperience.Xman.Commands
                     LogError("The restore process wasn't started because the Continuous Integration repository wasn't found.");
                 }
             };
-            ciCmd.BeginOutputReadLine();
-            ciCmd.BeginErrorReadLine();
             ciCmd.WaitForExit();
         }
     }

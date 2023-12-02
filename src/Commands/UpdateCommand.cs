@@ -2,6 +2,7 @@
 
 using Xperience.Xman.Helpers;
 using Xperience.Xman.Options;
+using Xperience.Xman.Services;
 using Xperience.Xman.Wizards;
 
 namespace Xperience.Xman.Commands
@@ -12,6 +13,7 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class UpdateCommand : AbstractCommand
     {
+        private readonly IShellRunner shellRunner;
         private readonly IEnumerable<string> packageNames = new string[]
         {
             "kentico.xperience.admin",
@@ -30,6 +32,12 @@ namespace Xperience.Xman.Commands
 
 
         public override string Description => "Updates a project's NuGet packages and database version";
+
+
+        public UpdateCommand(IShellRunner shellRunner)
+        {
+            this.shellRunner = shellRunner;
+        }
 
 
         public override void Execute(string[] args)
@@ -57,10 +65,7 @@ namespace Xperience.Xman.Commands
 
                 options.PackageName = package;
                 var packageScript = new ScriptBuilder(ScriptType.PackageUpdate).WithOptions(options).AppendVersion(options.Version).Build();
-                var packageCmd = CommandHelper.ExecuteShell(packageScript);
-                packageCmd.ErrorDataReceived += ErrorDataReceived;
-                packageCmd.BeginErrorReadLine();
-                packageCmd.WaitForExit();
+                shellRunner.Execute(packageScript, ErrorDataReceived).WaitForExit();
             }
         }
 
@@ -72,10 +77,7 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Attempting to build the project...[/]");
 
             var buildScript = new ScriptBuilder(ScriptType.BuildProject).Build();
-            var buildCmd = CommandHelper.ExecuteShell(buildScript);
-            buildCmd.ErrorDataReceived += ErrorDataReceived;
-            buildCmd.BeginErrorReadLine();
-            buildCmd.WaitForExit();
+            shellRunner.Execute(buildScript, ErrorDataReceived).WaitForExit();
         }
 
 
@@ -86,19 +88,15 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Updating the database...[/]");
 
             var databaseScript = new ScriptBuilder(ScriptType.DatabaseUpdate).Build();
-            var databaseCmd = CommandHelper.ExecuteShell(databaseScript, true);
-            databaseCmd.ErrorDataReceived += ErrorDataReceived;
+            var databaseCmd = shellRunner.Execute(databaseScript, ErrorDataReceived);
             databaseCmd.OutputDataReceived += (o, e) =>
             {
-                Console.WriteLine(e.Data);
                 if (e.Data?.Contains("Do you want to continue", StringComparison.OrdinalIgnoreCase) ?? false)
                 {
                     // Bypass backup warning
                     databaseCmd.StandardInput.WriteLine('Y');
                 }
             };
-            databaseCmd.BeginErrorReadLine();
-            databaseCmd.BeginOutputReadLine();
             databaseCmd.WaitForExit();
         }
     }
