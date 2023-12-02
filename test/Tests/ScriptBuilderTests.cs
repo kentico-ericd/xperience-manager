@@ -10,8 +10,8 @@ namespace Xperience.Xman.Tests
     /// </summary>
     public class ScriptBuilderTests
     {
-        private readonly InstallOptions validInstallOptions = new InstallOptions { ServerName = "TESTSERVER" };
-        private readonly UpdateOptions validUpdateOptions = new UpdateOptions { PackageName = "kentico.xperience.webapp" };
+        private readonly InstallOptions validInstallOptions = new() { ServerName = "TESTSERVER" };
+        private readonly UpdateOptions validUpdateOptions = new() { PackageName = "kentico.xperience.webapp" };
 
 
         [Test]

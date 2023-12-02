@@ -13,17 +13,25 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class InstallCommand : ICommand
     {
-        private bool stopProcessing = false;
-        private readonly IList<string> errors = new List<string>();
+        private readonly List<string> errors = new();
+
+
+        public List<string> Errors => errors;
+
+
+        public bool StopProcessing { get; set; }
 
 
         public IEnumerable<string> Keywords => new string[] { "i", "install" };
 
 
+        public IEnumerable<string> Parameters => Array.Empty<string>();
+
+
         public string Description => "Installs a new XbK instance";
 
 
-        public void Execute()
+        public void Execute(string[] args)
         {
             InstallOptions? options = ConfigFileHelper.GetOptionsFromConfig();
             if (options is null)
@@ -41,26 +49,21 @@ namespace Xperience.Xman.Commands
                 InstallTemplate(options);
                 CreateProjectFiles(options);
                 CreateDatabase(options);
-                if (errors.Any())
+                if (!Errors.Any())
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Installation failed with errors:\n{String.Join("\n", errors)}[/]");
-                }
-                else
-                {
-                    AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Installation complete![/]");
                     ConfigFileHelper.CreateConfigFile(options);
                 }
             }
             catch (Exception e)
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Installation failed with the error: {e.Message}[/]");
+                LogError(e.Message);
             }
         }
 
 
         private void CreateDatabase(InstallOptions options)
         {
-            if (stopProcessing) return;
+            if (StopProcessing) return;
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running database creation script...[/]");
 
@@ -74,7 +77,7 @@ namespace Xperience.Xman.Commands
 
         private void CreateProjectFiles(InstallOptions options)
         {
-            if (stopProcessing) return;
+            if (StopProcessing) return;
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running project creation script...[/]");
 
@@ -110,7 +113,7 @@ namespace Xperience.Xman.Commands
 
         private void InstallTemplate(InstallOptions options)
         {
-            if (stopProcessing) return;
+            if (StopProcessing) return;
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Uninstalling previous template version...[/]");
 
@@ -144,8 +147,8 @@ namespace Xperience.Xman.Commands
 
         private void LogError(string message)
         {
-            stopProcessing = true;
-            errors.Add(message);
+            StopProcessing = true;
+            Errors.Add(message);
         }
     }
 }

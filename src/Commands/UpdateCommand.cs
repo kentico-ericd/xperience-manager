@@ -14,8 +14,7 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class UpdateCommand : ICommand
     {
-        private bool stopProcessing = false;
-        private readonly IList<string> errors = new List<string>();
+        private readonly List<string> errors = new();
         private readonly IEnumerable<string> packageNames = new string[]
         {
             "kentico.xperience.admin",
@@ -27,13 +26,22 @@ namespace Xperience.Xman.Commands
         };
 
 
+        public List<string> Errors => errors;
+
+
+        public bool StopProcessing { get; set; }
+
+
         public IEnumerable<string> Keywords => new string[] { "u", "update" };
+
+
+        public IEnumerable<string> Parameters => Array.Empty<string>();
 
 
         public string Description => "Updates a project's NuGet packages and database version";
 
 
-        public void Execute()
+        public void Execute(string[] args)
         {
             var options = new UpdateWizard().Run();
             try
@@ -44,18 +52,14 @@ namespace Xperience.Xman.Commands
                 // There is currently an issue running the database update script while emulating the ReadKey() input
                 // for the script's "Do you want to continue" prompt. The update command must be run manually and the
                 // UpdateDatabase method is skipped.
-                if (errors.Any())
+                if (!Errors.Any())
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Update failed with errors:\n{String.Join("\n", errors)}[/]");
-                }
-                else
-                {
-                    AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Update complete![/] Unfortunately, the database cannot be updated at this time. Please run the 'dotnet run --no-build --kxp-update' command manually.");
+                    AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Unfortunately, the database cannot be updated at this time. Please run the 'dotnet run --no-build --kxp-update' command manually.[/]");
                 }
             }
             catch (Exception e)
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Update failed with the error: {e.Message}[/]");
+                LogError(e.Message);
             }
         }
 
@@ -64,7 +68,7 @@ namespace Xperience.Xman.Commands
         {
             foreach (var package in packageNames)
             {
-                if (stopProcessing) return;
+                if (StopProcessing) return;
 
                 var message = options.Version is null ? $"Updating {package} package to the latest version..." : $"Updating {package} package to version {options.Version}...";
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]{message}[/]");
@@ -81,7 +85,7 @@ namespace Xperience.Xman.Commands
 
         private void BuildProject()
         {
-            if (stopProcessing) return;
+            if (StopProcessing) return;
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Attempting to build the project...[/]");
 
@@ -95,7 +99,7 @@ namespace Xperience.Xman.Commands
 
         private void UpdateDatabase()
         {
-            if (stopProcessing) return;
+            if (StopProcessing) return;
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Updating the database...[/]");
 
@@ -128,8 +132,8 @@ namespace Xperience.Xman.Commands
 
         private void LogError(string message)
         {
-            stopProcessing = true;
-            errors.Add(message);
+            StopProcessing = true;
+            Errors.Add(message);
         }
     }
 }

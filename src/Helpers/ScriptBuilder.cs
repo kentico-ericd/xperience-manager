@@ -9,31 +9,41 @@ namespace Xperience.Xman.Helpers
     {
         private string currentScript;
         private readonly ScriptType currentScriptType;
+        private const string BUILD_SCRIPT = $"dotnet build";
         private const string INSTALL_PROJECT_SCRIPT = $"dotnet new {nameof(InstallOptions.Template)} -n {nameof(InstallOptions.ProjectName)}";
         private const string INSTALL_DATABASE_SCRIPT = $"dotnet kentico-xperience-dbmanager -- -s \"{nameof(InstallOptions.ServerName)}\" -d \"{nameof(InstallOptions.DatabaseName)}\" -a \"{nameof(InstallOptions.AdminPassword)}\"";
         private const string UNINSTALL_TEMPLATE_SCRIPT = "dotnet new uninstall kentico.xperience.templates";
         private const string INSTALL_TEMPLATE_SCRIPT = "dotnet new install kentico.xperience.templates";
         private const string UPDATE_PACKAGE_SCRIPT = $"dotnet add package {nameof(UpdateOptions.PackageName)}";
         private const string UPDATE_DATABASE_SCRIPT = $"dotnet run --no-build --kxp-update";
-        private const string BUILD_SCRIPT = $"dotnet build";
-        
+        private const string CI_STORE_SCRIPT = $"dotnet run --no-build --kxp-ci-store";
+        private const string CI_RESTORE_SCRIPT = $"dotnet run --no-build --kxp-ci-restore";
+
 
         /// <summary>
         /// Initializes a new instance of <see cref="ScriptBuilder"/>.
         /// </summary>
         /// <param name="type">The type of script to generate.</param>
+        /// <exception cref="InvalidOperationException"></exception>
         public ScriptBuilder(ScriptType type)
         {
+            if (type.Equals(ScriptType.None))
+            {
+                throw new InvalidOperationException("Invalid script type.");
+            }
+
             currentScriptType = type;
             currentScript = type switch
             {
+                ScriptType.BuildProject => BUILD_SCRIPT,
                 ScriptType.ProjectInstall => INSTALL_PROJECT_SCRIPT,
                 ScriptType.DatabaseInstall => INSTALL_DATABASE_SCRIPT,
                 ScriptType.TemplateUninstall => UNINSTALL_TEMPLATE_SCRIPT,
                 ScriptType.TemplateInstall => INSTALL_TEMPLATE_SCRIPT,
                 ScriptType.PackageUpdate => UPDATE_PACKAGE_SCRIPT,
                 ScriptType.DatabaseUpdate => UPDATE_DATABASE_SCRIPT,
-                ScriptType.BuildProject => BUILD_SCRIPT,
+                ScriptType.RestoreContinuousIngration => CI_RESTORE_SCRIPT,
+                ScriptType.StoreContinuousIngration => CI_STORE_SCRIPT,
                 _ => String.Empty,
             };
         }
@@ -118,6 +128,12 @@ namespace Xperience.Xman.Helpers
     public enum ScriptType
     {
         /// <summary>
+        /// An invalid script type.
+        /// </summary>
+        None,
+
+
+        /// <summary>
         /// The script which installs new Xperience by Kentico project files.
         /// </summary>
         ProjectInstall,
@@ -156,6 +172,18 @@ namespace Xperience.Xman.Helpers
         /// <summary>
         /// The script which builds the project.
         /// </summary>
-        BuildProject
+        BuildProject,
+
+
+        /// <summary>
+        /// The script which stores Continuous Intgeration data on the filesystem.
+        /// </summary>
+        StoreContinuousIngration,
+
+
+        /// <summary>
+        /// The script which restores Continuous Intgeration data to the database.
+        /// </summary>
+        RestoreContinuousIngration
     }
 }
