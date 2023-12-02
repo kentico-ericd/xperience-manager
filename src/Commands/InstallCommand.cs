@@ -13,6 +13,7 @@ namespace Xperience.Xman.Commands
     public class InstallCommand : AbstractCommand
     {
         private readonly IShellRunner shellRunner;
+        private readonly IScriptBuilder scriptBuilder;
 
 
         public override IEnumerable<string> Keywords => new string[] { "i", "install" };
@@ -24,9 +25,10 @@ namespace Xperience.Xman.Commands
         public override string Description => "Installs a new XbK instance";
 
 
-        public InstallCommand(IShellRunner shellRunner)
+        public InstallCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder)
         {
             this.shellRunner = shellRunner;
+            this.scriptBuilder = scriptBuilder;
         }
 
 
@@ -59,7 +61,7 @@ namespace Xperience.Xman.Commands
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running database creation script...[/]");
 
-            var databaseScript = new ScriptBuilder(ScriptType.DatabaseInstall).WithOptions(options).Build();
+            var databaseScript = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithOptions(options).Build();
             shellRunner.Execute(databaseScript, ErrorDataReceived).WaitForExit();
         }
 
@@ -71,7 +73,7 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running project creation script...[/]");
 
             var installComplete = false;
-            var installScript = new ScriptBuilder(ScriptType.ProjectInstall)
+            var installScript = scriptBuilder.SetScript(ScriptType.ProjectInstall)
                 .WithOptions(options)
                 .AppendCloud(options.UseCloud)
                 .Build();
@@ -103,13 +105,13 @@ namespace Xperience.Xman.Commands
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Uninstalling previous template version...[/]");
 
-            var uninstallScript = new ScriptBuilder(ScriptType.TemplateUninstall).Build();
+            var uninstallScript = scriptBuilder.SetScript(ScriptType.TemplateUninstall).Build();
             shellRunner.Execute(uninstallScript, ErrorDataReceived).WaitForExit();
 
             var message = options.Version is null ? "Installing latest template version..." : $"Installing template version {options.Version}...";
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]{message}[/]");
 
-            var installScript = new ScriptBuilder(ScriptType.TemplateInstall)
+            var installScript = scriptBuilder.SetScript(ScriptType.TemplateInstall)
                 .WithOptions(options)
                 .AppendVersion(options.Version)
                 .Build();

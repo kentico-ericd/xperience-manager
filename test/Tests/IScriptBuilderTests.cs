@@ -1,23 +1,31 @@
 using NUnit.Framework;
 
-using Xperience.Xman.Helpers;
 using Xperience.Xman.Options;
+using Xperience.Xman.Services;
 
 namespace Xperience.Xman.Tests
 {
     /// <summary>
-    /// Tests for the <see cref="ScriptBuilder"/> class.
+    /// Tests for <see cref="IScriptBuilder"/>.
     /// </summary>
-    public class ScriptBuilderTests
+    public class IScriptBuilderTests
     {
+        private IScriptBuilder scriptBuilder;
         private readonly InstallOptions validInstallOptions = new() { ServerName = "TESTSERVER" };
         private readonly UpdateOptions validUpdateOptions = new() { PackageName = "kentico.xperience.webapp" };
+
+
+        [SetUp]
+        public void SetUp()
+        {
+            scriptBuilder = new ScriptBuilder();
+        }
 
 
         [Test]
         public void ProjectInstallScript_WithValidOptions_ReturnsValidScript()
         {
-            var script = new ScriptBuilder(ScriptType.ProjectInstall).WithOptions(validInstallOptions).Build();
+            var script = scriptBuilder.SetScript(ScriptType.ProjectInstall).WithOptions(validInstallOptions).Build();
             var expected = $"dotnet new {validInstallOptions.Template} -n {validInstallOptions.ProjectName}";
 
             Assert.That(script, Is.EqualTo(expected));
@@ -28,7 +36,7 @@ namespace Xperience.Xman.Tests
         public void ProjectInstallScript_WithInvalidOptions_ThrowsException()
         {
             var options = new InstallOptions { Template = String.Empty };
-            var builder = new ScriptBuilder(ScriptType.ProjectInstall).WithOptions(options);
+            var builder = scriptBuilder.SetScript(ScriptType.ProjectInstall).WithOptions(options);
 
             Assert.That(() => builder.Build(), Throws.InvalidOperationException);
         }
@@ -38,7 +46,7 @@ namespace Xperience.Xman.Tests
         public void TemplateInstall_AppendVersion_AddsParameter()
         {
             var version = new Version(1, 0, 0);
-            var script = new ScriptBuilder(ScriptType.TemplateInstall)
+            var script = scriptBuilder.SetScript(ScriptType.TemplateInstall)
                 .WithOptions(validInstallOptions)
                 .AppendVersion(version)
                 .Build();
@@ -52,7 +60,7 @@ namespace Xperience.Xman.Tests
         public void PackageUpdate_AppendVersion_AddsParameter()
         {
             var version = new Version(1, 0, 0);
-            var script = new ScriptBuilder(ScriptType.PackageUpdate)
+            var script = scriptBuilder.SetScript(ScriptType.PackageUpdate)
                 .WithOptions(validUpdateOptions)
                 .AppendVersion(version)
                 .Build();
@@ -65,7 +73,7 @@ namespace Xperience.Xman.Tests
         [Test]
         public void DatabaseInstallScript_WithValidOptions_ReturnsValidScript()
         {
-            var script = new ScriptBuilder(ScriptType.DatabaseInstall).WithOptions(validInstallOptions).Build();
+            var script = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithOptions(validInstallOptions).Build();
             var expected = $"dotnet kentico-xperience-dbmanager -- -s \"{validInstallOptions.ServerName}\" -d \"{validInstallOptions.DatabaseName}\" -a \"{validInstallOptions.AdminPassword}\"";
             
             Assert.That(script, Is.EqualTo(expected));
@@ -77,7 +85,7 @@ namespace Xperience.Xman.Tests
         {
             // Default options has null value
             var options = new InstallOptions();
-            var builder = new ScriptBuilder(ScriptType.DatabaseInstall).WithOptions(options);
+            var builder = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithOptions(options);
 
             Assert.That(() => builder.Build(), Throws.InvalidOperationException);
         }

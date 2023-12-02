@@ -1,6 +1,5 @@
 ﻿using Spectre.Console;
 
-using Xperience.Xman.Helpers;
 using Xperience.Xman.Options;
 using Xperience.Xman.Services;
 using Xperience.Xman.Wizards;
@@ -14,6 +13,7 @@ namespace Xperience.Xman.Commands
     public class UpdateCommand : AbstractCommand
     {
         private readonly IShellRunner shellRunner;
+        private readonly IScriptBuilder scriptBuilder;
         private readonly IEnumerable<string> packageNames = new string[]
         {
             "kentico.xperience.admin",
@@ -34,9 +34,10 @@ namespace Xperience.Xman.Commands
         public override string Description => "Updates a project's NuGet packages and database version";
 
 
-        public UpdateCommand(IShellRunner shellRunner)
+        public UpdateCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder)
         {
             this.shellRunner = shellRunner;
+            this.scriptBuilder = scriptBuilder;
         }
 
 
@@ -64,7 +65,7 @@ namespace Xperience.Xman.Commands
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]{message}[/]");
 
                 options.PackageName = package;
-                var packageScript = new ScriptBuilder(ScriptType.PackageUpdate).WithOptions(options).AppendVersion(options.Version).Build();
+                var packageScript = scriptBuilder.SetScript(ScriptType.PackageUpdate).WithOptions(options).AppendVersion(options.Version).Build();
                 shellRunner.Execute(packageScript, ErrorDataReceived).WaitForExit();
             }
         }
@@ -76,7 +77,7 @@ namespace Xperience.Xman.Commands
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Attempting to build the project...[/]");
 
-            var buildScript = new ScriptBuilder(ScriptType.BuildProject).Build();
+            var buildScript = scriptBuilder.SetScript(ScriptType.BuildProject).Build();
             shellRunner.Execute(buildScript, ErrorDataReceived).WaitForExit();
         }
 
@@ -87,7 +88,7 @@ namespace Xperience.Xman.Commands
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Updating the database...[/]");
 
-            var databaseScript = new ScriptBuilder(ScriptType.DatabaseUpdate).Build();
+            var databaseScript = scriptBuilder.SetScript(ScriptType.DatabaseUpdate).Build();
             var databaseCmd = shellRunner.Execute(databaseScript, ErrorDataReceived);
             databaseCmd.OutputDataReceived += (o, e) =>
             {

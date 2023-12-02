@@ -1,6 +1,5 @@
 ﻿using Spectre.Console;
 
-using Xperience.Xman.Helpers;
 using Xperience.Xman.Services;
 
 namespace Xperience.Xman.Commands
@@ -13,6 +12,7 @@ namespace Xperience.Xman.Commands
         private const string STORE = "store";
         private const string RESTORE = "restore";
         private readonly IShellRunner shellRunner;
+        private readonly IScriptBuilder scriptBuilder;
         
 
         public override IEnumerable<string> Keywords => new string[] { "ci" };
@@ -24,9 +24,10 @@ namespace Xperience.Xman.Commands
         public override string Description => "Stores or restores CI data";
 
 
-        public ContinuousIntegrationCommand(IShellRunner shellRunner)
+        public ContinuousIntegrationCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder)
         {
             this.shellRunner = shellRunner;
+            this.scriptBuilder = scriptBuilder;
         }
 
 
@@ -61,7 +62,7 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running the CI store script...[/]");
 
             var storeStarted = false;
-            var ciScript = new ScriptBuilder(ScriptType.StoreContinuousIntegration).Build();
+            var ciScript = scriptBuilder.SetScript(ScriptType.StoreContinuousIntegration).Build();
             var ciCmd = shellRunner.Execute(ciScript, ErrorDataReceived);
             ciCmd.OutputDataReceived += (o, e) =>
             {
@@ -83,7 +84,7 @@ namespace Xperience.Xman.Commands
         {
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running the CI restore script...[/]");
 
-            var ciScript = new ScriptBuilder(ScriptType.RestoreContinuousIntegration).Build();
+            var ciScript = scriptBuilder.SetScript(ScriptType.RestoreContinuousIntegration).Build();
             var ciCmd = shellRunner.Execute(ciScript, ErrorDataReceived);
             ciCmd.OutputDataReceived += (o, e) =>
             {

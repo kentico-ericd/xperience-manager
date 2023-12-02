@@ -1,14 +1,11 @@
 ﻿using Xperience.Xman.Options;
 
-namespace Xperience.Xman.Helpers
+namespace Xperience.Xman.Services
 {
-    /// <summary>
-    /// Contains methods for generating scripts to execute with <see cref="CommandHelper"/>.
-    /// </summary>
-    public class ScriptBuilder
+    public class ScriptBuilder : IScriptBuilder
     {
-        private string currentScript;
-        private readonly ScriptType currentScriptType;
+        private string currentScript = String.Empty;
+        private ScriptType currentScriptType;
         private const string BUILD_SCRIPT = $"dotnet build";
         private const string INSTALL_PROJECT_SCRIPT = $"dotnet new {nameof(InstallOptions.Template)} -n {nameof(InstallOptions.ProjectName)}";
         private const string INSTALL_DATABASE_SCRIPT = $"dotnet kentico-xperience-dbmanager -- -s \"{nameof(InstallOptions.ServerName)}\" -d \"{nameof(InstallOptions.DatabaseName)}\" -a \"{nameof(InstallOptions.AdminPassword)}\"";
@@ -20,12 +17,60 @@ namespace Xperience.Xman.Helpers
         private const string CI_RESTORE_SCRIPT = $"dotnet run --no-build --kxp-ci-restore";
 
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ScriptBuilder"/>.
-        /// </summary>
-        /// <param name="type">The type of script to generate.</param>
-        /// <exception cref="InvalidOperationException"></exception>
-        public ScriptBuilder(ScriptType type)
+        public string Build()
+        {
+            if (!ValidateScript())
+            {
+                throw new InvalidOperationException("The script is empty or contains placeholder values.");
+            }
+
+            return currentScript;
+        }
+
+
+        public IScriptBuilder AppendVersion(Version? version)
+        {
+            if (currentScriptType.Equals(ScriptType.TemplateInstall) && version is not null)
+            {
+                currentScript += $"::{version}";
+            }
+            else if (currentScriptType.Equals(ScriptType.PackageUpdate) && version is not null)
+            {
+                currentScript += $" --version {version}";
+            }
+
+            return this;
+        }
+
+
+        public IScriptBuilder AppendCloud(bool useCloud)
+        {
+            if (currentScriptType.Equals(ScriptType.ProjectInstall) && useCloud)
+            {
+                currentScript += " --cloud";
+            }
+
+            return this;
+        }
+
+
+        public IScriptBuilder WithOptions(IWizardOptions options)
+        {
+            // Replace all placeholders in script with option values if non-null or empty
+            foreach (var prop in options.GetType().GetProperties())
+            {
+                var value = prop.GetValue(options)?.ToString() ?? String.Empty;
+                if (!String.IsNullOrEmpty(value))
+                {
+                    currentScript = currentScript.Replace(prop.Name, value);
+                }
+            }
+
+            return this;
+        }
+
+
+        public IScriptBuilder SetScript(ScriptType type)
         {
             if (type.Equals(ScriptType.None))
             {
@@ -46,71 +91,6 @@ namespace Xperience.Xman.Helpers
                 ScriptType.StoreContinuousIntegration => CI_STORE_SCRIPT,
                 _ => String.Empty,
             };
-        }
-
-
-        /// <summary>
-        /// Gets the generated script.
-        /// </summary>
-        /// <exception cref="InvalidOperationException"></exception>
-        public string Build()
-        {
-            if (!ValidateScript())
-            {
-                throw new InvalidOperationException("The script is empty or contains placeholder values.");
-            }
-
-            return currentScript;
-        }
-
-
-        /// <summary>
-        /// Appends a version number to the script if <paramref name="version"/> is not null.
-        /// </summary>
-        public ScriptBuilder AppendVersion(Version? version)
-        {
-            if (currentScriptType.Equals(ScriptType.TemplateInstall) && version is not null)
-            {
-                currentScript += $"::{version}";
-            }
-            else if (currentScriptType.Equals(ScriptType.PackageUpdate) && version is not null)
-            {
-                currentScript += $" --version {version}";
-            }
-
-            return this;
-        }
-
-
-        /// <summary>
-        /// Appends " --cloud" to the script if <paramref name="useCloud"/> is true.
-        /// </summary>
-        public ScriptBuilder AppendCloud(bool useCloud)
-        {
-            if (currentScriptType.Equals(ScriptType.ProjectInstall) && useCloud)
-            {
-                currentScript += " --cloud";
-            }
-
-            return this;
-        }
-
-
-        /// <summary>
-        /// Replaces script placeholders with the provided option values. If a property is <c>null</c> or emtpy,
-        /// the placeholder remains in the script.
-        /// </summary>
-        public ScriptBuilder WithOptions(IWizardOptions options)
-        {
-            // Replace all placeholders in script with option values if non-null or empty
-            foreach (var prop in options.GetType().GetProperties())
-            {
-                var value = prop.GetValue(options)?.ToString() ?? String.Empty;
-                if (!String.IsNullOrEmpty(value))
-                {
-                    currentScript = currentScript.Replace(prop.Name, value);
-                }
-            }
 
             return this;
         }
