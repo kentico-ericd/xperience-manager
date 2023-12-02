@@ -1,7 +1,5 @@
 ﻿using Spectre.Console;
 
-using System.Diagnostics;
-
 using Xperience.Xman.Helpers;
 using Xperience.Xman.Options;
 using Xperience.Xman.Wizards;
@@ -12,9 +10,8 @@ namespace Xperience.Xman.Commands
     /// A command which updates the NuGet packages and database of the Xperience by Kentico project in
     /// the current directory.
     /// </summary>
-    public class UpdateCommand : ICommand
+    public class UpdateCommand : AbstractCommand
     {
-        private readonly List<string> errors = new();
         private readonly IEnumerable<string> packageNames = new string[]
         {
             "kentico.xperience.admin",
@@ -26,41 +23,26 @@ namespace Xperience.Xman.Commands
         };
 
 
-        public List<string> Errors => errors;
+        public override IEnumerable<string> Keywords => new string[] { "u", "update" };
 
 
-        public bool StopProcessing { get; set; }
+        public override IEnumerable<string> Parameters => Array.Empty<string>();
 
 
-        public IEnumerable<string> Keywords => new string[] { "u", "update" };
+        public override string Description => "Updates a project's NuGet packages and database version";
 
 
-        public IEnumerable<string> Parameters => Array.Empty<string>();
-
-
-        public string Description => "Updates a project's NuGet packages and database version";
-
-
-        public void Execute(string[] args)
+        public override void Execute(string[] args)
         {
             var options = new UpdateWizard().Run();
-            try
-            {
-                AnsiConsole.WriteLine();
-                UpdatePackages(options);
-                BuildProject();
-                // There is currently an issue running the database update script while emulating the ReadKey() input
-                // for the script's "Do you want to continue" prompt. The update command must be run manually and the
-                // UpdateDatabase method is skipped.
-                if (!Errors.Any())
-                {
-                    AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Unfortunately, the database cannot be updated at this time. Please run the 'dotnet run --no-build --kxp-update' command manually.[/]");
-                }
-            }
-            catch (Exception e)
-            {
-                LogError(e.Message);
-            }
+
+            AnsiConsole.WriteLine();
+            UpdatePackages(options);
+            BuildProject();
+            // There is currently an issue running the database update script while emulating the ReadKey() input
+            // for the script's "Do you want to continue" prompt. The update command must be run manually and the
+            // UpdateDatabase method is skipped.
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Unfortunately, the database cannot be updated at this time. Please run the 'dotnet run --no-build --kxp-update' command manually.[/]");
         }
 
 
@@ -118,22 +100,6 @@ namespace Xperience.Xman.Commands
             databaseCmd.BeginErrorReadLine();
             databaseCmd.BeginOutputReadLine();
             databaseCmd.WaitForExit();
-        }
-
-
-        private void ErrorDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            if (!String.IsNullOrEmpty(e.Data))
-            {
-                LogError(e.Data);
-            }
-        }
-
-
-        private void LogError(string message)
-        {
-            StopProcessing = true;
-            Errors.Add(message);
         }
     }
 }

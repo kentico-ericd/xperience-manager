@@ -14,15 +14,22 @@ namespace Xperience.Xman
                 return;
             }
 
-            command.Execute(args);
+            try
+            {
+                command.Execute(args);
+            }
+            catch (Exception e)
+            {
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with error:\n{e.Message}[/]");
+            }
+
             if (command.Errors.Any())
             {
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with errors:\n{String.Join("\n", command.Errors)}[/]");
+                return;
             }
-            else
-            {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Process complete![/]");
-            }
+
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Process complete![/]");
         }
     }
 }

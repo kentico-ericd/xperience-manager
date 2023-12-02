@@ -42,8 +42,8 @@ namespace Xperience.Xman.Helpers
                 ScriptType.TemplateInstall => INSTALL_TEMPLATE_SCRIPT,
                 ScriptType.PackageUpdate => UPDATE_PACKAGE_SCRIPT,
                 ScriptType.DatabaseUpdate => UPDATE_DATABASE_SCRIPT,
-                ScriptType.RestoreContinuousIngration => CI_RESTORE_SCRIPT,
-                ScriptType.StoreContinuousIngration => CI_STORE_SCRIPT,
+                ScriptType.RestoreContinuousIntegration => CI_RESTORE_SCRIPT,
+                ScriptType.StoreContinuousIntegration => CI_STORE_SCRIPT,
                 _ => String.Empty,
             };
         }
@@ -178,12 +178,12 @@ namespace Xperience.Xman.Helpers
         /// <summary>
         /// The script which stores Continuous Intgeration data on the filesystem.
         /// </summary>
-        StoreContinuousIngration,
+        StoreContinuousIntegration,
 
 
         /// <summary>
         /// The script which restores Continuous Intgeration data to the database.
         /// </summary>
-        RestoreContinuousIngration
+        RestoreContinuousIntegration
     }
 }

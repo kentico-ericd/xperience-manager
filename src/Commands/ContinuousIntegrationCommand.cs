@@ -1,7 +1,5 @@
 ﻿using Spectre.Console;
 
-using System.Diagnostics;
-
 using Xperience.Xman.Helpers;
 
 namespace Xperience.Xman.Commands
@@ -9,29 +7,22 @@ namespace Xperience.Xman.Commands
     /// <summary>
     /// A command which stores or restores Continuous Integration data.
     /// </summary>
-    public class ContinuousIntegrationCommand : ICommand
+    public class ContinuousIntegrationCommand : AbstractCommand
     {
         private const string STORE = "store";
         private const string RESTORE = "restore";
-        private readonly List<string> errors = new();
+        
+
+        public override IEnumerable<string> Keywords => new string[] { "ci" };
 
 
-        public List<string> Errors => errors;
+        public override IEnumerable<string> Parameters => new string[] { STORE, RESTORE };
 
 
-        public bool StopProcessing { get; set; }
+        public override string Description => "Stores or restores CI data";
 
 
-        public IEnumerable<string> Keywords => new string[] { "ci" };
-
-
-        public IEnumerable<string> Parameters => new string[] { STORE, RESTORE };
-
-
-        public string Description => "Stores or restores CI data";
-
-
-        public void Execute(string[] args)
+        public override void Execute(string[] args)
         {
             if (args.Length < 2)
             {
@@ -39,72 +30,69 @@ namespace Xperience.Xman.Commands
                 return;
             }
 
-            var parameter = args[1].ToLower();
-            if (!Parameters.Any(p => p.Equals(parameter, StringComparison.OrdinalIgnoreCase)))
+            var action = args[1].ToLower();
+            if (!Parameters.Any(p => p.Equals(action, StringComparison.OrdinalIgnoreCase)))
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Invalid parameter '{parameter}'[/]");
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Invalid parameter '{action}'[/]");
                 return;
             }
 
-            ScriptType scriptType = parameter switch
+            if (action.Equals(STORE, StringComparison.OrdinalIgnoreCase))
             {
-                STORE => ScriptType.StoreContinuousIngration,
-                RESTORE => ScriptType.RestoreContinuousIngration,
-                _ => ScriptType.None,
-            };
+                StoreFiles();
+            }
+            else if (action.Equals(RESTORE, StringComparison.OrdinalIgnoreCase))
+            {
+                RestoreFiles();
+            }
+        }
+
+
+        private void StoreFiles()
+        {
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running the CI store script...[/]");
 
             var storeStarted = false;
-            var actionType = scriptType.Equals(ScriptType.StoreContinuousIngration) ? "store" : "restore";
-            try
+            var ciScript = new ScriptBuilder(ScriptType.StoreContinuousIntegration).Build();
+            var ciCmd = CommandHelper.ExecuteShell(ciScript);
+            ciCmd.ErrorDataReceived += ErrorDataReceived;
+            ciCmd.OutputDataReceived += (o, e) =>
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running the CI {actionType} script...[/]");
-
-                var ciScript = new ScriptBuilder(scriptType).Build();
-                var ciCmd = CommandHelper.ExecuteShell(ciScript);
-                ciCmd.ErrorDataReceived += ErrorDataReceived;
-                ciCmd.OutputDataReceived += (o, e) =>
+                if (e.Data?.Contains("Storing objects...", StringComparison.OrdinalIgnoreCase) ?? false)
                 {
-                    if (e.Data?.Contains("Storing objects...", StringComparison.OrdinalIgnoreCase) ?? false)
-                    {
-                        // Mark process started, since running the store command without CI enabled in Settings doesn't throw error
-                        storeStarted = true;
-                    }
-                    if (e.Data?.Contains("The Continuous Integration repository is either not initialized or in an incorrect location on the file system.", StringComparison.OrdinalIgnoreCase) ?? false)
-                    {
-                        // Restore process couldn't find repository directory
-                        StopProcessing = true;
-                        LogError("The restore process wasn't started because the Continuous Integration repository wasn't found.");
-                    }
-                };
-                ciCmd.BeginOutputReadLine();
-                ciCmd.BeginErrorReadLine();
-                ciCmd.WaitForExit();
-
-                if (scriptType.Equals(ScriptType.StoreContinuousIngration) && !storeStarted)
-                {
-                    LogError("The store process wasn't started. This is most likely due to Continuous Integration being disabled in Settings.");
+                    // Mark process started, since running the store command without CI enabled in Settings doesn't throw error
+                    storeStarted = true;
                 }
-            }
-            catch (Exception e)
+            };
+            ciCmd.BeginOutputReadLine();
+            ciCmd.BeginErrorReadLine();
+            ciCmd.WaitForExit();
+            if (!storeStarted)
             {
-                LogError(e.Message);
+                LogError("The store process wasn't started. This is most likely due to Continuous Integration being disabled in Settings.");
             }
         }
 
 
-        private void ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        private void RestoreFiles()
         {
-            if (!String.IsNullOrEmpty(e.Data))
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running the CI restore script...[/]");
+
+            var ciScript = new ScriptBuilder(ScriptType.RestoreContinuousIntegration).Build();
+            var ciCmd = CommandHelper.ExecuteShell(ciScript);
+            ciCmd.ErrorDataReceived += ErrorDataReceived;
+            ciCmd.OutputDataReceived += (o, e) =>
             {
-                LogError(e.Data);
-            }
-        }
-
-
-        private void LogError(string message)
-        {
-            StopProcessing = true;
-            Errors.Add(message);
+                if (e.Data?.Contains("The Continuous Integration repository is either not initialized or in an incorrect location on the file system.", StringComparison.OrdinalIgnoreCase) ?? false)
+                {
+                    // Restore process couldn't find repository directory
+                    StopProcessing = true;
+                    LogError("The restore process wasn't started because the Continuous Integration repository wasn't found.");
+                }
+            };
+            ciCmd.BeginOutputReadLine();
+            ciCmd.BeginErrorReadLine();
+            ciCmd.WaitForExit();
         }
     }
 }

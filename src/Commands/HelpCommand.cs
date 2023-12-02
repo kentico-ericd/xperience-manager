@@ -9,27 +9,18 @@ namespace Xperience.Xman.Commands
     /// <summary>
     /// A command which displays the current tool version, a list of commands, and their descriptions.
     /// </summary>
-    public class HelpCommand : ICommand
+    public class HelpCommand : AbstractCommand
     {
-        private readonly List<string> errors = new();
+        public override IEnumerable<string> Keywords => new string[] { "?", "help" };
 
 
-        public List<string> Errors => errors;
+        public override IEnumerable<string> Parameters => Array.Empty<string>();
 
 
-        public bool StopProcessing { get; set; }
+        public override string Description => "Displays the help menu (this screen)";
 
 
-        public IEnumerable<string> Keywords => new string[] { "?", "help" };
-
-
-        public IEnumerable<string> Parameters => Array.Empty<string>();
-
-
-        public string Description => "Displays the help menu (this screen)";
-
-
-        public void Execute(string[] args)
+        public override void Execute(string[] args)
         {
             var v = Assembly.GetExecutingAssembly().GetName().Version;
             AnsiConsole.Write(
