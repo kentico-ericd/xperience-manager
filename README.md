@@ -30,7 +30,7 @@ The following commands can be executed using the `xman` tool name:
 - `?`, `help`
 - `i`, `install`
 - `u`, `update`
-- `ci` `<store>` `<restore>`
+- `ci store`, `ci restore`
 
 ### Installing a project with the wizard
 
