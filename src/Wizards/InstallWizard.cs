@@ -41,7 +41,7 @@ namespace Xperience.Xman.Wizards
                 (v) => Options.Template = v.ToString()));
 
             Steps.Add(new Step<string>(
-                new TextPrompt<string>("Give your project a [green]name[/]?")
+                new TextPrompt<string>("Give your project a [green]name[/]:")
                     .DefaultValue(Options.ProjectName),
                 (v) => Options.ProjectName = v));
 
@@ -50,17 +50,17 @@ namespace Xperience.Xman.Wizards
             Steps.Add(new Step<bool>(cloudPrompt, (v) => Options.UseCloud = v));
 
             Steps.Add(new Step<string>(
-                new TextPrompt<string>("Enter the [green]SQL server[/] name"),
+                new TextPrompt<string>("Enter the [green]SQL server[/] name:"),
                 (v) => Options.ServerName = v));
 
             Steps.Add(new Step<string>(
-                new TextPrompt<string>("Enter the [green]database[/] name")
+                new TextPrompt<string>("Enter the [green]database[/] name:")
                     .AllowEmpty()
                     .DefaultValue(Options.DatabaseName),
                 (v) => Options.DatabaseName = v));
 
             Steps.Add(new Step<string>(
-                new TextPrompt<string>("Enter the admin [green]password[/]")
+                new TextPrompt<string>("Enter the admin [green]password[/]:")
                     .AllowEmpty()
                     .DefaultValue(Options.AdminPassword),
                 (v) => Options.AdminPassword = v));

@@ -1,13 +1,33 @@
-﻿using Xperience.Xman.Helpers;
+﻿using System.Reflection;
 
-namespace Xperience.Xman
-{
-    public static class Program
-    {
-        static void Main(string[] args)
-        {
-            var command = CommandHelper.GetCommand(args);
-            command?.Execute();
-        }
-    }
-}
+using Autofac;
+
+using Xperience.Xman;
+using Xperience.Xman.Commands;
+using Xperience.Xman.Repositories;
+using Xperience.Xman.Services;
+
+var builder = new ContainerBuilder();
+var assemblies = Assembly.GetExecutingAssembly();
+
+builder.RegisterType<App>();
+builder.RegisterAssemblyTypes(assemblies)
+    .Where(t => t.IsClass
+        && !t.IsAbstract
+        && typeof(IRepository).IsAssignableFrom(t))
+    .AsImplementedInterfaces()
+    .InstancePerLifetimeScope();
+builder.RegisterAssemblyTypes(assemblies)
+    .Where(t => t.IsClass
+        && !t.IsAbstract
+        && typeof(ICommand).IsAssignableFrom(t))
+    .AsImplementedInterfaces()
+    .InstancePerLifetimeScope();
+builder.RegisterAssemblyTypes(assemblies)
+    .Where(t => t.IsClass
+        && !t.IsAbstract
+        && typeof(IService).IsAssignableFrom(t))
+    .AsImplementedInterfaces()
+    .InstancePerLifetimeScope();
+
+builder.Build().Resolve<App>().Run(args);

@@ -2,44 +2,33 @@ using Spectre.Console;
 
 using System.Reflection;
 
-using Xperience.Xman.Helpers;
-
 namespace Xperience.Xman.Commands
 {
     /// <summary>
     /// A command which displays the current tool version, a list of commands, and their descriptions.
     /// </summary>
-    public class HelpCommand : ICommand
+    public class HelpCommand : AbstractCommand
     {
-        public IEnumerable<string> Keywords => new string[] { "?", "help" };
+        public override IEnumerable<string> Keywords => new string[] { "?", "help" };
 
 
-        public string Description => "Displays the help menu (this screen)";
+        public override IEnumerable<string> Parameters => Array.Empty<string>();
 
 
-        public void Execute()
+        public override string Description => "Displays the help menu (this screen)";
+
+
+        public override void Execute(string[] args)
         {
-            var version = Assembly.GetEntryAssembly()?
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-                .InformationalVersion
-                .ToString();
-
+            var assembly = Assembly.GetExecutingAssembly();
+            var v = assembly.GetName().Version;
             AnsiConsole.Write(
                 new FigletText("xman")
                     .LeftJustified()
                     .Color(Color.Orange3));
-            AnsiConsole.WriteLine($" v{version}");
+            if (v is not null) AnsiConsole.WriteLine($" v{v.Major}.{v.Minor}.{v.Revision}");
 
-            var table = new Table().AddColumn("Command").AddColumn("Description");
-            foreach (var command in CommandHelper.Commands)
-            {
-                if (command is null) continue;
-
-                var keywords = command.Keywords.Where(k => !string.IsNullOrEmpty(k));
-                table.AddRow(String.Join(", ", keywords), command.Description);
-            }
-
-            AnsiConsole.Write(table);
+            AnsiConsole.MarkupInterpolated($" [{Constants.EMPHASIS_COLOR}]https://github.com/kentico-ericd/xperience-manager[/]\n\n");
         }
     }
 }
