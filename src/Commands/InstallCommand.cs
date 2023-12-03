@@ -106,12 +106,12 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Uninstalling previous template version...[/]");
 
             var uninstallScript = scriptBuilder.SetScript(ScriptType.TemplateUninstall).Build();
-            shellRunner.Execute(uninstallScript, ErrorDataReceived).WaitForExit();
-
+            var uninstallCmd = shellRunner.Execute(uninstallScript, ErrorDataReceived);
+            uninstallCmd.WaitForExit();
+        
             if (StopProcessing) return;
 
-            var message = options.Version is null ? "Installing latest template version..." : $"Installing template version {options.Version}...";
-            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]{message}[/]");
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Installing template version {options.Version}...[/]");
 
             var installScript = scriptBuilder.SetScript(ScriptType.TemplateInstall)
                 .WithOptions(options)
@@ -122,7 +122,7 @@ namespace Xperience.Xman.Commands
 
             if (installCmd.ExitCode != 0)
             {
-                LogError("Template installation failed. Please check version number");
+                LogError("Template installation failed. Please check version number", installCmd);
             }
         }
     }

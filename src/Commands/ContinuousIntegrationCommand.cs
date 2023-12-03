@@ -75,7 +75,7 @@ namespace Xperience.Xman.Commands
             ciCmd.WaitForExit();
             if (!storeStarted)
             {
-                LogError("The store process wasn't started. This is most likely due to Continuous Integration being disabled in Settings.");
+                LogError("The store process wasn't started. This is most likely due to Continuous Integration being disabled in Settings.", ciCmd);
             }
         }
 
@@ -92,7 +92,7 @@ namespace Xperience.Xman.Commands
                 {
                     // Restore process couldn't find repository directory
                     StopProcessing = true;
-                    LogError("The restore process wasn't started because the Continuous Integration repository wasn't found.");
+                    LogError("The restore process wasn't started because the Continuous Integration repository wasn't found.", ciCmd);
                 }
             };
             ciCmd.WaitForExit();

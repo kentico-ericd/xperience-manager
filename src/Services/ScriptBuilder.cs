@@ -30,7 +30,7 @@ namespace Xperience.Xman.Services
 
         public IScriptBuilder AppendVersion(Version? version)
         {
-            if (currentScriptType.Equals(ScriptType.TemplateInstall) && version is not null)
+            if (currentScriptType.Equals(ScriptType.TemplateInstall))
             {
                 currentScript += $"::{version}";
             }
