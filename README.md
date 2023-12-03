@@ -77,7 +77,7 @@ Currently, there is a bug with updating the project's database version, so the t
 
 You can use the `ci` command to serialize the database or restore the CI repository to the database:
 
-- `ci store`
-- `ci restore`
+- `xman ci store`
+- `xman ci restore`
 
 Continuous Integration should be enabled in the __Settings__ application to run the `store` command.
