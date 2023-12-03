@@ -30,6 +30,7 @@ The following commands can be executed using the `xman` tool name:
 - `?`, `help`
 - `i`, `install`
 - `u`, `update`
+- `ci` `<store>` `<restore>`
 
 ### Installing a project with the wizard
 
@@ -71,3 +72,12 @@ Currently, there is a bug with updating the project's database version, so the t
    ```bash
    xman update
    ```
+
+### Running Continuous Integration
+
+You can use the `ci` command to serialize the database or restore the CI repository to the database:
+
+- `ci store`
+- `ci restore`
+
+Continuous Integration should be enabled in the __Settings__ application to run the `store` command.
