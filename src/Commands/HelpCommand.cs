@@ -26,7 +26,9 @@ namespace Xperience.Xman.Commands
                 new FigletText("xman")
                     .LeftJustified()
                     .Color(Color.Orange3));
-            if (v is not null) AnsiConsole.WriteLine($" v{v.Major}.{v.Minor}.{v.Revision}\n");
+            if (v is not null) AnsiConsole.WriteLine($" v{v.Major}.{v.Minor}.{v.Revision}");
+
+            AnsiConsole.MarkupInterpolated($" [{Constants.EMPHASIS_COLOR}]https://github.com/kentico-ericd/xperience-manager[/]\n\n");
         }
     }
 }
