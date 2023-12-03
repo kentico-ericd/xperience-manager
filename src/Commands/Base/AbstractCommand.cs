@@ -1,4 +1,3 @@
-
 using System.Diagnostics;
 
 namespace Xperience.Xman.Commands

@@ -108,6 +108,8 @@ namespace Xperience.Xman.Commands
             var uninstallScript = scriptBuilder.SetScript(ScriptType.TemplateUninstall).Build();
             shellRunner.Execute(uninstallScript, ErrorDataReceived).WaitForExit();
 
+            if (StopProcessing) return;
+
             var message = options.Version is null ? "Installing latest template version..." : $"Installing template version {options.Version}...";
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]{message}[/]");
 
