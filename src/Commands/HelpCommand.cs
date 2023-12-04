@@ -2,6 +2,8 @@ using Spectre.Console;
 
 using System.Reflection;
 
+using Xperience.Xman.Helpers;
+
 namespace Xperience.Xman.Commands
 {
     /// <summary>
@@ -26,7 +28,16 @@ namespace Xperience.Xman.Commands
                 new FigletText("xman")
                     .LeftJustified()
                     .Color(Color.Orange3));
-            if (v is not null) AnsiConsole.WriteLine($" v{v.Major}.{v.Minor}.{v.Revision}");
+            if (v is not null)
+            {
+                AnsiConsole.WriteLine($" v{v.Major}.{v.Minor}.{v.Revision}");
+
+                var latestVersion = NuGetVersionHelper.GetLatestVersion("xperience.xman", v).ConfigureAwait(false).GetAwaiter().GetResult();
+                if (latestVersion is not null)
+                {
+                    AnsiConsole.MarkupInterpolated($" New version [{Constants.SUCCESS_COLOR}]{latestVersion}[/] available!\n");
+                }
+            }
 
             AnsiConsole.MarkupInterpolated($" [{Constants.EMPHASIS_COLOR}]https://github.com/kentico-ericd/xperience-manager[/]\n\n");
         }

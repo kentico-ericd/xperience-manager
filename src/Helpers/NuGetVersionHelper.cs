@@ -21,5 +21,26 @@ namespace Xperience.Xman.Helpers
                 NullLogger.Instance,
                 CancellationToken.None);
         }
+
+
+        /// <summary>
+        /// Gets the latest version of the provided NuGet package, or <n>null</n> if <paramref name="currentVersion"/>
+        /// is the latest version.
+        /// </summary>
+        public static async Task<Version?> GetLatestVersion(string package, Version currentVersion)
+        {
+            SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
+            FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>();
+
+            var versions = await resource.GetAllVersionsAsync(
+                package,
+                new SourceCacheContext(),
+                NullLogger.Instance,
+                CancellationToken.None);
+
+            var latest = versions.OrderByDescending(v => v).FirstOrDefault()?.Version ?? currentVersion;
+
+            return latest > currentVersion ? latest : null;
+        }
     }
 }
