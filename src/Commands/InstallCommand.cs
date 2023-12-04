@@ -78,7 +78,16 @@ namespace Xperience.Xman.Commands
                 .WithOptions(options)
                 .AppendCloud(options.UseCloud)
                 .Build();
-            shellRunner.Execute(installScript, ErrorDataReceived, ProjectFilesOutputReceived, true).WaitForExit();
+            shellRunner.Execute(installScript, ErrorDataReceived, (o, e) =>
+            {
+                var proc = o as Process;
+                if (e.Data?.Contains("Do you want to run this action", StringComparison.OrdinalIgnoreCase) ?? false)
+                {
+                    // Restore packages when prompted
+                    proc?.StandardInput.WriteLine("Y");
+                    proc?.StandardInput.Close();
+                }
+            }, true).WaitForExit();
         }
 
 
@@ -102,23 +111,6 @@ namespace Xperience.Xman.Commands
                 .Build();
             var installCmd = shellRunner.Execute(installScript, ErrorDataReceived);
             installCmd.WaitForExit();
-        }
-
-
-        private void ProjectFilesOutputReceived(object sender, DataReceivedEventArgs e)
-        {
-            var proc = sender as Process;
-            if (e.Data?.Contains("Do you want to run this action", StringComparison.OrdinalIgnoreCase) ?? false)
-            {
-                // Restore packages when prompted
-                proc?.StandardInput.WriteLine("Y");
-            }
-            else if (e.Data?.Contains("Restore was successful", StringComparison.OrdinalIgnoreCase) ?? false)
-            {
-                // Workaround for the installation process staying open forever
-                proc?.StandardInput.Close();
-                proc?.Close();
-            }
         }
     }
 }
