@@ -1,5 +1,7 @@
 using Spectre.Console;
 
+using System.Diagnostics;
+
 using Xperience.Xman.Helpers;
 using Xperience.Xman.Options;
 using Xperience.Xman.Services;
@@ -72,30 +74,11 @@ namespace Xperience.Xman.Commands
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running project creation script...[/]");
 
-            var installComplete = false;
             var installScript = scriptBuilder.SetScript(ScriptType.ProjectInstall)
                 .WithOptions(options)
                 .AppendCloud(options.UseCloud)
                 .Build();
-            var installCmd = shellRunner.Execute(installScript, ErrorDataReceived);
-            installCmd.OutputDataReceived += (o, e) =>
-            {
-                if (e.Data?.Contains("Do you want to run this action", StringComparison.OrdinalIgnoreCase) ?? false)
-                {
-                    // Restore packages when prompted
-                    installCmd.StandardInput.WriteLine("Y");
-                }
-                else if (e.Data?.Contains("Restore was successful", StringComparison.OrdinalIgnoreCase) ?? false)
-                {
-                    // Workaround for the installation process staying open forever
-                    installComplete = true;
-                }
-            };
-            while (!installComplete)
-            {
-                installCmd.WaitForExit(100);
-            }
-            installCmd.Close();
+            shellRunner.Execute(installScript, ErrorDataReceived, ProjectFilesOutputReceived, true).WaitForExit();
         }
 
 
@@ -106,10 +89,10 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Uninstalling previous template version...[/]");
 
             var uninstallScript = scriptBuilder.SetScript(ScriptType.TemplateUninstall).Build();
-            var uninstallCmd = shellRunner.Execute(uninstallScript, ErrorDataReceived);
+            // Don't use base error handler for uninstall script as it throws when no templates are installed
+            // Just skip uninstall step in case of error and try to continue
+            var uninstallCmd = shellRunner.Execute(uninstallScript);
             uninstallCmd.WaitForExit();
-        
-            if (StopProcessing) return;
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Installing template version {options.Version}...[/]");
 
@@ -119,10 +102,22 @@ namespace Xperience.Xman.Commands
                 .Build();
             var installCmd = shellRunner.Execute(installScript, ErrorDataReceived);
             installCmd.WaitForExit();
+        }
 
-            if (installCmd.ExitCode != 0)
+
+        private void ProjectFilesOutputReceived(object sender, DataReceivedEventArgs e)
+        {
+            var proc = sender as Process;
+            if (e.Data?.Contains("Do you want to run this action", StringComparison.OrdinalIgnoreCase) ?? false)
             {
-                LogError("Template installation failed. Please check version number", installCmd);
+                // Restore packages when prompted
+                proc?.StandardInput.WriteLine("Y");
+            }
+            else if (e.Data?.Contains("Restore was successful", StringComparison.OrdinalIgnoreCase) ?? false)
+            {
+                // Workaround for the installation process staying open forever
+                proc?.StandardInput.Close();
+                proc?.Close();
             }
         }
     }

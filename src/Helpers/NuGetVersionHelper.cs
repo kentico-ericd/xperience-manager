@@ -20,7 +20,6 @@ namespace Xperience.Xman.Helpers
                 new SourceCacheContext(),
                 NullLogger.Instance,
                 CancellationToken.None);
-
         }
     }
 }

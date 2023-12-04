@@ -48,7 +48,7 @@ namespace Xperience.Xman.Commands
             Errors.Add(message);
 
             StopProcessing = true;
-            if (process is not null)
+            if (process is not null && !process.HasExited)
             {
                 process.Kill();
             }
