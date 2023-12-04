@@ -35,7 +35,7 @@ namespace Xperience.Xman.Commands
         {
             if (!String.IsNullOrEmpty(e.Data))
             {
-                LogError(e.Data);
+                LogError(e.Data, sender as Process);
             }
         }
 
@@ -43,10 +43,15 @@ namespace Xperience.Xman.Commands
         /// <summary>
         /// Adds an error to <see cref="Errors"/> and stops additional processing.
         /// </summary>
-        protected void LogError(string message)
+        protected void LogError(string message, Process? process)
         {
-            StopProcessing = true;
             Errors.Add(message);
+
+            StopProcessing = true;
+            if (process is not null && !process.HasExited)
+            {
+                process.Kill();
+            }
         }
     }
 }

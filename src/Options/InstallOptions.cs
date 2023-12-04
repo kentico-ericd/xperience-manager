@@ -8,8 +8,7 @@ namespace Xperience.Xman.Options
     public class InstallOptions : IWizardOptions
     {
         /// <summary>
-        /// The version of the Xperience by Kentico templates and database to install. If <c>null</c>, the
-        /// latest version is installed.
+        /// The version of the Xperience by Kentico templates and database to install.
         /// </summary>
         public Version? Version { get; set; }
 

@@ -49,8 +49,7 @@ namespace Xperience.Xman.Commands
             UpdatePackages(options);
             BuildProject();
             // There is currently an issue running the database update script while emulating the ReadKey() input
-            // for the script's "Do you want to continue" prompt. The update command must be run manually and the
-            // UpdateDatabase method is skipped.
+            // for the script's "Do you want to continue" prompt. The update command must be run manually.
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Unfortunately, the database cannot be updated at this time. Please run the 'dotnet run --no-build --kxp-update' command manually.[/]");
         }
 
@@ -61,8 +60,7 @@ namespace Xperience.Xman.Commands
             {
                 if (StopProcessing) return;
 
-                var message = options.Version is null ? $"Updating {package} package to the latest version..." : $"Updating {package} package to version {options.Version}...";
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]{message}[/]");
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Updating {package} to version {options.Version}...[/]");
 
                 options.PackageName = package;
                 var packageScript = scriptBuilder.SetScript(ScriptType.PackageUpdate).WithOptions(options).AppendVersion(options.Version).Build();
@@ -79,26 +77,6 @@ namespace Xperience.Xman.Commands
 
             var buildScript = scriptBuilder.SetScript(ScriptType.BuildProject).Build();
             shellRunner.Execute(buildScript, ErrorDataReceived).WaitForExit();
-        }
-
-
-        private void UpdateDatabase()
-        {
-            if (StopProcessing) return;
-
-            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Updating the database...[/]");
-
-            var databaseScript = scriptBuilder.SetScript(ScriptType.DatabaseUpdate).Build();
-            var databaseCmd = shellRunner.Execute(databaseScript, ErrorDataReceived);
-            databaseCmd.OutputDataReceived += (o, e) =>
-            {
-                if (e.Data?.Contains("Do you want to continue", StringComparison.OrdinalIgnoreCase) ?? false)
-                {
-                    // Bypass backup warning
-                    databaseCmd.StandardInput.WriteLine('Y');
-                }
-            };
-            databaseCmd.WaitForExit();
         }
     }
 }

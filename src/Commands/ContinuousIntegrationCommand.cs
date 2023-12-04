@@ -1,5 +1,7 @@
 ﻿using Spectre.Console;
 
+using System.Diagnostics;
+
 using Xperience.Xman.Services;
 
 namespace Xperience.Xman.Commands
@@ -61,22 +63,8 @@ namespace Xperience.Xman.Commands
         {
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running the CI store script...[/]");
 
-            var storeStarted = false;
             var ciScript = scriptBuilder.SetScript(ScriptType.StoreContinuousIntegration).Build();
-            var ciCmd = shellRunner.Execute(ciScript, ErrorDataReceived);
-            ciCmd.OutputDataReceived += (o, e) =>
-            {
-                if (e.Data?.Contains("Storing objects...", StringComparison.OrdinalIgnoreCase) ?? false)
-                {
-                    // Mark process started, since running the store command without CI enabled in Settings doesn't throw error
-                    storeStarted = true;
-                }
-            };
-            ciCmd.WaitForExit();
-            if (!storeStarted)
-            {
-                LogError("The store process wasn't started. This is most likely due to Continuous Integration being disabled in Settings.");
-            }
+            shellRunner.Execute(ciScript, ErrorDataReceived).WaitForExit();
         }
 
 
@@ -85,17 +73,14 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running the CI restore script...[/]");
 
             var ciScript = scriptBuilder.SetScript(ScriptType.RestoreContinuousIntegration).Build();
-            var ciCmd = shellRunner.Execute(ciScript, ErrorDataReceived);
-            ciCmd.OutputDataReceived += (o, e) =>
+            shellRunner.Execute(ciScript, ErrorDataReceived, (o, e) =>
             {
                 if (e.Data?.Contains("The Continuous Integration repository is either not initialized or in an incorrect location on the file system.", StringComparison.OrdinalIgnoreCase) ?? false)
                 {
                     // Restore process couldn't find repository directory
-                    StopProcessing = true;
-                    LogError("The restore process wasn't started because the Continuous Integration repository wasn't found.");
+                    LogError("The restore process wasn't started because the Continuous Integration repository wasn't found.", o as Process);
                 }
-            };
-            ciCmd.WaitForExit();
+            }).WaitForExit();
         }
     }
 }

@@ -1,5 +1,6 @@
 using Spectre.Console;
 
+using Xperience.Xman.Helpers;
 using Xperience.Xman.Options;
 using Xperience.Xman.Steps;
 
@@ -21,28 +22,21 @@ namespace Xperience.Xman.Wizards
 
         protected override void InitSteps()
         {
-            Steps.Add(new Step<string>(
-                new TextPrompt<string>("Which [green]version[/]? [green](latest)[/]")
-                    .AllowEmpty()
-                    .ValidationErrorMessage($"[{Constants.ERROR_COLOR}]Please enter a valid version, ie '27.0.0'[/]")
-                    .Validate(SetVersion)));
-        }
-
-
-        private bool SetVersion(string versionString)
-        {
-            if (string.IsNullOrEmpty(versionString))
-            {
-                return true;
-            }
-
-            if (Version.TryParse(versionString, out var ver))
-            {
-                Options.Version = ver;
-                return true;
-            }
-
-            return false;
+            var versions = NuGetVersionHelper.GetPackageVersions("kentico.xperience.templates")
+                .ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult()
+                .Where(v => !v.IsPrerelease && !v.IsLegacyVersion && v.Major >= 25)
+                .Select(v => v.Version)
+                .OrderByDescending(v => v);
+            Steps.Add(new Step<Version>(
+                new SelectionPrompt<Version>()
+                    .Title("Which [green]version[/]?")
+                    .PageSize(10)
+                    .UseConverter(v => $"{v.Major}.{v.Minor}.{v.Build}")
+                    .MoreChoicesText("Scroll for more...")
+                    .AddChoices(versions),
+                (v) => Options.Version = v));
         }
     }
 }
