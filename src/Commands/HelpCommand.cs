@@ -31,7 +31,7 @@ namespace Xperience.Xman.Commands
             var v = assembly.GetName().Version;
             if (v is not null)
             {
-                AnsiConsole.WriteLine($" v{v.Major}.{v.Minor}.{v.Revision}");
+                AnsiConsole.WriteLine($" v{v.Major}.{v.Minor}.{v.Build}");
 
                 var latestVersion = await NuGetVersionHelper.GetLatestVersion("xperience.xman", v);
                 if (latestVersion is not null)
