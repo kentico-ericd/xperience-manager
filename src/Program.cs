@@ -30,4 +30,4 @@ builder.RegisterAssemblyTypes(assemblies)
     .AsImplementedInterfaces()
     .InstancePerLifetimeScope();
 
-builder.Build().Resolve<App>().Run(args);
+await builder.Build().Resolve<App>().Run(args);

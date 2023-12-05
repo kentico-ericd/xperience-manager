@@ -8,6 +8,7 @@ namespace Xperience.Xman.Services
         {
             Process cmd = new();
             cmd.StartInfo.FileName = "powershell.exe";
+            cmd.StartInfo.Arguments = "-noprofile -nologo";
             cmd.StartInfo.RedirectStandardInput = true;
             cmd.StartInfo.CreateNoWindow = true;
             cmd.StartInfo.UseShellExecute = false;

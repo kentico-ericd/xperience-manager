@@ -20,7 +20,7 @@ namespace Xperience.Xman.Commands
         public override string Description => "Displays the help menu (this screen)";
 
 
-        public override void Execute(string[] args)
+        public override async Task Execute(string[] args)
         {
             AnsiConsole.Write(
                 new FigletText("xman")
@@ -33,7 +33,7 @@ namespace Xperience.Xman.Commands
             {
                 AnsiConsole.WriteLine($" v{v.Major}.{v.Minor}.{v.Revision}");
 
-                var latestVersion = NuGetVersionHelper.GetLatestVersion("xperience.xman", v).ConfigureAwait(false).GetAwaiter().GetResult();
+                var latestVersion = await NuGetVersionHelper.GetLatestVersion("xperience.xman", v);
                 if (latestVersion is not null)
                 {
                     AnsiConsole.MarkupInterpolated($" New version [{Constants.SUCCESS_COLOR}]{latestVersion}[/] available!\n");

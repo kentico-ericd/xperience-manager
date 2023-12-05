@@ -22,7 +22,7 @@ namespace Xperience.Xman
         /// <summary>
         /// Runs the console application with the arguments provided by the user.
         /// </summary>
-        public void Run(string[] args)
+        public async Task Run(string[] args)
         {
             var identifier = "help";
             if (args.Length > 0) {
@@ -37,7 +37,7 @@ namespace Xperience.Xman
 
             try
             {
-                command.Execute(args);
+                await command.Execute(args);
             }
             catch (Exception e)
             {

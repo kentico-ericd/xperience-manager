@@ -3,11 +3,11 @@
     /// <summary>
     /// Represents a step used to display a prompt for user interaction.
     /// </summary>
-    public interface  IStep
+    public interface IStep
     {
         /// <summary>
         /// Displays a prompt to the user.
         /// </summary>
-        public void Execute();
+        public Task Execute();
     }
 }

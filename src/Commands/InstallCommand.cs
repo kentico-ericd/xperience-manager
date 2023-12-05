@@ -34,12 +34,12 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override void Execute(string[] args)
+        public override async Task Execute(string[] args)
         {
-            InstallOptions? options = ConfigFileHelper.GetOptionsFromConfig();
+            InstallOptions? options = await ConfigFileHelper.GetOptionsFromConfig();
             if (options is null)
             {
-                options = new InstallWizard().Run();
+                options = await new InstallWizard().Run();
             }
             else
             {
@@ -47,28 +47,28 @@ namespace Xperience.Xman.Commands
             }
 
             AnsiConsole.WriteLine();
-            InstallTemplate(options);
-            CreateProjectFiles(options);
-            CreateDatabase(options);
+            await InstallTemplate(options);
+            await CreateProjectFiles(options);
+            await CreateDatabase(options);
             if (!Errors.Any())
             {
-                ConfigFileHelper.CreateConfigFile(options);
+                await ConfigFileHelper.CreateConfigFile(options);
             }
         }
 
 
-        private void CreateDatabase(InstallOptions options)
+        private async Task CreateDatabase(InstallOptions options)
         {
             if (StopProcessing) return;
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running database creation script...[/]");
 
             var databaseScript = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithOptions(options).Build();
-            shellRunner.Execute(databaseScript, ErrorDataReceived).WaitForExit();
+            await shellRunner.Execute(databaseScript, ErrorDataReceived).WaitForExitAsync();
         }
 
 
-        private void CreateProjectFiles(InstallOptions options)
+        private async Task CreateProjectFiles(InstallOptions options)
         {
             if (StopProcessing) return;
 
@@ -78,7 +78,7 @@ namespace Xperience.Xman.Commands
                 .WithOptions(options)
                 .AppendCloud(options.UseCloud)
                 .Build();
-            shellRunner.Execute(installScript, ErrorDataReceived, (o, e) =>
+            await shellRunner.Execute(installScript, ErrorDataReceived, (o, e) =>
             {
                 var proc = o as Process;
                 if (e.Data?.Contains("Do you want to run this action", StringComparison.OrdinalIgnoreCase) ?? false)
@@ -87,11 +87,11 @@ namespace Xperience.Xman.Commands
                     proc?.StandardInput.WriteLine("Y");
                     proc?.StandardInput.Close();
                 }
-            }, true).WaitForExit();
+            }, true).WaitForExitAsync();
         }
 
 
-        private void InstallTemplate(InstallOptions options)
+        private async Task InstallTemplate(InstallOptions options)
         {
             if (StopProcessing) return;
 
@@ -101,7 +101,7 @@ namespace Xperience.Xman.Commands
             // Don't use base error handler for uninstall script as it throws when no templates are installed
             // Just skip uninstall step in case of error and try to continue
             var uninstallCmd = shellRunner.Execute(uninstallScript);
-            uninstallCmd.WaitForExit();
+            await uninstallCmd.WaitForExitAsync();
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Installing template version {options.Version}...[/]");
 
@@ -110,7 +110,7 @@ namespace Xperience.Xman.Commands
                 .AppendVersion(options.Version)
                 .Build();
             var installCmd = shellRunner.Execute(installScript, ErrorDataReceived);
-            installCmd.WaitForExit();
+            await installCmd.WaitForExitAsync();
         }
     }
 }

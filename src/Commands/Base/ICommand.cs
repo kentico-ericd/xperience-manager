@@ -39,6 +39,6 @@ namespace Xperience.Xman.Commands
         /// Executes the command.
         /// </summary>
         /// <param name="args">The arguments provided by the user.</param>
-        public void Execute(string[] args);
+        public Task Execute(string[] args);
     }
 }

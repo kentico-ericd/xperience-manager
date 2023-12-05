@@ -41,20 +41,20 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override void Execute(string[] args)
+        public override async Task Execute(string[] args)
         {
-            var options = new UpdateWizard().Run();
+            var options = await new UpdateWizard().Run();
 
             AnsiConsole.WriteLine();
-            UpdatePackages(options);
-            BuildProject();
+            await UpdatePackages(options);
+            await BuildProject();
             // There is currently an issue running the database update script while emulating the ReadKey() input
             // for the script's "Do you want to continue" prompt. The update command must be run manually.
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Unfortunately, the database cannot be updated at this time. Please run the 'dotnet run --no-build --kxp-update' command manually.[/]");
         }
 
 
-        private void UpdatePackages(UpdateOptions options)
+        private async Task UpdatePackages(UpdateOptions options)
         {
             foreach (var package in packageNames)
             {
@@ -64,19 +64,19 @@ namespace Xperience.Xman.Commands
 
                 options.PackageName = package;
                 var packageScript = scriptBuilder.SetScript(ScriptType.PackageUpdate).WithOptions(options).AppendVersion(options.Version).Build();
-                shellRunner.Execute(packageScript, ErrorDataReceived).WaitForExit();
+                await shellRunner.Execute(packageScript, ErrorDataReceived).WaitForExitAsync();
             }
         }
 
 
-        private void BuildProject()
+        private async Task BuildProject()
         {
             if (StopProcessing) return;
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Attempting to build the project...[/]");
 
             var buildScript = scriptBuilder.SetScript(ScriptType.BuildProject).Build();
-            shellRunner.Execute(buildScript, ErrorDataReceived).WaitForExit();
+            await shellRunner.Execute(buildScript, ErrorDataReceived).WaitForExitAsync();
         }
     }
 }

@@ -23,13 +23,15 @@ namespace Xperience.Xman.Steps
         }
 
 
-        public void Execute()
+        public Task Execute()
         {
             var input = AnsiConsole.Prompt(prompt);
             if (valueReceiver is not null)
             {
                 valueReceiver(input);
             }
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Xperience.Xman.Commands
         public abstract string Description { get; }
 
 
-        public abstract void Execute(string[] args);
+        public abstract Task Execute(string[] args);
 
 
         /// <summary>

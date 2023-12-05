@@ -13,9 +13,9 @@ namespace Xperience.Xman.Helpers
         /// <summary>
         /// Stores the <see cref="InstallOptions"/> in the configuration file.
         /// </summary>
-        public static void CreateConfigFile(InstallOptions options)
+        public static Task CreateConfigFile(InstallOptions options)
         {
-            File.WriteAllText(Constants.CONFIG_FILENAME, JsonConvert.SerializeObject(options));
+            return File.WriteAllTextAsync(Constants.CONFIG_FILENAME, JsonConvert.SerializeObject(options));
         }
 
 
@@ -23,7 +23,7 @@ namespace Xperience.Xman.Helpers
         /// Loads <see cref="InstallOptions"/> from the configuration file.
         /// </summary>
         /// <returns></returns>
-        public static InstallOptions? GetOptionsFromConfig()
+        public static async Task<InstallOptions?> GetOptionsFromConfig()
         {
             if (!File.Exists(Constants.CONFIG_FILENAME))
             {
@@ -32,7 +32,7 @@ namespace Xperience.Xman.Helpers
 
             try
             {
-                var text = File.ReadAllText(Constants.CONFIG_FILENAME);
+                var text = await File.ReadAllTextAsync(Constants.CONFIG_FILENAME);
 
                 return JsonConvert.DeserializeObject<InstallOptions>(text);
             }

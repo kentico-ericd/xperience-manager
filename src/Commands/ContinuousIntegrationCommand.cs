@@ -33,7 +33,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override void Execute(string[] args)
+        public override async Task Execute(string[] args)
         {
             if (args.Length < 2)
             {
@@ -50,37 +50,81 @@ namespace Xperience.Xman.Commands
 
             if (action.Equals(STORE, StringComparison.OrdinalIgnoreCase))
             {
-                StoreFiles();
+                await AnsiConsole.Progress()
+                    .Columns(new ProgressColumn[]
+                    {
+                        new SpinnerColumn(),
+                        new ElapsedTimeColumn(),
+                        new TaskDescriptionColumn(),
+                        new ProgressBarColumn(),
+                        new PercentageColumn()
+                    })
+                    .StartAsync(async ctx =>
+                    {
+                        var task = ctx.AddTask($"[{Constants.EMPHASIS_COLOR}]Running the CI store script[/]");
+                        await StoreFiles(task);
+                    });
             }
             else if (action.Equals(RESTORE, StringComparison.OrdinalIgnoreCase))
             {
-                RestoreFiles();
+                await AnsiConsole.Progress()
+                    .Columns(new ProgressColumn[]
+                    {
+                        new SpinnerColumn(),
+                        new ElapsedTimeColumn(),
+                        new TaskDescriptionColumn()
+                    })
+                    .StartAsync(async ctx =>
+                    {
+                        var task = ctx.AddTask($"[{Constants.EMPHASIS_COLOR}]Running the CI restore script[/]");
+                        await RestoreFiles(task);
+                    });
             }
         }
 
 
-        private void StoreFiles()
+        private async Task StoreFiles(ProgressTask task)
         {
-            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running the CI store script...[/]");
-
             var ciScript = scriptBuilder.SetScript(ScriptType.StoreContinuousIntegration).Build();
-            shellRunner.Execute(ciScript, ErrorDataReceived).WaitForExit();
+            await shellRunner.Execute(ciScript, ErrorDataReceived, (o, e) => {
+                if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false && e.Data.Any(char.IsDigit))
+                {
+                    // Message is something like "Object type 1/84: Module"
+                    var progressMessage = e.Data.Split(':');
+                    if (progressMessage.Length == 0) return;
+
+                    var progressNumbers = progressMessage[0].Split('/');
+                    if (progressNumbers.Length < 2) return;
+
+                    var progressCurrent = double.Parse(String.Join("", progressNumbers[0].Where(char.IsDigit)));
+                    var progressMax = double.Parse(String.Join("", progressNumbers[1].Where(char.IsDigit)));
+
+                    task.MaxValue = progressMax;
+                    task.Value = progressCurrent;
+                }
+            }).WaitForExitAsync();
         }
 
 
-        private void RestoreFiles()
+        private async Task RestoreFiles(ProgressTask task)
         {
-            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running the CI restore script...[/]");
-
+            var originalDescription = task.Description;
             var ciScript = scriptBuilder.SetScript(ScriptType.RestoreContinuousIntegration).Build();
-            shellRunner.Execute(ciScript, ErrorDataReceived, (o, e) =>
+            await shellRunner.Execute(ciScript, ErrorDataReceived, (o, e) =>
             {
                 if (e.Data?.Contains("The Continuous Integration repository is either not initialized or in an incorrect location on the file system.", StringComparison.OrdinalIgnoreCase) ?? false)
                 {
                     // Restore process couldn't find repository directory
                     LogError("The restore process wasn't started because the Continuous Integration repository wasn't found.", o as Process);
                 }
-            }).WaitForExit();
+                else if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false)
+                {
+                    // Message is something like "Object type Module: updating Activities"
+                    task.Description = e.Data;
+                }
+            }).WaitForExitAsync();
+
+            task.Description = originalDescription;
         }
     }
 }

@@ -40,11 +40,11 @@ namespace Xperience.Xman.Wizards
         /// <summary>
         /// Requests user input to generate the <see cref="TOptions"/>.
         /// </summary>
-        public TOptions Run()
+        public async Task<TOptions> Run()
         {
             do
             {
-                steps.Current.Execute();
+                await steps.Current.Execute();
             } while (steps.Next());
 
             return options;
