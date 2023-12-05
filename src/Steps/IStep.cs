@@ -1,13 +1,13 @@
 ﻿namespace Xperience.Xman.Steps
 {
     /// <summary>
-    /// A step used to display a prompt for user interaction.
+    /// Represents a step used to display a prompt for user interaction.
     /// </summary>
-    public abstract class AbstractStep
+    public interface  IStep
     {
         /// <summary>
         /// Displays a prompt to the user.
         /// </summary>
-        public abstract void Execute();
+        public void Execute();
     }
 }

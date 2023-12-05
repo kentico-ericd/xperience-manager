@@ -10,7 +10,7 @@ namespace Xperience.Xman.Tests
     /// </summary>
     public class IScriptBuilderTests
     {
-        private IScriptBuilder scriptBuilder = new ScriptBuilder();
+        private readonly IScriptBuilder scriptBuilder = new ScriptBuilder();
         private readonly InstallOptions validInstallOptions = new() { ServerName = "TESTSERVER" };
         private readonly UpdateOptions validUpdateOptions = new() { PackageName = "kentico.xperience.webapp" };
 

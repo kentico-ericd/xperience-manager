@@ -5,7 +5,7 @@ namespace Xperience.Xman.Steps
     /// <summary>
     /// A step used to display a prompt for user interaction and optionally return the value.
     /// </summary>
-    public class Step<T> : AbstractStep
+    public class Step<T> : IStep
     {
         private readonly IPrompt<T> prompt;
         private readonly Action<T>? valueReceiver;
@@ -23,7 +23,7 @@ namespace Xperience.Xman.Steps
         }
 
 
-        public override void Execute()
+        public void Execute()
         {
             var input = AnsiConsole.Prompt(prompt);
             if (valueReceiver is not null)
