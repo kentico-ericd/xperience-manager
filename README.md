@@ -49,7 +49,7 @@ The following commands can be executed using the `xman` tool name:
 
 ### Installing a project with a configuration file
 
-Whenever you install a new project with the wizard, a `config.json` file is automatically generated. When you run the `install` command, the wizard is skipped if the tool detects a `config.json` file in the installation directory. You can also manually create the file before installation, e.g.:
+Whenever you install a new project with the wizard, a `xman.json` file is automatically generated. When you run the `install` command, the wizard is skipped if the tool detects a `xman.json` file in the installation directory. You can also manually create the file before installation, e.g.:
 
 ```json
 {
