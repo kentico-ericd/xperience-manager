@@ -11,16 +11,7 @@ namespace Xperience.Xman.Wizards
     /// </summary>
     public class UpdateWizard : AbstractWizard<UpdateOptions>
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="UpdateWizard"/>.
-        /// </summary>
-        public UpdateWizard()
-        {
-            InitSteps(); 
-        }
-
-
-        protected override void InitSteps()
+        public override void InitSteps()
         {
             var versions = NuGetVersionHelper.GetPackageVersions("kentico.xperience.templates")
                 .ConfigureAwait(false)

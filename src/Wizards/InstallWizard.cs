@@ -16,18 +16,9 @@ namespace Xperience.Xman.Wizards
             "kentico-xperience-mvc",
             "kentico-xperience-admin-sample"
         };
+        
 
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="InstallWizard"/>.
-        /// </summary>
-        public InstallWizard()
-        {
-            InitSteps(); 
-        }
-
-
-        protected override void InitSteps()
+        public override void InitSteps()
         {
             var versions = NuGetVersionHelper.GetPackageVersions("kentico.xperience.templates")
                 .ConfigureAwait(false)

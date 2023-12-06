@@ -6,6 +6,7 @@ using Xperience.Xman;
 using Xperience.Xman.Commands;
 using Xperience.Xman.Repositories;
 using Xperience.Xman.Services;
+using Xperience.Xman.Wizards;
 
 var builder = new ContainerBuilder();
 var assemblies = Assembly.GetExecutingAssembly();
@@ -29,5 +30,7 @@ builder.RegisterAssemblyTypes(assemblies)
         && typeof(IService).IsAssignableFrom(t))
     .AsImplementedInterfaces()
     .InstancePerLifetimeScope();
+builder.RegisterAssemblyTypes(assemblies)
+    .AsClosedTypesOf(typeof(IWizard<>));
 
 await builder.Build().Resolve<App>().Run(args);

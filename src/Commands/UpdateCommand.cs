@@ -14,6 +14,7 @@ namespace Xperience.Xman.Commands
     {
         private readonly IShellRunner shellRunner;
         private readonly IScriptBuilder scriptBuilder;
+        private readonly IWizard<UpdateOptions> wizard;
         private readonly IEnumerable<string> packageNames = new string[]
         {
             "kentico.xperience.admin",
@@ -34,8 +35,9 @@ namespace Xperience.Xman.Commands
         public override string Description => "Updates a project's NuGet packages and database version";
 
 
-        public UpdateCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder)
+        public UpdateCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder, IWizard<UpdateOptions> wizard)
         {
+            this.wizard = wizard;
             this.shellRunner = shellRunner;
             this.scriptBuilder = scriptBuilder;
         }
@@ -43,7 +45,7 @@ namespace Xperience.Xman.Commands
 
         public override async Task Execute(string[] args)
         {
-            var options = await new UpdateWizard().Run();
+            var options = await wizard.Run();
 
             AnsiConsole.WriteLine();
             await UpdatePackages(options);

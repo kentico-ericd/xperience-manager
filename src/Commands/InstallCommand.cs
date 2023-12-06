@@ -16,6 +16,7 @@ namespace Xperience.Xman.Commands
     {
         private readonly IShellRunner shellRunner;
         private readonly IScriptBuilder scriptBuilder;
+        private readonly IWizard<InstallOptions> wizard;
 
 
         public override IEnumerable<string> Keywords => new string[] { "i", "install" };
@@ -27,8 +28,9 @@ namespace Xperience.Xman.Commands
         public override string Description => "Installs a new XbK instance";
 
 
-        public InstallCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder)
+        public InstallCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder, IWizard<InstallOptions> wizard)
         {
+            this.wizard = wizard;
             this.shellRunner = shellRunner;
             this.scriptBuilder = scriptBuilder;
         }
@@ -39,7 +41,7 @@ namespace Xperience.Xman.Commands
             InstallOptions? options = await ConfigFileHelper.GetOptionsFromConfig();
             if (options is null)
             {
-                options = await new InstallWizard().Run();
+                options = await wizard.Run();
             }
             else
             {
