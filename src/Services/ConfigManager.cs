@@ -7,13 +7,10 @@ namespace Xperience.Xman.Services
 {
     public class ConfigManager : IConfigManager
     {
-        public async Task AddProfile(InstallOptions options)
+        public async Task AddProfile(Profile profile)
         {
             var config = await ReadConfig();
-            config.Profiles.Add(new()
-            {
-                WorkingDirectory = options.ProjectName
-            });
+            config.Profiles.Add(profile);
 
             await WriteConfig(config);
         }
@@ -26,13 +23,24 @@ namespace Xperience.Xman.Services
                 return Task.CompletedTask;
             }
 
-            return WriteConfig(new ToolConfiguration());
+            return WriteConfig(new ToolConfiguration
+            {
+                DefaultInstallOptions = new()
+            });
+        }
+
+
+        public async Task<InstallOptions> GetDefaultInstallOptions()
+        {
+            var config = await ReadConfig();
+
+            return config.DefaultInstallOptions ?? new();
         }
 
 
         private async Task<ToolConfiguration> ReadConfig()
         {
-            if (File.Exists(Constants.CONFIG_FILENAME))
+            if (!File.Exists(Constants.CONFIG_FILENAME))
             {
                 throw new FileNotFoundException($"The configuration file {Constants.CONFIG_FILENAME} was not found.");
             }

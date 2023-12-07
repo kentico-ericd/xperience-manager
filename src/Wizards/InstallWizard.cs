@@ -18,13 +18,10 @@ namespace Xperience.Xman.Wizards
         };
 
 
-        public override void InitSteps()
+        public override async Task InitSteps()
         {
-            var versions = NuGetVersionHelper.GetPackageVersions("kentico.xperience.templates")
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult()
-                .Where(v => !v.IsPrerelease && !v.IsLegacyVersion && v.Major >= 25)
+            var versions = await NuGetVersionHelper.GetPackageVersions("kentico.xperience.templates");
+            var filtered = versions.Where(v => !v.IsPrerelease && !v.IsLegacyVersion && v.Major >= 25)
                 .Select(v => v.Version)
                 .OrderByDescending(v => v);
             Steps.Add(new Step<Version>(
@@ -33,7 +30,7 @@ namespace Xperience.Xman.Wizards
                     .PageSize(10)
                     .UseConverter(v => $"{v.Major}.{v.Minor}.{v.Build}")
                     .MoreChoicesText("Scroll for more...")
-                    .AddChoices(versions),
+                    .AddChoices(filtered),
                 (v) => Options.Version = v));
 
             Steps.Add(new Step<string>(
@@ -53,9 +50,12 @@ namespace Xperience.Xman.Wizards
             };
             Steps.Add(new Step<bool>(cloudPrompt, (v) => Options.UseCloud = v));
 
-            Steps.Add(new Step<string>(
-                new TextPrompt<string>("Enter the [green]SQL server[/] name:"),
-                (v) => Options.ServerName = v));
+            var serverPrompt = new TextPrompt<string>("Enter the [green]SQL server[/] name:");
+            if (!string.IsNullOrEmpty(Options.ServerName))
+            {
+                serverPrompt.DefaultValue(Options.ServerName);
+            }
+            Steps.Add(new Step<string>(serverPrompt, (v) => Options.ServerName = v));
 
             Steps.Add(new Step<string>(
                 new TextPrompt<string>("Enter the [green]database[/] name:")

@@ -14,7 +14,7 @@ namespace Xperience.Xman.Wizards
         /// <summary>
         /// The options to populate.
         /// </summary>
-        public TOptions Options { get; }
+        public TOptions Options { get; set; }
 
 
 
@@ -22,7 +22,7 @@ namespace Xperience.Xman.Wizards
         /// Initializes the <see cref="Steps"/> with the <see cref="Step{T}"/>s required to
         /// populate the <see cref="Options"/>.
         /// </summary>
-        public void InitSteps();
+        public Task InitSteps();
 
 
         /// <summary>

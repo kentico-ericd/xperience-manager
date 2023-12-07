@@ -13,6 +13,7 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class InstallCommand : AbstractCommand
     {
+        private readonly Configuration.Profile profile = new();
         private readonly IShellRunner shellRunner;
         private readonly IConfigManager configManager;
         private readonly IScriptBuilder scriptBuilder;
@@ -48,16 +49,29 @@ namespace Xperience.Xman.Commands
 
         public override async Task Execute(string[] args)
         {
+            // Override default values of InstallOptions with values from config file
+            wizard.Options = await configManager.GetDefaultInstallOptions();
             var options = await wizard.Run();
 
+            profile.ProjectName = options.ProjectName;
+            profile.WorkingDirectory = Path.GetFullPath(options.ProjectName);
+
             AnsiConsole.WriteLine();
+            await CreateWorkingDirectory(options);
             await InstallTemplate(options);
             await CreateProjectFiles(options);
             await CreateDatabase(options);
             if (!Errors.Any())
             {
-                await configManager.AddProfile(options);
+                await configManager.AddProfile(profile);
             }
+        }
+
+
+        private async Task CreateWorkingDirectory(InstallOptions options)
+        {
+            string mkdirScript = scriptBuilder.SetScript(ScriptType.CreateDirectory).WithOptions(options).Build();
+            await shellRunner.Execute(new(mkdirScript) { ErrorHandler = ErrorDataReceived }).WaitForExitAsync();
         }
 
 
@@ -70,10 +84,12 @@ namespace Xperience.Xman.Commands
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running database creation script...[/]");
 
-            // TODO: Set working directory
-
             string databaseScript = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithOptions(options).Build();
-            await shellRunner.Execute(new(databaseScript) { ErrorHandler = ErrorDataReceived }).WaitForExitAsync();
+            await shellRunner.Execute(new(databaseScript)
+            {
+                ErrorHandler = ErrorDataReceived,
+                WorkingDirectory = profile.WorkingDirectory
+            }).WaitForExitAsync();
         }
 
 
@@ -84,8 +100,6 @@ namespace Xperience.Xman.Commands
                 return;
             }
 
-            // TODO: Create working directory and set later
-
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running project creation script...[/]");
 
             string installScript = scriptBuilder.SetScript(ScriptType.ProjectInstall)
@@ -95,7 +109,7 @@ namespace Xperience.Xman.Commands
             await shellRunner.Execute(new(installScript)
             {
                 KeepOpen = true,
-                WorkingDirectory = options.ProjectName,
+                WorkingDirectory = profile.WorkingDirectory,
                 ErrorHandler = ErrorDataReceived,
                 OutputHandler = (o, e) =>
                 {

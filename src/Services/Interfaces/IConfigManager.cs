@@ -1,5 +1,5 @@
-﻿using Xperience.Xman.Options;
-using Xperience.Xman.Configuration;
+﻿using Xperience.Xman.Configuration;
+using Xperience.Xman.Options;
 
 namespace Xperience.Xman.Services
 {
@@ -17,8 +17,13 @@ namespace Xperience.Xman.Services
         /// <summary>
         /// Adds a profile to the <see cref="ToolConfiguration.Profiles"/>.
         /// </summary>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        public Task AddProfile(InstallOptions options);
+        public Task AddProfile(Profile profile);
+
+
+        /// <summary>
+        /// Gets the <see cref="InstallOptions"/> specified by the tool configuration file, or a new instance if
+        /// the configuration can't be read.
+        /// </summary>
+        public Task<InstallOptions> GetDefaultInstallOptions();
     }
 }

@@ -12,20 +12,15 @@ namespace Xperience.Xman.Wizards
         public StepList Steps { get; } = new();
 
 
-        public TOptions Options { get; } = new();
+        public TOptions Options { get; set; } = new();
 
 
-        /// <summary>
-        /// Initializes the <see cref="Steps"/> by calling <see cref="InitSteps"/>.
-        /// </summary>
-        protected AbstractWizard() => InitSteps();
-
-
-        public abstract void InitSteps();
+        public abstract Task InitSteps();
 
 
         public async Task<TOptions> Run()
         {
+            await InitSteps();
             do
             {
                 await Steps.Current.Execute();

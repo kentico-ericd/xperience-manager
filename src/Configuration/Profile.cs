@@ -6,6 +6,12 @@
     public class Profile
     {
         /// <summary>
+        /// The Xperience by Kentico project name.
+        /// </summary>
+        public string? ProjectName { get; set; }
+
+
+        /// <summary>
         /// The absolute path to the installation's root folder.
         /// </summary>
         public string? WorkingDirectory { get; set; }
