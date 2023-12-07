@@ -11,6 +11,17 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class HelpCommand : AbstractCommand
     {
+        /// <summary>
+        /// Workaround for circular dependency when commands are injected into this command.
+        /// </summary>
+        private IEnumerable<ICommand> commands = new ICommand[]
+        {
+            new InstallCommand(),
+            new UpdateCommand(),
+            new ContinuousIntegrationCommand()
+        };
+
+
         public override IEnumerable<string> Keywords => new string[] { "?", "help" };
 
 
@@ -40,7 +51,22 @@ namespace Xperience.Xman.Commands
                 }
             }
 
-            AnsiConsole.MarkupInterpolated($" [{Constants.EMPHASIS_COLOR}]https://github.com/kentico-ericd/xperience-manager[/]\n\n");
+            AnsiConsole.MarkupInterpolated($" [{Constants.EMPHASIS_COLOR}]https://github.com/kentico-ericd/xperience-manager[/]\n");
+
+            var table = new Table()
+                .AddColumn("Command")
+                .AddColumn("Parameters")
+                .AddColumn("Description");
+            foreach (var command in commands)
+            {
+                table.AddRow(
+                    String.Join(", ", command.Keywords),
+                    String.Join(", ", command.Parameters),
+                    command.Description);
+            }
+
+            AnsiConsole.Write(table);
+            AnsiConsole.WriteLine();
         }
     }
 }

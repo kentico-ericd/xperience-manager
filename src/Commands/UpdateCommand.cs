@@ -35,6 +35,15 @@ namespace Xperience.Xman.Commands
         public override string Description => "Updates a project's NuGet packages and database version";
 
 
+        /// <summary>
+        /// Do not use. Workaround for circular dependency in <see cref="HelpCommand"/> when commands are injected
+        /// into the constuctor.
+        /// </summary>
+        internal UpdateCommand()
+        {
+        }
+
+
         public UpdateCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder, IWizard<UpdateOptions> wizard)
         {
             this.wizard = wizard;

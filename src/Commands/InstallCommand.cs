@@ -28,6 +28,15 @@ namespace Xperience.Xman.Commands
         public override string Description => "Installs a new XbK instance";
 
 
+        /// <summary>
+        /// Do not use. Workaround for circular dependency in <see cref="HelpCommand"/> when commands are injected
+        /// into the constuctor.
+        /// </summary>
+        internal InstallCommand()
+        {
+        }
+
+
         public InstallCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder, IWizard<InstallOptions> wizard)
         {
             this.wizard = wizard;

@@ -26,6 +26,15 @@ namespace Xperience.Xman.Commands
         public override string Description => "Stores or restores CI data";
 
 
+        /// <summary>
+        /// Do not use. Workaround for circular dependency in <see cref="HelpCommand"/> when commands are injected
+        /// into the constuctor.
+        /// </summary>
+        internal ContinuousIntegrationCommand()
+        {
+        }
+
+
         public ContinuousIntegrationCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder)
         {
             this.shellRunner = shellRunner;
