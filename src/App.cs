@@ -50,7 +50,7 @@ namespace Xperience.Xman
                 }
                 else if (command is not HelpCommand and not ProfileCommand)
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Process complete![/]");
+                    AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Process complete![/]\n");
                 }
             }
             catch (Exception e)

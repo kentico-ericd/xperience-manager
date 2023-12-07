@@ -21,9 +21,10 @@ namespace Xperience.Xman.Services
 
 
         /// <summary>
-        /// Gets the current profile, or <c>null</c> if not set.
+        /// Gets the current profile, or <c>null</c> if not set. If there is only one profile registered, that
+        /// profile is automatically selected.
         /// </summary>
-        public Profile? GetCurrentProfile();
+        public Task<Profile?> GetCurrentProfile();
 
 
         /// <summary>

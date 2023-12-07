@@ -57,7 +57,8 @@ namespace Xperience.Xman.Commands
                 throw new InvalidOperationException($"Invalid parameter '{action}'");
             }
 
-            var profile = configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
+            var profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
+            PrintCurrentProfile(profile);
 
             if (action.Equals(STORE, StringComparison.OrdinalIgnoreCase))
             {

@@ -56,7 +56,9 @@ namespace Xperience.Xman.Commands
 
         public override async Task Execute(string[] args)
         {
-            var profile = configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
+            var profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
+            PrintCurrentProfile(profile);
+
             var options = await wizard.Run();
 
             AnsiConsole.WriteLine();

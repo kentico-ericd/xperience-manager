@@ -35,12 +35,12 @@ namespace Xperience.Xman.Commands
             var config = await configManager.GetConfig();
             if (!config.Profiles.Any())
             {
-                AnsiConsole.MarkupLineInterpolated($"There are no registered profiles. Install a new instance with [{Constants.SUCCESS_COLOR}]xman i[/] to add a profile.");
+                AnsiConsole.MarkupLineInterpolated($"There are no registered profiles. Install a new instance with [{Constants.SUCCESS_COLOR}]xman i[/] to add a profile.\n");
                 return;
             }
 
-            var currentProfile = configManager.GetCurrentProfile();
-            AnsiConsole.MarkupLineInterpolated($"[[Active: [{Constants.EMPHASIS_COLOR}]{currentProfile?.ProjectName ?? "None"}[/]]]");
+            var currentProfile = await configManager.GetCurrentProfile();
+            PrintCurrentProfile(currentProfile);
 
             var prompt = new SelectionPrompt<string>()
                     .Title("Switch to profile:")
@@ -57,6 +57,8 @@ namespace Xperience.Xman.Commands
             {
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Failed to switch to '{selected}'[/]");
             }
+
+            AnsiConsole.WriteLine();
         }
     }
 }

@@ -7,9 +7,6 @@ namespace Xperience.Xman.Services
 {
     public class ConfigManager : IConfigManager
     {
-        private Profile? currentProfile;
-
-
         public async Task AddProfile(Profile profile)
         {
             var config = await GetConfig();
@@ -22,13 +19,24 @@ namespace Xperience.Xman.Services
         public async Task<bool> TrySetCurrentProfile(string profileName)
         {
             var config = await GetConfig();
-            currentProfile = config.Profiles.FirstOrDefault(p => p.ProjectName?.Equals(profileName, StringComparison.OrdinalIgnoreCase) ?? false);
+            config.CurrentProfile = config.Profiles.FirstOrDefault(p => p.ProjectName?.Equals(profileName, StringComparison.OrdinalIgnoreCase) ?? false);
 
-            return currentProfile is not null;
+            await WriteConfig(config);
+
+            return config.CurrentProfile is not null;
         }
 
 
-        public Profile? GetCurrentProfile() => currentProfile;
+        public async Task<Profile?> GetCurrentProfile()
+        {
+            var config = await GetConfig();
+            if (config.CurrentProfile is null && config.Profiles.Count == 1)
+            {
+                config.CurrentProfile = config.Profiles.First();
+            }
+
+            return config.CurrentProfile;
+        }
 
 
         public async Task<ToolConfiguration> GetConfig()

@@ -1,5 +1,7 @@
 using System.Diagnostics;
 
+using Spectre.Console;
+
 namespace Xperience.Xman.Commands
 {
     /// <summary>
@@ -50,5 +52,8 @@ namespace Xperience.Xman.Commands
                 process.Kill();
             }
         }
+
+
+        protected void PrintCurrentProfile(Configuration.Profile? profile) => AnsiConsole.MarkupLineInterpolated($"[[Profile: [{Constants.EMPHASIS_COLOR}]{profile?.ProjectName ?? "None"}[/]]]");
     }
 }
