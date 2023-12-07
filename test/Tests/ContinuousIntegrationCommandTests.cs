@@ -5,6 +5,7 @@ using NUnit.Framework;
 using System.Diagnostics;
 
 using Xperience.Xman.Commands;
+using Xperience.Xman.Configuration;
 using Xperience.Xman.Services;
 
 namespace Xperience.Xman.Tests
@@ -15,10 +16,14 @@ namespace Xperience.Xman.Tests
     public class ContinuousIntegrationCommandTests
     {
         private readonly IShellRunner shellRunner = Substitute.For<IShellRunner>();
+        private readonly IConfigManager configManager = Substitute.For<IConfigManager>();
 
 
         [SetUp]
-        public void ContinuousIntegrationCommandTestsSetUp() => shellRunner
+        public void ContinuousIntegrationCommandTestsSetUp()
+        {
+            configManager.GetCurrentProfile().Returns(new Profile());
+            shellRunner
                 .Execute(Arg.Any<ShellOptions>())
                 .Returns((x) =>
                 {
@@ -36,12 +41,13 @@ namespace Xperience.Xman.Tests
 
                     return cmd;
                 });
+        }
 
 
         [Test]
         public async Task Execute_StoreParameter_CallsStoreScript()
         {
-            var command = new ContinuousIntegrationCommand(shellRunner, new ScriptBuilder());
+            var command = new ContinuousIntegrationCommand(shellRunner, new ScriptBuilder(), configManager);
             await command.Execute(new string[] { "ci", "store" });
 
             string expectedScript = "dotnet run --no-build --kxp-ci-store";
@@ -53,7 +59,7 @@ namespace Xperience.Xman.Tests
         [Test]
         public async Task Execute_RestoreParameter_CallsRestoreScript()
         {
-            var command = new ContinuousIntegrationCommand(shellRunner, new ScriptBuilder());
+            var command = new ContinuousIntegrationCommand(shellRunner, new ScriptBuilder(), configManager);
             await command.Execute(new string[] { "ci", "restore" });
 
             string expectedScript = "dotnet run --no-build --kxp-ci-restore";

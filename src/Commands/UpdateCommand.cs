@@ -15,6 +15,7 @@ namespace Xperience.Xman.Commands
         private readonly IShellRunner shellRunner;
         private readonly IScriptBuilder scriptBuilder;
         private readonly IWizard<UpdateOptions> wizard;
+        private readonly IConfigManager configManager;
         private readonly IEnumerable<string> packageNames = new string[]
         {
             "kentico.xperience.admin",
@@ -29,7 +30,7 @@ namespace Xperience.Xman.Commands
         public override IEnumerable<string> Keywords => new string[] { "u", "update" };
 
 
-        public override IEnumerable<string> Parameters => Array.Empty<string>();
+        public override IEnumerable<string> Parameters => Enumerable.Empty<string>();
 
 
         public override string Description => "Updates a project's NuGet packages and database version";
@@ -44,30 +45,31 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public UpdateCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder, IWizard<UpdateOptions> wizard)
+        public UpdateCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder, IWizard<UpdateOptions> wizard, IConfigManager configManager)
         {
             this.wizard = wizard;
             this.shellRunner = shellRunner;
             this.scriptBuilder = scriptBuilder;
+            this.configManager = configManager;
         }
 
 
         public override async Task Execute(string[] args)
         {
+            var profile = configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
             var options = await wizard.Run();
 
             AnsiConsole.WriteLine();
-            await UpdatePackages(options);
-            await BuildProject();
+            await UpdatePackages(options, profile);
+            await BuildProject(profile);
             // There is currently an issue running the database update script while emulating the ReadKey() input
             // for the script's "Do you want to continue" prompt. The update command must be run manually.
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Unfortunately, the database cannot be updated at this time. Please run the 'dotnet run --no-build --kxp-update' command manually.[/]");
         }
 
 
-        private async Task UpdatePackages(UpdateOptions options)
+        private async Task UpdatePackages(UpdateOptions options, Configuration.Profile profile)
         {
-            // TODO: Set working directory
             foreach (string package in packageNames)
             {
                 if (StopProcessing)
@@ -79,14 +81,17 @@ namespace Xperience.Xman.Commands
 
                 options.PackageName = package;
                 string packageScript = scriptBuilder.SetScript(ScriptType.PackageUpdate).WithOptions(options).AppendVersion(options.Version).Build();
-                await shellRunner.Execute(new(packageScript) { ErrorHandler = ErrorDataReceived }).WaitForExitAsync();
+                await shellRunner.Execute(new(packageScript)
+                {
+                    ErrorHandler = ErrorDataReceived,
+                    WorkingDirectory = profile.WorkingDirectory
+                }).WaitForExitAsync();
             }
         }
 
 
-        private async Task BuildProject()
+        private async Task BuildProject(Configuration.Profile profile)
         {
-            // TODO: Set working directory
             if (StopProcessing)
             {
                 return;
@@ -95,7 +100,11 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Attempting to build the project...[/]");
 
             string buildScript = scriptBuilder.SetScript(ScriptType.BuildProject).Build();
-            await shellRunner.Execute(new(buildScript) { ErrorHandler = ErrorDataReceived }).WaitForExitAsync();
+            await shellRunner.Execute(new(buildScript)
+            {
+                ErrorHandler = ErrorDataReceived,
+                WorkingDirectory = profile.WorkingDirectory
+            }).WaitForExitAsync();
         }
     }
 }

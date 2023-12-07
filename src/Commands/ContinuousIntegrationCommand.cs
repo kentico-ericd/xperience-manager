@@ -15,6 +15,7 @@ namespace Xperience.Xman.Commands
         private const string RESTORE = "restore";
         private readonly IShellRunner shellRunner;
         private readonly IScriptBuilder scriptBuilder;
+        private readonly IConfigManager configManager;
 
 
         public override IEnumerable<string> Keywords => new string[] { "ci" };
@@ -35,10 +36,11 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public ContinuousIntegrationCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder)
+        public ContinuousIntegrationCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder, IConfigManager configManager)
         {
             this.shellRunner = shellRunner;
             this.scriptBuilder = scriptBuilder;
+            this.configManager = configManager;
         }
 
 
@@ -46,16 +48,16 @@ namespace Xperience.Xman.Commands
         {
             if (args.Length < 2)
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Must provide 1 parameter from '{string.Join(", ", Parameters)}'[/]");
-                return;
+                throw new InvalidOperationException($"Must provide 1 parameter from '{string.Join(", ", Parameters)}'");
             }
 
             string action = args[1].ToLower();
             if (!Parameters.Any(p => p.Equals(action, StringComparison.OrdinalIgnoreCase)))
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Invalid parameter '{action}'[/]");
-                return;
+                throw new InvalidOperationException($"Invalid parameter '{action}'");
             }
+
+            var profile = configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
 
             if (action.Equals(STORE, StringComparison.OrdinalIgnoreCase))
             {
@@ -71,7 +73,7 @@ namespace Xperience.Xman.Commands
                     .StartAsync(async ctx =>
                     {
                         var task = ctx.AddTask($"[{Constants.EMPHASIS_COLOR}]Running the CI store script[/]");
-                        await StoreFiles(task);
+                        await StoreFiles(task, profile);
                     });
             }
             else if (action.Equals(RESTORE, StringComparison.OrdinalIgnoreCase))
@@ -86,18 +88,18 @@ namespace Xperience.Xman.Commands
                     .StartAsync(async ctx =>
                     {
                         var task = ctx.AddTask($"[{Constants.EMPHASIS_COLOR}]Running the CI restore script[/]");
-                        await RestoreFiles(task);
+                        await RestoreFiles(task, profile);
                     });
             }
         }
 
 
-        private async Task StoreFiles(ProgressTask task)
+        private async Task StoreFiles(ProgressTask task, Configuration.Profile profile)
         {
-            // TODO: Set working directory
             string ciScript = scriptBuilder.SetScript(ScriptType.StoreContinuousIntegration).Build();
             await shellRunner.Execute(new(ciScript)
             {
+                WorkingDirectory = profile.WorkingDirectory,
                 ErrorHandler = ErrorDataReceived,
                 OutputHandler = (o, e) =>
                 {
@@ -127,13 +129,13 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task RestoreFiles(ProgressTask task)
+        private async Task RestoreFiles(ProgressTask task, Configuration.Profile profile)
         {
-            // TODO: Set working directory
             string originalDescription = task.Description;
             string ciScript = scriptBuilder.SetScript(ScriptType.RestoreContinuousIntegration).Build();
             await shellRunner.Execute(new(ciScript)
             {
+                WorkingDirectory = profile.WorkingDirectory,
                 ErrorHandler = ErrorDataReceived,
                 OutputHandler = (o, e) =>
                 {

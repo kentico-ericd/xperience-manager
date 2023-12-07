@@ -44,21 +44,18 @@ namespace Xperience.Xman
             try
             {
                 await command.Execute(args);
+                if (command.Errors.Any())
+                {
+                    AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with errors:\n{string.Join("\n", command.Errors)}[/]");
+                }
+                else if (command is not HelpCommand and not ProfileCommand)
+                {
+                    AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Process complete![/]");
+                }
             }
             catch (Exception e)
             {
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with error:\n{e.Message}[/]");
-            }
-
-            if (command.Errors.Any())
-            {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with errors:\n{string.Join("\n", command.Errors)}[/]");
-                return;
-            }
-
-            if (command is not HelpCommand)
-            {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Process complete![/]");
             }
         }
     }

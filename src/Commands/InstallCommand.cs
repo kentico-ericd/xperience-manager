@@ -23,7 +23,7 @@ namespace Xperience.Xman.Commands
         public override IEnumerable<string> Keywords => new string[] { "i", "install" };
 
 
-        public override IEnumerable<string> Parameters => Array.Empty<string>();
+        public override IEnumerable<string> Parameters => Enumerable.Empty<string>();
 
 
         public override string Description => "Installs a new XbK instance";
