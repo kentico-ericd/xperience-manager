@@ -10,21 +10,12 @@ namespace Xperience.Xman.Repositories
         private readonly IEnumerable<ICommand> commands;
 
 
-        public CommandRepository(IEnumerable<ICommand> commands)
-        {
-            this.commands = commands;
-        }
+        public CommandRepository(IEnumerable<ICommand> commands) => this.commands = commands;
 
 
-        public ICommand? Get(string keyword)
-        {
-            return commands.FirstOrDefault(c => c?.Keywords.Contains(keyword, StringComparer.OrdinalIgnoreCase) ?? false);
-        }
+        public ICommand? Get(string keyword) => commands.FirstOrDefault(c => c?.Keywords.Contains(keyword, StringComparer.OrdinalIgnoreCase) ?? false);
 
 
-        public IEnumerable<ICommand> GetAll()
-        {
-            return commands;
-        }
+        public IEnumerable<ICommand> GetAll() => commands;
     }
 }

@@ -4,7 +4,7 @@ namespace Xperience.Xman.Services
 {
     public class ScriptBuilder : IScriptBuilder
     {
-        private string currentScript = String.Empty;
+        private string currentScript = string.Empty;
         private ScriptType currentScriptType;
         private const string BUILD_SCRIPT = "dotnet build";
         private const string INSTALL_PROJECT_SCRIPT = $"dotnet new {nameof(InstallOptions.Template)} -n {nameof(InstallOptions.ProjectName)}";
@@ -64,8 +64,8 @@ namespace Xperience.Xman.Services
             // Replace all placeholders in script with option values if non-null or empty
             foreach (var prop in options.GetType().GetProperties())
             {
-                var value = prop.GetValue(options)?.ToString() ?? String.Empty;
-                if (!String.IsNullOrEmpty(value))
+                string value = prop.GetValue(options)?.ToString() ?? string.Empty;
+                if (!string.IsNullOrEmpty(value))
                 {
                     currentScript = currentScript.Replace(prop.Name, value);
                 }
@@ -94,7 +94,8 @@ namespace Xperience.Xman.Services
                 ScriptType.DatabaseUpdate => UPDATE_DATABASE_SCRIPT,
                 ScriptType.RestoreContinuousIntegration => CI_RESTORE_SCRIPT,
                 ScriptType.StoreContinuousIntegration => CI_STORE_SCRIPT,
-                _ => String.Empty,
+                ScriptType.None => string.Empty,
+                _ => string.Empty,
             };
 
             return this;
@@ -105,7 +106,7 @@ namespace Xperience.Xman.Services
         {
             var propertyNames = typeof(InstallOptions).GetProperties().Select(p => p.Name);
 
-            return !String.IsNullOrEmpty(currentScript) && !propertyNames.Any(currentScript.Contains);
+            return !string.IsNullOrEmpty(currentScript) && !propertyNames.Any(currentScript.Contains);
         }
     }
 

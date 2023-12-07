@@ -5,13 +5,13 @@
     /// </summary>
     public class StepList : List<IStep>
     {
-        private int _currentIndex = 0;
+        private int currentIndex = 0;
 
 
         /// <summary>
         /// The current step.
         /// </summary>
-        public IStep Current => this[_currentIndex];
+        public IStep Current => this[currentIndex];
 
 
         /// <summary>
@@ -20,13 +20,12 @@
         /// <returns><c>False</c> if there is no next element.</returns>
         public bool Next()
         {
-            if (_currentIndex < Count - 1)
+            if (currentIndex < Count - 1)
             {
                 Step(1);
                 return true;
             }
-            
-            
+
             return false;
         }
 
@@ -37,7 +36,7 @@
         /// <returns><c>False</c> if there is no previous element.</returns>
         public bool Previous()
         {
-            if (_currentIndex > 0)
+            if (currentIndex > 0)
             {
                 Step(-1);
                 return true;
@@ -46,18 +45,18 @@
             return false;
         }
 
-        
+
         private void Step(int direction)
         {
-            _currentIndex += direction;
-            if (_currentIndex > Count - 1)
+            currentIndex += direction;
+            if (currentIndex > Count - 1)
             {
-                _currentIndex = Count - 1;
+                currentIndex = Count - 1;
             }
 
-            if (_currentIndex < 0)
+            if (currentIndex < 0)
             {
-                _currentIndex = 0;
+                currentIndex = 0;
             }
         }
     }

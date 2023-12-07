@@ -13,10 +13,7 @@ namespace Xperience.Xman
         private readonly ICommandRepository commandRepository;
 
 
-        public App(ICommandRepository commandRepository)
-        {
-            this.commandRepository = commandRepository;
-        }
+        public App(ICommandRepository commandRepository) => this.commandRepository = commandRepository;
 
 
         /// <summary>
@@ -24,8 +21,9 @@ namespace Xperience.Xman
         /// </summary>
         public async Task Run(string[] args)
         {
-            var identifier = "help";
-            if (args.Length > 0) {
+            string identifier = "help";
+            if (args.Length > 0)
+            {
                 identifier = args[0];
             }
 
@@ -46,7 +44,7 @@ namespace Xperience.Xman
 
             if (command.Errors.Any())
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with errors:\n{String.Join("\n", command.Errors)}[/]");
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with errors:\n{string.Join("\n", command.Errors)}[/]");
                 return;
             }
 

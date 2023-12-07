@@ -47,7 +47,7 @@ namespace Xperience.Xman.Commands
 
         public override async Task Execute(string[] args)
         {
-            InstallOptions? options = await ConfigFileHelper.GetOptionsFromConfig();
+            var options = await ConfigFileHelper.GetOptionsFromConfig();
             if (options is null)
             {
                 options = await wizard.Run();
@@ -70,22 +70,28 @@ namespace Xperience.Xman.Commands
 
         private async Task CreateDatabase(InstallOptions options)
         {
-            if (StopProcessing) return;
+            if (StopProcessing)
+            {
+                return;
+            }
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running database creation script...[/]");
 
-            var databaseScript = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithOptions(options).Build();
+            string databaseScript = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithOptions(options).Build();
             await shellRunner.Execute(databaseScript, ErrorDataReceived).WaitForExitAsync();
         }
 
 
         private async Task CreateProjectFiles(InstallOptions options)
         {
-            if (StopProcessing) return;
+            if (StopProcessing)
+            {
+                return;
+            }
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running project creation script...[/]");
 
-            var installScript = scriptBuilder.SetScript(ScriptType.ProjectInstall)
+            string installScript = scriptBuilder.SetScript(ScriptType.ProjectInstall)
                 .WithOptions(options)
                 .AppendCloud(options.UseCloud)
                 .Build();
@@ -104,11 +110,14 @@ namespace Xperience.Xman.Commands
 
         private async Task InstallTemplate(InstallOptions options)
         {
-            if (StopProcessing) return;
+            if (StopProcessing)
+            {
+                return;
+            }
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Uninstalling previous template version...[/]");
 
-            var uninstallScript = scriptBuilder.SetScript(ScriptType.TemplateUninstall).Build();
+            string uninstallScript = scriptBuilder.SetScript(ScriptType.TemplateUninstall).Build();
             // Don't use base error handler for uninstall script as it throws when no templates are installed
             // Just skip uninstall step in case of error and try to continue
             var uninstallCmd = shellRunner.Execute(uninstallScript);
@@ -116,7 +125,7 @@ namespace Xperience.Xman.Commands
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Installing template version {options.Version}...[/]");
 
-            var installScript = scriptBuilder.SetScript(ScriptType.TemplateInstall)
+            string installScript = scriptBuilder.SetScript(ScriptType.TemplateInstall)
                 .WithOptions(options)
                 .AppendVersion(options.Version)
                 .Build();

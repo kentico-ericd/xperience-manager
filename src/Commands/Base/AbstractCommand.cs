@@ -7,15 +7,12 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public abstract class AbstractCommand : ICommand
     {
-        private readonly List<string> errors = new();
-
-
-        public List<string> Errors => errors;
+        public List<string> Errors { get; } = new();
 
 
         public bool StopProcessing { get; set; }
 
-        
+
         public abstract IEnumerable<string> Keywords { get; }
 
 
@@ -33,7 +30,7 @@ namespace Xperience.Xman.Commands
         /// </summary>
         protected void ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            if (!String.IsNullOrEmpty(e.Data))
+            if (!string.IsNullOrEmpty(e.Data))
             {
                 LogError(e.Data, sender as Process);
             }

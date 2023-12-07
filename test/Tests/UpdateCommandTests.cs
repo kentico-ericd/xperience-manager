@@ -16,7 +16,7 @@ namespace Xperience.Xman.Tests
     /// </summary>
     public class UpdateCommandTests
     {
-        private readonly Version version = new Version(1, 0, 0);
+        private readonly Version version = new(1, 0, 0);
         private readonly IShellRunner shellRunner = Substitute.For<IShellRunner>();
         private readonly IWizard<UpdateOptions> updateWizard = Substitute.For<IWizard<UpdateOptions>>();
 
@@ -56,7 +56,7 @@ namespace Xperience.Xman.Tests
             var command = new UpdateCommand(shellRunner, new ScriptBuilder(), updateWizard);
             await command.Execute(Array.Empty<string>());
 
-            var packageNames = new string[]
+            string[] packageNames = new string[]
             {
                 "kentico.xperience.admin",
                 "kentico.xperience.azurestorage",
@@ -67,7 +67,7 @@ namespace Xperience.Xman.Tests
             };
 
             shellRunner.Received().Execute("dotnet build", Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>());
-            foreach (var p in packageNames)
+            foreach (string p in packageNames)
             {
                 shellRunner.Received().Execute($"dotnet add package {p} --version {version}", Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>());
             }

@@ -14,7 +14,7 @@ namespace Xperience.Xman.Commands
         /// <summary>
         /// Workaround for circular dependency when commands are injected into this command.
         /// </summary>
-        private IEnumerable<ICommand> commands = new ICommand[]
+        private readonly IEnumerable<ICommand> commands = new ICommand[]
         {
             new InstallCommand(),
             new UpdateCommand(),
@@ -60,8 +60,8 @@ namespace Xperience.Xman.Commands
             foreach (var command in commands)
             {
                 table.AddRow(
-                    String.Join(", ", command.Keywords),
-                    String.Join(", ", command.Parameters),
+                    string.Join(", ", command.Keywords),
+                    string.Join(", ", command.Parameters),
                     command.Description);
             }
 

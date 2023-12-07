@@ -9,23 +9,16 @@ namespace Xperience.Xman.Wizards
     /// </summary>
     public abstract class AbstractWizard<TOptions> : IWizard<TOptions> where TOptions : IWizardOptions, new()
     {
-        private readonly TOptions options = new();
-        private readonly StepList steps = new();
+        public StepList Steps { get; } = new();
 
 
-        public StepList Steps => steps;
-
-
-        public TOptions Options => options;
+        public TOptions Options { get; } = new();
 
 
         /// <summary>
         /// Initializes the <see cref="Steps"/> by calling <see cref="InitSteps"/>.
         /// </summary>
-        public AbstractWizard()
-        {
-            InitSteps();
-        }
+        protected AbstractWizard() => InitSteps();
 
 
         public abstract void InitSteps();
@@ -35,10 +28,10 @@ namespace Xperience.Xman.Wizards
         {
             do
             {
-                await steps.Current.Execute();
-            } while (steps.Next());
+                await Steps.Current.Execute();
+            } while (Steps.Next());
 
-            return options;
+            return Options;
         }
     }
 }

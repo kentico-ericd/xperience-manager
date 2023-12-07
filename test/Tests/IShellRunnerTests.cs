@@ -19,7 +19,7 @@ namespace Xperience.Xman.Tests
         public void Execute_ErrorHandler_CapturesError()
         {
             var builder = new StringBuilder();
-            var invalidPackage = "PACKAGE_DOESNT_EXIST";
+            string invalidPackage = "PACKAGE_DOESNT_EXIST";
             var proc = shellRunner.Execute($"dotnet new install {invalidPackage}", errorHandler: (o, e) => builder.Append(e.Data));
             proc.WaitForExit();
 
@@ -35,7 +35,7 @@ namespace Xperience.Xman.Tests
         [Test]
         public void Execute_OutputHandler_ExitsProcess()
         {
-            var question = "How old";
+            string question = "How old";
             var proc = shellRunner.Execute($"Read-Host '{question}'", outputHandler: (o, e) =>
             {
                 var p = o as Process;

@@ -18,9 +18,7 @@ namespace Xperience.Xman.Tests
 
 
         [SetUp]
-        public void ContinuousIntegrationCommandTestsSetUp()
-        {
-            shellRunner
+        public void ContinuousIntegrationCommandTestsSetUp() => shellRunner
                 .Execute(Arg.Any<string>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>())
                 .Returns((x) =>
                 {
@@ -38,7 +36,6 @@ namespace Xperience.Xman.Tests
 
                     return cmd;
                 });
-        }
 
 
         [Test]

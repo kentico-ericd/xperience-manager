@@ -11,12 +11,12 @@ namespace Xperience.Xman.Wizards
     /// </summary>
     public class InstallWizard : AbstractWizard<InstallOptions>
     {
-        private readonly IEnumerable<string> TEMPLATES = new string[] {
+        private readonly IEnumerable<string> templates = new string[] {
             "kentico-xperience-sample-mvc",
             "kentico-xperience-mvc",
             "kentico-xperience-admin-sample"
         };
-        
+
 
         public override void InitSteps()
         {
@@ -39,7 +39,7 @@ namespace Xperience.Xman.Wizards
             Steps.Add(new Step<string>(
                 new SelectionPrompt<string>()
                     .Title("Which [green]template[/]?")
-                    .AddChoices(TEMPLATES),
+                    .AddChoices(templates),
                 (v) => Options.Template = v.ToString()));
 
             Steps.Add(new Step<string>(

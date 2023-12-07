@@ -67,14 +67,17 @@ namespace Xperience.Xman.Commands
 
         private async Task UpdatePackages(UpdateOptions options)
         {
-            foreach (var package in packageNames)
+            foreach (string package in packageNames)
             {
-                if (StopProcessing) return;
+                if (StopProcessing)
+                {
+                    return;
+                }
 
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Updating {package} to version {options.Version}...[/]");
 
                 options.PackageName = package;
-                var packageScript = scriptBuilder.SetScript(ScriptType.PackageUpdate).WithOptions(options).AppendVersion(options.Version).Build();
+                string packageScript = scriptBuilder.SetScript(ScriptType.PackageUpdate).WithOptions(options).AppendVersion(options.Version).Build();
                 await shellRunner.Execute(packageScript, ErrorDataReceived).WaitForExitAsync();
             }
         }
@@ -82,11 +85,14 @@ namespace Xperience.Xman.Commands
 
         private async Task BuildProject()
         {
-            if (StopProcessing) return;
+            if (StopProcessing)
+            {
+                return;
+            }
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Attempting to build the project...[/]");
 
-            var buildScript = scriptBuilder.SetScript(ScriptType.BuildProject).Build();
+            string buildScript = scriptBuilder.SetScript(ScriptType.BuildProject).Build();
             await shellRunner.Execute(buildScript, ErrorDataReceived).WaitForExitAsync();
         }
     }

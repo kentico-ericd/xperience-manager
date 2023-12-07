@@ -15,7 +15,7 @@ namespace Xperience.Xman.Commands
         private const string RESTORE = "restore";
         private readonly IShellRunner shellRunner;
         private readonly IScriptBuilder scriptBuilder;
-        
+
 
         public override IEnumerable<string> Keywords => new string[] { "ci" };
 
@@ -50,7 +50,7 @@ namespace Xperience.Xman.Commands
                 return;
             }
 
-            var action = args[1].ToLower();
+            string action = args[1].ToLower();
             if (!Parameters.Any(p => p.Equals(action, StringComparison.OrdinalIgnoreCase)))
             {
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Invalid parameter '{action}'[/]");
@@ -94,19 +94,25 @@ namespace Xperience.Xman.Commands
 
         private async Task StoreFiles(ProgressTask task)
         {
-            var ciScript = scriptBuilder.SetScript(ScriptType.StoreContinuousIntegration).Build();
+            string ciScript = scriptBuilder.SetScript(ScriptType.StoreContinuousIntegration).Build();
             await shellRunner.Execute(ciScript, ErrorDataReceived, (o, e) => {
                 if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false && e.Data.Any(char.IsDigit))
                 {
                     // Message is something like "Object type 1/84: Module"
-                    var progressMessage = e.Data.Split(':');
-                    if (progressMessage.Length == 0) return;
+                    string[] progressMessage = e.Data.Split(':');
+                    if (progressMessage.Length == 0)
+                    {
+                        return;
+                    }
 
-                    var progressNumbers = progressMessage[0].Split('/');
-                    if (progressNumbers.Length < 2) return;
+                    string[] progressNumbers = progressMessage[0].Split('/');
+                    if (progressNumbers.Length < 2)
+                    {
+                        return;
+                    }
 
-                    var progressCurrent = double.Parse(String.Join("", progressNumbers[0].Where(char.IsDigit)));
-                    var progressMax = double.Parse(String.Join("", progressNumbers[1].Where(char.IsDigit)));
+                    double progressCurrent = double.Parse(string.Join("", progressNumbers[0].Where(char.IsDigit)));
+                    double progressMax = double.Parse(string.Join("", progressNumbers[1].Where(char.IsDigit)));
 
                     task.MaxValue = progressMax;
                     task.Value = progressCurrent;
@@ -117,8 +123,8 @@ namespace Xperience.Xman.Commands
 
         private async Task RestoreFiles(ProgressTask task)
         {
-            var originalDescription = task.Description;
-            var ciScript = scriptBuilder.SetScript(ScriptType.RestoreContinuousIntegration).Build();
+            string originalDescription = task.Description;
+            string ciScript = scriptBuilder.SetScript(ScriptType.RestoreContinuousIntegration).Build();
             await shellRunner.Execute(ciScript, ErrorDataReceived, (o, e) =>
             {
                 if (e.Data?.Contains("The Continuous Integration repository is either not initialized or in an incorrect location on the file system.", StringComparison.OrdinalIgnoreCase) ?? false)
