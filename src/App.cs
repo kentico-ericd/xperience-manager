@@ -2,6 +2,7 @@ using Spectre.Console;
 
 using Xperience.Xman.Commands;
 using Xperience.Xman.Repositories;
+using Xperience.Xman.Services;
 
 namespace Xperience.Xman
 {
@@ -10,10 +11,15 @@ namespace Xperience.Xman
     /// </summary>
     public class App
     {
+        private readonly IConfigManager configManager;
         private readonly ICommandRepository commandRepository;
 
 
-        public App(ICommandRepository commandRepository) => this.commandRepository = commandRepository;
+        public App(IConfigManager configManager, ICommandRepository commandRepository)
+        {
+            this.configManager = configManager;
+            this.commandRepository = commandRepository;
+        }
 
 
         /// <summary>
@@ -21,6 +27,8 @@ namespace Xperience.Xman
         /// </summary>
         public async Task Run(string[] args)
         {
+            await configManager.EnsureConfigFile();
+
             string identifier = "help";
             if (args.Length > 0)
             {
@@ -36,21 +44,18 @@ namespace Xperience.Xman
             try
             {
                 await command.Execute(args);
+                if (command.Errors.Any())
+                {
+                    AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with errors:\n{string.Join("\n", command.Errors)}[/]");
+                }
+                else if (command is not HelpCommand and not ProfileCommand)
+                {
+                    AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Process complete![/]\n");
+                }
             }
             catch (Exception e)
             {
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with error:\n{e.Message}[/]");
-            }
-
-            if (command.Errors.Any())
-            {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with errors:\n{string.Join("\n", command.Errors)}[/]");
-                return;
-            }
-
-            if (command is not HelpCommand)
-            {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Process complete![/]");
             }
         }
     }

@@ -11,7 +11,14 @@ namespace Xperience.Xman.Tests
     public class IScriptBuilderTests
     {
         private readonly IScriptBuilder scriptBuilder = new ScriptBuilder();
-        private readonly InstallOptions validInstallOptions = new() { ServerName = "TESTSERVER" };
+        private readonly InstallOptions validInstallOptions = new()
+        {
+            ProjectName = "TEST",
+            AdminPassword = "PW",
+            DatabaseName = "DB",
+            ServerName = "TESTSERVER",
+            Template = "kentico-xperience-sample-mvc"
+        };
         private readonly UpdateOptions validUpdateOptions = new() { PackageName = "kentico.xperience.webapp" };
 
 
@@ -76,7 +83,6 @@ namespace Xperience.Xman.Tests
         [Test]
         public void DatabaseInstallScript_WithInvalidOptions_ThrowsException()
         {
-            // Default options has null value
             var options = new InstallOptions();
             var builder = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithOptions(options);
 

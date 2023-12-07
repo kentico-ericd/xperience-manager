@@ -40,7 +40,7 @@ namespace Xperience.Xman.Tests
             });
 
             shellRunner
-                .Execute(Arg.Any<string>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>())
+                .Execute(Arg.Any<ShellOptions>())
                 .Returns((x) =>
                 {
                     // Return dummy process
@@ -67,7 +67,7 @@ namespace Xperience.Xman.Tests
         [Test]
         public async Task Execute_CallsInstallationScripts()
         {
-            var command = new InstallCommand(shellRunner, new ScriptBuilder(), installWizard);
+            var command = new InstallCommand(shellRunner, new ScriptBuilder(), installWizard, Substitute.For<IConfigManager>());
             await command.Execute(Array.Empty<string>());
 
             string expectedProjectFileScript = $"dotnet new {TEMPLATE} -n {PROJECT_NAME}";
@@ -77,11 +77,10 @@ namespace Xperience.Xman.Tests
 
             Assert.Multiple(() =>
             {
-                Assert.That(File.Exists(Constants.CONFIG_FILENAME));
-                shellRunner.Received().Execute(expectedProjectFileScript, Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>());
-                shellRunner.Received().Execute(expectedUninstallScript, Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>());
-                shellRunner.Received().Execute(expectedTemplateScript, Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>());
-                shellRunner.Received().Execute(expectedDatabaseScript, Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>());
+                shellRunner.Received().Execute(Arg.Is<ShellOptions>(x => x.Script.Equals(expectedProjectFileScript)));
+                shellRunner.Received().Execute(Arg.Is<ShellOptions>(x => x.Script.Equals(expectedUninstallScript)));
+                shellRunner.Received().Execute(Arg.Is<ShellOptions>(x => x.Script.Equals(expectedTemplateScript)));
+                shellRunner.Received().Execute(Arg.Is<ShellOptions>(x => x.Script.Equals(expectedDatabaseScript)));
             });
         }
     }

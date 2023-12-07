@@ -5,6 +5,7 @@ using NUnit.Framework;
 using System.Diagnostics;
 
 using Xperience.Xman.Commands;
+using Xperience.Xman.Configuration;
 using Xperience.Xman.Services;
 
 namespace Xperience.Xman.Tests
@@ -15,11 +16,15 @@ namespace Xperience.Xman.Tests
     public class ContinuousIntegrationCommandTests
     {
         private readonly IShellRunner shellRunner = Substitute.For<IShellRunner>();
+        private readonly IConfigManager configManager = Substitute.For<IConfigManager>();
 
 
         [SetUp]
-        public void ContinuousIntegrationCommandTestsSetUp() => shellRunner
-                .Execute(Arg.Any<string>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>())
+        public void ContinuousIntegrationCommandTestsSetUp()
+        {
+            configManager.GetCurrentProfile().Returns(new Profile());
+            shellRunner
+                .Execute(Arg.Any<ShellOptions>())
                 .Returns((x) =>
                 {
                     // Return dummy process
@@ -36,25 +41,30 @@ namespace Xperience.Xman.Tests
 
                     return cmd;
                 });
+        }
 
 
         [Test]
         public async Task Execute_StoreParameter_CallsStoreScript()
         {
-            var command = new ContinuousIntegrationCommand(shellRunner, new ScriptBuilder());
+            var command = new ContinuousIntegrationCommand(shellRunner, new ScriptBuilder(), configManager);
             await command.Execute(new string[] { "ci", "store" });
 
-            shellRunner.Received().Execute("dotnet run --no-build --kxp-ci-store", Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>());
+            string expectedScript = "dotnet run --no-build --kxp-ci-store";
+
+            shellRunner.Received().Execute(Arg.Is<ShellOptions>(x => x.Script.Equals(expectedScript)));
         }
 
 
         [Test]
         public async Task Execute_RestoreParameter_CallsRestoreScript()
         {
-            var command = new ContinuousIntegrationCommand(shellRunner, new ScriptBuilder());
+            var command = new ContinuousIntegrationCommand(shellRunner, new ScriptBuilder(), configManager);
             await command.Execute(new string[] { "ci", "restore" });
 
-            shellRunner.Received().Execute("dotnet run --no-build --kxp-ci-restore", Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>());
+            string expectedScript = "dotnet run --no-build --kxp-ci-restore";
+
+            shellRunner.Received().Execute(Arg.Is<ShellOptions>(x => x.Script.Equals(expectedScript)));
         }
     }
 }

@@ -16,6 +16,7 @@ namespace Xperience.Xman.Commands
         /// </summary>
         private readonly IEnumerable<ICommand> commands = new ICommand[]
         {
+            new ProfileCommand(),
             new InstallCommand(),
             new UpdateCommand(),
             new ContinuousIntegrationCommand()
@@ -25,7 +26,7 @@ namespace Xperience.Xman.Commands
         public override IEnumerable<string> Keywords => new string[] { "?", "help" };
 
 
-        public override IEnumerable<string> Parameters => Array.Empty<string>();
+        public override IEnumerable<string> Parameters => Enumerable.Empty<string>();
 
 
         public override string Description => "Displays the help menu (this screen)";
@@ -43,12 +44,6 @@ namespace Xperience.Xman.Commands
             if (v is not null)
             {
                 AnsiConsole.WriteLine($" v{v.Major}.{v.Minor}.{v.Build}");
-
-                var latestVersion = await NuGetVersionHelper.GetLatestVersion("xperience.xman", v);
-                if (latestVersion is not null)
-                {
-                    AnsiConsole.MarkupInterpolated($" New version [{Constants.SUCCESS_COLOR}]{latestVersion}[/] available!\n");
-                }
             }
 
             AnsiConsole.MarkupInterpolated($" [{Constants.EMPHASIS_COLOR}]https://github.com/kentico-ericd/xperience-manager[/]\n");
@@ -67,6 +62,14 @@ namespace Xperience.Xman.Commands
 
             AnsiConsole.Write(table);
             AnsiConsole.WriteLine();
+            if (v is not null)
+            {
+                var latestVersion = await NuGetVersionHelper.GetLatestVersion("xperience.xman", v);
+                if (latestVersion is not null)
+                {
+                    AnsiConsole.MarkupInterpolated($" New version [{Constants.SUCCESS_COLOR}]{latestVersion}[/] available!\n\n");
+                }
+            }
         }
     }
 }

@@ -15,6 +15,7 @@ namespace Xperience.Xman.Commands
         private const string RESTORE = "restore";
         private readonly IShellRunner shellRunner;
         private readonly IScriptBuilder scriptBuilder;
+        private readonly IConfigManager configManager;
 
 
         public override IEnumerable<string> Keywords => new string[] { "ci" };
@@ -35,10 +36,11 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public ContinuousIntegrationCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder)
+        public ContinuousIntegrationCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder, IConfigManager configManager)
         {
             this.shellRunner = shellRunner;
             this.scriptBuilder = scriptBuilder;
+            this.configManager = configManager;
         }
 
 
@@ -46,16 +48,17 @@ namespace Xperience.Xman.Commands
         {
             if (args.Length < 2)
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Must provide 1 parameter from '{String.Join(", ", Parameters)}'[/]");
-                return;
+                throw new InvalidOperationException($"Must provide 1 parameter from '{string.Join(", ", Parameters)}'");
             }
 
             string action = args[1].ToLower();
             if (!Parameters.Any(p => p.Equals(action, StringComparison.OrdinalIgnoreCase)))
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Invalid parameter '{action}'[/]");
-                return;
+                throw new InvalidOperationException($"Invalid parameter '{action}'");
             }
+
+            var profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
+            PrintCurrentProfile(profile);
 
             if (action.Equals(STORE, StringComparison.OrdinalIgnoreCase))
             {
@@ -71,7 +74,7 @@ namespace Xperience.Xman.Commands
                     .StartAsync(async ctx =>
                     {
                         var task = ctx.AddTask($"[{Constants.EMPHASIS_COLOR}]Running the CI store script[/]");
-                        await StoreFiles(task);
+                        await StoreFiles(task, profile);
                     });
             }
             else if (action.Equals(RESTORE, StringComparison.OrdinalIgnoreCase))
@@ -86,56 +89,67 @@ namespace Xperience.Xman.Commands
                     .StartAsync(async ctx =>
                     {
                         var task = ctx.AddTask($"[{Constants.EMPHASIS_COLOR}]Running the CI restore script[/]");
-                        await RestoreFiles(task);
+                        await RestoreFiles(task, profile);
                     });
             }
         }
 
 
-        private async Task StoreFiles(ProgressTask task)
+        private async Task StoreFiles(ProgressTask task, Configuration.Profile profile)
         {
             string ciScript = scriptBuilder.SetScript(ScriptType.StoreContinuousIntegration).Build();
-            await shellRunner.Execute(ciScript, ErrorDataReceived, (o, e) => {
-                if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false && e.Data.Any(char.IsDigit))
+            await shellRunner.Execute(new(ciScript)
+            {
+                WorkingDirectory = profile.WorkingDirectory,
+                ErrorHandler = ErrorDataReceived,
+                OutputHandler = (o, e) =>
                 {
-                    // Message is something like "Object type 1/84: Module"
-                    string[] progressMessage = e.Data.Split(':');
-                    if (progressMessage.Length == 0)
+                    if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false && e.Data.Any(char.IsDigit))
                     {
-                        return;
+                        // Message is something like "Object type 1/84: Module"
+                        string[] progressMessage = e.Data.Split(':');
+                        if (progressMessage.Length == 0)
+                        {
+                            return;
+                        }
+
+                        string[] progressNumbers = progressMessage[0].Split('/');
+                        if (progressNumbers.Length < 2)
+                        {
+                            return;
+                        }
+
+                        double progressCurrent = double.Parse(string.Join("", progressNumbers[0].Where(char.IsDigit)));
+                        double progressMax = double.Parse(string.Join("", progressNumbers[1].Where(char.IsDigit)));
+
+                        task.MaxValue = progressMax;
+                        task.Value = progressCurrent;
                     }
-
-                    string[] progressNumbers = progressMessage[0].Split('/');
-                    if (progressNumbers.Length < 2)
-                    {
-                        return;
-                    }
-
-                    double progressCurrent = double.Parse(string.Join("", progressNumbers[0].Where(char.IsDigit)));
-                    double progressMax = double.Parse(string.Join("", progressNumbers[1].Where(char.IsDigit)));
-
-                    task.MaxValue = progressMax;
-                    task.Value = progressCurrent;
                 }
             }).WaitForExitAsync();
         }
 
 
-        private async Task RestoreFiles(ProgressTask task)
+        private async Task RestoreFiles(ProgressTask task, Configuration.Profile profile)
         {
             string originalDescription = task.Description;
             string ciScript = scriptBuilder.SetScript(ScriptType.RestoreContinuousIntegration).Build();
-            await shellRunner.Execute(ciScript, ErrorDataReceived, (o, e) =>
+            await shellRunner.Execute(new(ciScript)
             {
-                if (e.Data?.Contains("The Continuous Integration repository is either not initialized or in an incorrect location on the file system.", StringComparison.OrdinalIgnoreCase) ?? false)
+                WorkingDirectory = profile.WorkingDirectory,
+                ErrorHandler = ErrorDataReceived,
+                OutputHandler = (o, e) =>
                 {
-                    // Restore process couldn't find repository directory
-                    LogError("The restore process wasn't started because the Continuous Integration repository wasn't found.", o as Process);
-                }
-                else if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false)
-                {
-                    // Message is something like "Object type Module: updating Activities"
-                    task.Description = e.Data;
+                    if (e.Data?.Contains("The Continuous Integration repository is either not initialized or in an incorrect location on the file system.", StringComparison.OrdinalIgnoreCase) ?? false)
+                    {
+                        // Restore process couldn't find repository directory
+                        LogError("The restore process wasn't started because the Continuous Integration repository wasn't found.", o as Process);
+                    }
+                    else if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false)
+                    {
+                        // Message is something like "Object type Module: updating Activities"
+                        task.Description = e.Data;
+                    }
                 }
             }).WaitForExitAsync();
 

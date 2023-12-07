@@ -20,7 +20,7 @@ namespace Xperience.Xman.Tests
         {
             var builder = new StringBuilder();
             string invalidPackage = "PACKAGE_DOESNT_EXIST";
-            var proc = shellRunner.Execute($"dotnet new install {invalidPackage}", errorHandler: (o, e) => builder.Append(e.Data));
+            var proc = shellRunner.Execute(new($"dotnet new install {invalidPackage}") { ErrorHandler = (o, e) => builder.Append(e.Data) });
             proc.WaitForExit();
 
             Assert.Multiple(() =>
@@ -36,15 +36,19 @@ namespace Xperience.Xman.Tests
         public void Execute_OutputHandler_ExitsProcess()
         {
             string question = "How old";
-            var proc = shellRunner.Execute($"Read-Host '{question}'", outputHandler: (o, e) =>
+            var proc = shellRunner.Execute(new($"Read-Host '{question}'")
             {
-                var p = o as Process;
-                if (e.Data?.Contains(question) ?? false)
+                KeepOpen = true,
+                OutputHandler = (o, e) =>
                 {
-                    p?.StandardInput.WriteLine(42);
-                    p?.StandardInput.Close();
+                    var p = o as Process;
+                    if (e.Data?.Contains(question) ?? false)
+                    {
+                        p?.StandardInput.WriteLine(42);
+                        p?.StandardInput.Close();
+                    }
                 }
-            }, keepOpen: true);
+            });
             proc.WaitForExit();
 
             Assert.Multiple(() =>

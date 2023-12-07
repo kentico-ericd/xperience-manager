@@ -5,6 +5,7 @@ using NUnit.Framework;
 using System.Diagnostics;
 
 using Xperience.Xman.Commands;
+using Xperience.Xman.Configuration;
 using Xperience.Xman.Options;
 using Xperience.Xman.Services;
 using Xperience.Xman.Wizards;
@@ -18,19 +19,21 @@ namespace Xperience.Xman.Tests
     {
         private readonly Version version = new(1, 0, 0);
         private readonly IShellRunner shellRunner = Substitute.For<IShellRunner>();
+        private readonly IConfigManager configManager = Substitute.For<IConfigManager>();
         private readonly IWizard<UpdateOptions> updateWizard = Substitute.For<IWizard<UpdateOptions>>();
 
 
         [SetUp]
         public void UpdateCommandTestsSetUp()
         {
+            configManager.GetCurrentProfile().Returns(new Profile());
             updateWizard.Run().Returns(new UpdateOptions
             {
                 Version = version
             });
 
             shellRunner
-                .Execute(Arg.Any<string>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>())
+                .Execute(Arg.Any<ShellOptions>())
                 .Returns((x) =>
                 {
                     // Return dummy process
@@ -53,7 +56,7 @@ namespace Xperience.Xman.Tests
         [Test]
         public async Task Execute_CallsUpdateScripts()
         {
-            var command = new UpdateCommand(shellRunner, new ScriptBuilder(), updateWizard);
+            var command = new UpdateCommand(shellRunner, new ScriptBuilder(), updateWizard, configManager);
             await command.Execute(Array.Empty<string>());
 
             string[] packageNames = new string[]
@@ -66,10 +69,10 @@ namespace Xperience.Xman.Tests
                 "kentico.xperience.webapp"
             };
 
-            shellRunner.Received().Execute("dotnet build", Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>());
+            shellRunner.Received().Execute(Arg.Is<ShellOptions>(x => x.Script.Equals("dotnet build")));
             foreach (string p in packageNames)
             {
-                shellRunner.Received().Execute($"dotnet add package {p} --version {version}", Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>());
+                shellRunner.Received().Execute(Arg.Is<ShellOptions>(x => x.Script.Equals($"dotnet add package {p} --version {version}")));
             }
         }
     }
