@@ -23,51 +23,46 @@ Run the following command from a command prompt such as Powershell:
 dotnet tool update xperience.xman -g
 ```
 
+## Getting started
+
+This tool must be run from a parent directory containing one or more Xperience by Kentico projects, for example the C:\inetpub\wwwroot directory. When you [install](#installing-a-project-with-the-wizard) a new instance, a new profile is created in the `xman.config` file, allowing you to manage multiple installations without changing directory.
+
 ## Usage
 
 The following commands can be executed using the `xman` tool name:
 
 - `?`, `help`
+- `p`, `profile`
 - `i`, `install`
 - `u`, `update`
 - `ci store`, `ci restore`
 
-### Installing a project with the wizard
+### Changing profiles
 
-1. Create an empty directory in the location you wish to install Xperience by Kentico
-1. In a command prompt, navigate to the empty directory
+<img src="https://raw.githubusercontent.com/kentico-ericd/xperience-manager/master/img/profiles.png" width="350">
+
+Certain commands such as `update` are executed against the installation indicated by the current profile. The `profile` command shows you the current profile, and allows you to switch profiles. If you only have one profile, that is automatically selected.
+
+1. Run the `profile` command from the directory containing the `xman.json` file:
 
    ```bash
-   cd C:\inetpub\wwwroot\xbk
+   xman profile
    ```
 
-1. Run the `install` command which will begin the installation wizard:
+### Installing a project with the wizard
+
+1. Run the `install` command from the directory containing the `xman.json` file, which will begin the installation wizard:
 
    ```bash
    xman install
    ```
 
-### Installing a project with a configuration file
-
-Whenever you install a new project with the wizard, a `xman.json` file is automatically generated. When you run the `install` command, the wizard is skipped if the tool detects a `xman.json` file in the installation directory. You can also manually create the file before installation, e.g.:
-
-```json
-{
-    "AdminPassword": "test",
-    "DatabaseName": "xbk28",
-    "ProjectName": "xbk28",
-    "ServerName": "my-server",
-    "Template": "kentico-xperience-sample-mvc",
-    "UseCloud": false,
-    "Version": "28.0.0"
-}
-```
-
 ### Updating a project version
 
 Currently, there is a bug with updating the project's database version, so the tool only updates the NuGet packages and builds the project. However, the database update command is provided in the UI for easy copy-pasting.
 
-1. Run the `update` command from the Xperience by Kentico root directory which will begin the update wizard:
+1. (optional) Select a profile with the [`profile`](#changing-profiles) command
+1. Run the `update` command from the directory containing the `xman.json` file, which will begin the update wizard:
 
    ```bash
    xman update
@@ -75,7 +70,10 @@ Currently, there is a bug with updating the project's database version, so the t
 
 ### Running Continuous Integration
 
-You can use the `ci` command to serialize the database or restore the CI repository to the database:
+You can use the `ci` command to serialize the database or restore the CI repository to the database.
 
-- `xman ci store`
-- `xman ci restore`
+1. (optional) Select a profile with the [`profile`](#changing-profiles) command
+2. Run the desired command to begin the CI process:
+
+   - `xman ci store`
+   - `xman ci restore`
