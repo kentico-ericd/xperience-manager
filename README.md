@@ -51,6 +51,20 @@ Certain commands such as `update` are executed against the installation indicate
 
 ### Installing a project with the wizard
 
+This command installs a new Xperience by Kentico project in a subfolder of the current directory. The name of the profile and subfolder are determined by the __Project name__ entered during installation. The `xman.json` file contains default installation options, which you may edit to speed up the installation of new instances. For example:
+
+```json
+"DefaultInstallOptions": {
+   "AdminPassword": "mypassword",
+   "DatabaseName": "mycompany",
+   "ProjectName": "mysite",
+   "ServerName": "company-server",
+   "Template": "kentico-xperience-sample-mvc",
+   "UseCloud": true,
+   "Version": null //Version cannot have a default value
+},
+```
+
 1. Run the `install` command from the directory containing the `xman.json` file, which will begin the installation wizard:
 
    ```bash
