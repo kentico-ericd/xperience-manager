@@ -4,7 +4,7 @@ namespace Xperience.Xman.Services
 {
     public class ShellRunner : IShellRunner
     {
-        public Process Execute(string script, DataReceivedEventHandler? errorHandler = null, DataReceivedEventHandler? outputHandler = null, bool keepOpen = false)
+        public Process Execute(ShellOptions options)
         {
             Process cmd = new();
             cmd.StartInfo.FileName = "powershell.exe";
@@ -12,34 +12,39 @@ namespace Xperience.Xman.Services
             cmd.StartInfo.RedirectStandardInput = true;
             cmd.StartInfo.CreateNoWindow = true;
             cmd.StartInfo.UseShellExecute = false;
-            if (errorHandler is not null)
+            if (!string.IsNullOrEmpty(options.WorkingDirectory))
+            {
+                cmd.StartInfo.WorkingDirectory = options.WorkingDirectory;
+            }
+
+            if (options.ErrorHandler is not null)
             {
                 cmd.StartInfo.RedirectStandardError = true;
                 cmd.EnableRaisingEvents = true;
-                cmd.ErrorDataReceived += errorHandler;
+                cmd.ErrorDataReceived += options.ErrorHandler;
             }
 
-            if (outputHandler is not null)
+            if (options.OutputHandler is not null)
             {
                 cmd.StartInfo.RedirectStandardOutput = true;
-                cmd.OutputDataReceived += outputHandler;
+                cmd.OutputDataReceived += options.OutputHandler;
             }
 
             cmd.Start();
 
-            if (errorHandler is not null)
+            if (options.ErrorHandler is not null)
             {
                 cmd.BeginErrorReadLine();
             }
 
-            if (outputHandler is not null)
+            if (options.OutputHandler is not null)
             {
                 cmd.BeginOutputReadLine();
             }
 
             cmd.StandardInput.AutoFlush = true;
-            cmd.StandardInput.WriteLine(script);
-            if (!keepOpen)
+            cmd.StandardInput.WriteLine(options.Script);
+            if (!options.KeepOpen)
             {
                 cmd.StandardInput.Close();
             }

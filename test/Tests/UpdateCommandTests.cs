@@ -30,7 +30,7 @@ namespace Xperience.Xman.Tests
             });
 
             shellRunner
-                .Execute(Arg.Any<string>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>())
+                .Execute(Arg.Any<ShellOptions>())
                 .Returns((x) =>
                 {
                     // Return dummy process
@@ -66,10 +66,10 @@ namespace Xperience.Xman.Tests
                 "kentico.xperience.webapp"
             };
 
-            shellRunner.Received().Execute("dotnet build", Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>());
+            shellRunner.Received().Execute(Arg.Is<ShellOptions>(x => x.Script.Equals("dotnet build")));
             foreach (string p in packageNames)
             {
-                shellRunner.Received().Execute($"dotnet add package {p} --version {version}", Arg.Any<DataReceivedEventHandler>(), Arg.Any<DataReceivedEventHandler>(), Arg.Any<bool>());
+                shellRunner.Received().Execute(Arg.Is<ShellOptions>(x => x.Script.Equals($"dotnet add package {p} --version {version}")));
             }
         }
     }

@@ -46,7 +46,7 @@ namespace Xperience.Xman.Commands
         {
             if (args.Length < 2)
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Must provide 1 parameter from '{String.Join(", ", Parameters)}'[/]");
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Must provide 1 parameter from '{string.Join(", ", Parameters)}'[/]");
                 return;
             }
 
@@ -94,28 +94,34 @@ namespace Xperience.Xman.Commands
 
         private async Task StoreFiles(ProgressTask task)
         {
+            // TODO: Set working directory
             string ciScript = scriptBuilder.SetScript(ScriptType.StoreContinuousIntegration).Build();
-            await shellRunner.Execute(ciScript, ErrorDataReceived, (o, e) => {
-                if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false && e.Data.Any(char.IsDigit))
+            await shellRunner.Execute(new(ciScript)
+            {
+                ErrorHandler = ErrorDataReceived,
+                OutputHandler = (o, e) =>
                 {
-                    // Message is something like "Object type 1/84: Module"
-                    string[] progressMessage = e.Data.Split(':');
-                    if (progressMessage.Length == 0)
+                    if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false && e.Data.Any(char.IsDigit))
                     {
-                        return;
+                        // Message is something like "Object type 1/84: Module"
+                        string[] progressMessage = e.Data.Split(':');
+                        if (progressMessage.Length == 0)
+                        {
+                            return;
+                        }
+
+                        string[] progressNumbers = progressMessage[0].Split('/');
+                        if (progressNumbers.Length < 2)
+                        {
+                            return;
+                        }
+
+                        double progressCurrent = double.Parse(string.Join("", progressNumbers[0].Where(char.IsDigit)));
+                        double progressMax = double.Parse(string.Join("", progressNumbers[1].Where(char.IsDigit)));
+
+                        task.MaxValue = progressMax;
+                        task.Value = progressCurrent;
                     }
-
-                    string[] progressNumbers = progressMessage[0].Split('/');
-                    if (progressNumbers.Length < 2)
-                    {
-                        return;
-                    }
-
-                    double progressCurrent = double.Parse(string.Join("", progressNumbers[0].Where(char.IsDigit)));
-                    double progressMax = double.Parse(string.Join("", progressNumbers[1].Where(char.IsDigit)));
-
-                    task.MaxValue = progressMax;
-                    task.Value = progressCurrent;
                 }
             }).WaitForExitAsync();
         }
@@ -123,19 +129,24 @@ namespace Xperience.Xman.Commands
 
         private async Task RestoreFiles(ProgressTask task)
         {
+            // TODO: Set working directory
             string originalDescription = task.Description;
             string ciScript = scriptBuilder.SetScript(ScriptType.RestoreContinuousIntegration).Build();
-            await shellRunner.Execute(ciScript, ErrorDataReceived, (o, e) =>
+            await shellRunner.Execute(new(ciScript)
             {
-                if (e.Data?.Contains("The Continuous Integration repository is either not initialized or in an incorrect location on the file system.", StringComparison.OrdinalIgnoreCase) ?? false)
+                ErrorHandler = ErrorDataReceived,
+                OutputHandler = (o, e) =>
                 {
-                    // Restore process couldn't find repository directory
-                    LogError("The restore process wasn't started because the Continuous Integration repository wasn't found.", o as Process);
-                }
-                else if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false)
-                {
-                    // Message is something like "Object type Module: updating Activities"
-                    task.Description = e.Data;
+                    if (e.Data?.Contains("The Continuous Integration repository is either not initialized or in an incorrect location on the file system.", StringComparison.OrdinalIgnoreCase) ?? false)
+                    {
+                        // Restore process couldn't find repository directory
+                        LogError("The restore process wasn't started because the Continuous Integration repository wasn't found.", o as Process);
+                    }
+                    else if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false)
+                    {
+                        // Message is something like "Object type Module: updating Activities"
+                        task.Description = e.Data;
+                    }
                 }
             }).WaitForExitAsync();
 

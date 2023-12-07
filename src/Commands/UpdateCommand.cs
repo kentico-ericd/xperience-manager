@@ -67,6 +67,7 @@ namespace Xperience.Xman.Commands
 
         private async Task UpdatePackages(UpdateOptions options)
         {
+            // TODO: Set working directory
             foreach (string package in packageNames)
             {
                 if (StopProcessing)
@@ -78,13 +79,14 @@ namespace Xperience.Xman.Commands
 
                 options.PackageName = package;
                 string packageScript = scriptBuilder.SetScript(ScriptType.PackageUpdate).WithOptions(options).AppendVersion(options.Version).Build();
-                await shellRunner.Execute(packageScript, ErrorDataReceived).WaitForExitAsync();
+                await shellRunner.Execute(new(packageScript) { ErrorHandler = ErrorDataReceived }).WaitForExitAsync();
             }
         }
 
 
         private async Task BuildProject()
         {
+            // TODO: Set working directory
             if (StopProcessing)
             {
                 return;
@@ -93,7 +95,7 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Attempting to build the project...[/]");
 
             string buildScript = scriptBuilder.SetScript(ScriptType.BuildProject).Build();
-            await shellRunner.Execute(buildScript, ErrorDataReceived).WaitForExitAsync();
+            await shellRunner.Execute(new(buildScript) { ErrorHandler = ErrorDataReceived }).WaitForExitAsync();
         }
     }
 }

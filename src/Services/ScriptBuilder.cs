@@ -4,9 +4,11 @@ namespace Xperience.Xman.Services
 {
     public class ScriptBuilder : IScriptBuilder
     {
-        private string currentScript = string.Empty;
         private ScriptType currentScriptType;
+        private string currentScript = string.Empty;
+
         private const string BUILD_SCRIPT = "dotnet build";
+        private const string MKDIR_SCRIPT = $"mkdir {nameof(InstallOptions.ProjectName)}";
         private const string INSTALL_PROJECT_SCRIPT = $"dotnet new {nameof(InstallOptions.Template)} -n {nameof(InstallOptions.ProjectName)}";
         private const string INSTALL_DATABASE_SCRIPT = $"dotnet kentico-xperience-dbmanager -- -s \"{nameof(InstallOptions.ServerName)}\" -d \"{nameof(InstallOptions.DatabaseName)}\" -a \"{nameof(InstallOptions.AdminPassword)}\"";
         private const string UNINSTALL_TEMPLATE_SCRIPT = "dotnet new uninstall kentico.xperience.templates";
@@ -86,6 +88,7 @@ namespace Xperience.Xman.Services
             currentScript = type switch
             {
                 ScriptType.BuildProject => BUILD_SCRIPT,
+                ScriptType.CreateDirectory => MKDIR_SCRIPT,
                 ScriptType.ProjectInstall => INSTALL_PROJECT_SCRIPT,
                 ScriptType.DatabaseInstall => INSTALL_DATABASE_SCRIPT,
                 ScriptType.TemplateUninstall => UNINSTALL_TEMPLATE_SCRIPT,
@@ -170,6 +173,12 @@ namespace Xperience.Xman.Services
         /// <summary>
         /// The script which restores Continuous Intgeration data to the database.
         /// </summary>
-        RestoreContinuousIntegration
+        RestoreContinuousIntegration,
+
+
+        /// <summary>
+        /// The script which creates a new directory.
+        /// </summary>
+        CreateDirectory,
     }
 }
