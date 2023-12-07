@@ -7,6 +7,9 @@ using Xperience.Xman.Services;
 
 namespace Xperience.Xman.Tests
 {
+    /// <summary>
+    /// Tests for <see cref="IShellRunner"/>.
+    /// </summary>
     public class IShellRunnerTests
     {
         private readonly IShellRunner shellRunner = new ShellRunner();
@@ -20,9 +23,12 @@ namespace Xperience.Xman.Tests
             var proc = shellRunner.Execute($"dotnet new install {invalidPackage}", errorHandler: (o, e) => builder.Append(e.Data));
             proc.WaitForExit();
 
-            Assert.That(proc.HasExited);
-            Assert.That(proc.StartInfo.RedirectStandardError);
-            Assert.That(builder.ToString(), Contains.Substring($"{invalidPackage} could not be installed, the package does not exist"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(proc.HasExited);
+                Assert.That(proc.StartInfo.RedirectStandardError);
+                Assert.That(builder.ToString(), Contains.Substring($"{invalidPackage} could not be installed, the package does not exist"));
+            });
         }
 
 
@@ -41,8 +47,11 @@ namespace Xperience.Xman.Tests
             }, keepOpen: true);
             proc.WaitForExit();
 
-            Assert.That(proc.HasExited);
-            Assert.That(proc.StartInfo.RedirectStandardOutput);
+            Assert.Multiple(() =>
+            {
+                Assert.That(proc.HasExited);
+                Assert.That(proc.StartInfo.RedirectStandardOutput);
+            });
         }
     }
 }

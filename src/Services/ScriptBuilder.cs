@@ -6,15 +6,15 @@ namespace Xperience.Xman.Services
     {
         private string currentScript = String.Empty;
         private ScriptType currentScriptType;
-        private const string BUILD_SCRIPT = $"dotnet build";
+        private const string BUILD_SCRIPT = "dotnet build";
         private const string INSTALL_PROJECT_SCRIPT = $"dotnet new {nameof(InstallOptions.Template)} -n {nameof(InstallOptions.ProjectName)}";
         private const string INSTALL_DATABASE_SCRIPT = $"dotnet kentico-xperience-dbmanager -- -s \"{nameof(InstallOptions.ServerName)}\" -d \"{nameof(InstallOptions.DatabaseName)}\" -a \"{nameof(InstallOptions.AdminPassword)}\"";
         private const string UNINSTALL_TEMPLATE_SCRIPT = "dotnet new uninstall kentico.xperience.templates";
         private const string INSTALL_TEMPLATE_SCRIPT = "dotnet new install kentico.xperience.templates";
         private const string UPDATE_PACKAGE_SCRIPT = $"dotnet add package {nameof(UpdateOptions.PackageName)}";
-        private const string UPDATE_DATABASE_SCRIPT = $"dotnet run --no-build --kxp-update";
-        private const string CI_STORE_SCRIPT = $"dotnet run --no-build --kxp-ci-store";
-        private const string CI_RESTORE_SCRIPT = $"dotnet run --no-build --kxp-ci-restore";
+        private const string UPDATE_DATABASE_SCRIPT = "dotnet run --no-build --kxp-update";
+        private const string CI_STORE_SCRIPT = "dotnet run --no-build --kxp-ci-store";
+        private const string CI_RESTORE_SCRIPT = "dotnet run --no-build --kxp-ci-restore";
 
 
         public string Build()
