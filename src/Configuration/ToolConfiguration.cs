@@ -8,6 +8,12 @@ namespace Xperience.Xman.Configuration
     public class ToolConfiguration
     {
         /// <summary>
+        /// The version of the dotnet tool that last managed this configuration.
+        /// </summary>
+        public Version? Version { get; set; }
+
+
+        /// <summary>
         /// The registered profiles found in the configuration file.
         /// </summary>
         public List<Profile> Profiles { get; set; } = new();

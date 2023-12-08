@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Reflection;
+
+using Newtonsoft.Json;
 
 using Xperience.Xman.Configuration;
 using Xperience.Xman.Options;
@@ -85,8 +87,11 @@ namespace Xperience.Xman.Services
                 return Task.CompletedTask;
             }
 
+            var currentVersion = Assembly.GetExecutingAssembly().GetName().Version ?? throw new InvalidOperationException("The tool version couldn't be retrieved.");
+
             return WriteConfig(new ToolConfiguration
             {
+                Version = currentVersion,
                 DefaultInstallOptions = new()
             });
         }
