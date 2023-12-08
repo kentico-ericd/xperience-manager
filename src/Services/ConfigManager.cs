@@ -5,6 +5,7 @@ using Xperience.Xman.Options;
 
 namespace Xperience.Xman.Services
 {
+    // TODO: Store config in memory
     public class ConfigManager : IConfigManager
     {
         public async Task AddProfile(Profile profile)
@@ -35,12 +36,22 @@ namespace Xperience.Xman.Services
         public async Task<Profile?> GetCurrentProfile()
         {
             var config = await GetConfig();
-            if (string.IsNullOrEmpty(config.CurrentProfile) && config.Profiles.Count == 1)
+            var match = config.Profiles.FirstOrDefault(p => p.ProjectName?.Equals(config.CurrentProfile, StringComparison.OrdinalIgnoreCase) ?? false);
+            if (config.Profiles.Count == 1 &&
+                (string.IsNullOrEmpty(config.CurrentProfile) || match is null))
             {
-                return config.Profiles.First();
+                // There's only 1 profile and there was no value stored in config, or non-matching value
+                // Select the only profile and save it in the config
+                var profile = config.Profiles.FirstOrDefault();
+                if (profile is not null)
+                {
+                    await TrySetCurrentProfile(profile.ProjectName ?? string.Empty);
+
+                    return profile;
+                }
             }
 
-            return config.Profiles.FirstOrDefault(p => p.ProjectName?.Equals(config.CurrentProfile, StringComparison.OrdinalIgnoreCase) ?? false);
+            return match;
         }
 
 
@@ -77,6 +88,26 @@ namespace Xperience.Xman.Services
             var config = await GetConfig();
 
             return config.DefaultInstallOptions ?? new();
+        }
+
+
+        public async Task RemoveProfile(string name)
+        {
+            var config = await GetConfig();
+
+            // For some reason Profiles.Remove() didn't work, make a new list
+            var newProfiles = new List<Profile>();
+            foreach (var p in config.Profiles)
+            {
+                if (!p.ProjectName?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? true)
+                {
+                    newProfiles.Add(p);
+                }
+            }
+
+            config.Profiles = newProfiles;
+
+            await WriteConfig(config);
         }
 
 

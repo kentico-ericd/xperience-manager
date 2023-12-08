@@ -41,6 +41,12 @@ namespace Xperience.Xman.Services
 
 
         /// <summary>
+        /// Removes a profile to the <see cref="ToolConfiguration.Profiles"/>.
+        /// </summary>
+        public Task RemoveProfile(string name);
+
+
+        /// <summary>
         /// Sets the currently active profile.
         /// </summary>
         /// <returns><c>True</c> if a profile was loaded and set.</returns>

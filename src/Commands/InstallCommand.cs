@@ -66,7 +66,7 @@ namespace Xperience.Xman.Commands
         {
             if (options is null)
             {
-                throw new InvalidOperationException("The installation options weren't foundy.");
+                throw new InvalidOperationException("The installation options weren't found.");
             }
 
             await CreateWorkingDirectory(options);
