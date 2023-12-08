@@ -19,23 +19,28 @@ namespace Xperience.Xman.Services
         public async Task<bool> TrySetCurrentProfile(string profileName)
         {
             var config = await GetConfig();
-            config.CurrentProfile = config.Profiles.FirstOrDefault(p => p.ProjectName?.Equals(profileName, StringComparison.OrdinalIgnoreCase) ?? false);
+            var match = config.Profiles.FirstOrDefault(p => p.ProjectName?.Equals(profileName, StringComparison.OrdinalIgnoreCase) ?? false);
+            if (match is null)
+            {
+                return false;
+            }
 
+            config.CurrentProfile = profileName;
             await WriteConfig(config);
 
-            return config.CurrentProfile is not null;
+            return true;
         }
 
 
         public async Task<Profile?> GetCurrentProfile()
         {
             var config = await GetConfig();
-            if (config.CurrentProfile is null && config.Profiles.Count == 1)
+            if (string.IsNullOrEmpty(config.CurrentProfile) && config.Profiles.Count == 1)
             {
-                config.CurrentProfile = config.Profiles.First();
+                return config.Profiles.First();
             }
 
-            return config.CurrentProfile;
+            return config.Profiles.FirstOrDefault(p => p.ProjectName?.Equals(config.CurrentProfile, StringComparison.OrdinalIgnoreCase) ?? false);
         }
 
 

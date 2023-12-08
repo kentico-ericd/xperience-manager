@@ -14,9 +14,9 @@ namespace Xperience.Xman.Configuration
 
 
         /// <summary>
-        /// The currently active profile as stored in the configuration file.
+        /// The currently active profile name as stored in the configuration file.
         /// </summary>
-        public Profile? CurrentProfile { get; set; }
+        public string? CurrentProfile { get; set; }
 
 
         /// <summary>

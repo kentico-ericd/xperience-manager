@@ -11,6 +11,8 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class ContinuousIntegrationCommand : AbstractCommand
     {
+        private string? actionName;
+        private Configuration.Profile? profile;
         private const string STORE = "store";
         private const string RESTORE = "restore";
         private readonly IShellRunner shellRunner;
@@ -44,23 +46,34 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task Execute(string[] args)
+        public override async Task PreExecute(string[] args)
         {
             if (args.Length < 2)
             {
                 throw new InvalidOperationException($"Must provide 1 parameter from '{string.Join(", ", Parameters)}'");
             }
 
-            string action = args[1].ToLower();
-            if (!Parameters.Any(p => p.Equals(action, StringComparison.OrdinalIgnoreCase)))
+            actionName = args[1].ToLower();
+            if (!Parameters.Any(p => p.Equals(actionName, StringComparison.OrdinalIgnoreCase)))
             {
-                throw new InvalidOperationException($"Invalid parameter '{action}'");
+                throw new InvalidOperationException($"Invalid parameter '{actionName}'");
             }
 
-            var profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
+            profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
             PrintCurrentProfile(profile);
 
-            if (action.Equals(STORE, StringComparison.OrdinalIgnoreCase))
+            await base.PreExecute(args);
+        }
+
+
+        public override async Task Execute(string[] args)
+        {
+            if (profile is null)
+            {
+                return;
+            }
+
+            if (actionName?.Equals(STORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await AnsiConsole.Progress()
                     .Columns(new ProgressColumn[]
@@ -77,7 +90,7 @@ namespace Xperience.Xman.Commands
                         await StoreFiles(task, profile);
                     });
             }
-            else if (action.Equals(RESTORE, StringComparison.OrdinalIgnoreCase))
+            else if (actionName?.Equals(RESTORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await AnsiConsole.Progress()
                     .Columns(new ProgressColumn[]
@@ -92,6 +105,17 @@ namespace Xperience.Xman.Commands
                         await RestoreFiles(task, profile);
                     });
             }
+        }
+
+
+        public override async Task PostExecute(string[] args)
+        {
+            if (!Errors.Any())
+            {
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]CI {actionName ?? "process"} complete![/]\n");
+            }
+
+            await base.PostExecute(args);
         }
 
 

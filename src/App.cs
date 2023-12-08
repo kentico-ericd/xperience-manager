@@ -1,6 +1,5 @@
 using Spectre.Console;
 
-using Xperience.Xman.Commands;
 using Xperience.Xman.Repositories;
 using Xperience.Xman.Services;
 
@@ -43,14 +42,20 @@ namespace Xperience.Xman
 
             try
             {
-                await command.Execute(args);
+                await command.PreExecute(args);
+                if (!command.StopProcessing)
+                {
+                    await command.Execute(args);
+                }
+
+                if (!command.StopProcessing)
+                {
+                    await command.PostExecute(args);
+                }
+
                 if (command.Errors.Any())
                 {
                     AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with errors:\n{string.Join("\n", command.Errors)}[/]");
-                }
-                else if (command is not HelpCommand and not ProfileCommand)
-                {
-                    AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Process complete![/]\n");
                 }
             }
             catch (Exception e)

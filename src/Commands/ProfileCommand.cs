@@ -1,11 +1,13 @@
 ﻿using Spectre.Console;
 
+using Xperience.Xman.Configuration;
 using Xperience.Xman.Services;
 
 namespace Xperience.Xman.Commands
 {
     public class ProfileCommand : AbstractCommand
     {
+        private ToolConfiguration? config;
         private readonly IConfigManager configManager;
 
 
@@ -30,17 +32,33 @@ namespace Xperience.Xman.Commands
         public ProfileCommand(IConfigManager configManager) => this.configManager = configManager;
 
 
-        public override async Task Execute(string[] args)
+        public override async Task PreExecute(string[] args)
         {
-            var config = await configManager.GetConfig();
+            config = await configManager.GetConfig();
             if (!config.Profiles.Any())
             {
                 AnsiConsole.MarkupLineInterpolated($"There are no registered profiles. Install a new instance with [{Constants.SUCCESS_COLOR}]xman i[/] to add a profile.\n");
+                StopProcessing = true;
                 return;
             }
 
-            var currentProfile = await configManager.GetCurrentProfile();
-            PrintCurrentProfile(currentProfile);
+            var profile = await configManager.GetCurrentProfile();
+            PrintCurrentProfile(profile);
+
+            if (config.Profiles.Count == 1)
+            {
+                AnsiConsole.WriteLine("You're currently using the only registered profile.");
+                StopProcessing = true;
+            }
+        }
+
+
+        public override async Task Execute(string[] args)
+        {
+            if (config is null)
+            {
+                throw new InvalidOperationException("Tool configuration couldn't be loaded.");
+            }
 
             var prompt = new SelectionPrompt<string>()
                     .Title("Switch to profile:")

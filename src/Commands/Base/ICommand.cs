@@ -36,9 +36,21 @@ namespace Xperience.Xman.Commands
 
 
         /// <summary>
-        /// Executes the command.
+        /// Runs before <see cref="Execute"/>.
+        /// </summary>
+        public Task PreExecute(string[] args);
+
+
+        /// <summary>
+        /// Executes the command if <see cref="StopProcessing"/> is <c>false</c>.
         /// </summary>
         /// <param name="args">The arguments provided by the user.</param>
         public Task Execute(string[] args);
+
+
+        /// <summary>
+        /// Runs after <see cref="Execute"/> if <see cref="StopProcessing"/> is <c>false</c>.
+        /// </summary>
+        public Task PostExecute(string[] args);
     }
 }

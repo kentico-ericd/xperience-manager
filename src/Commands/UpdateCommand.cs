@@ -12,6 +12,8 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class UpdateCommand : AbstractCommand
     {
+        private UpdateOptions? options;
+        private Configuration.Profile? profile;
         private readonly IShellRunner shellRunner;
         private readonly IScriptBuilder scriptBuilder;
         private readonly IWizard<UpdateOptions> wizard;
@@ -54,19 +56,40 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task Execute(string[] args)
+        public override async Task PreExecute(string[] args)
         {
-            var profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
+            profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
             PrintCurrentProfile(profile);
 
-            var options = await wizard.Run();
+            options = await wizard.Run();
 
             AnsiConsole.WriteLine();
+        }
+
+
+        public override async Task Execute(string[] args)
+        {
+            if (options is null || profile is null)
+            {
+                throw new InvalidOperationException("");
+            }
+
             await UpdatePackages(options, profile);
             await BuildProject(profile);
             // There is currently an issue running the database update script while emulating the ReadKey() input
             // for the script's "Do you want to continue" prompt. The update command must be run manually.
-            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Unfortunately, the database cannot be updated at this time. Please run the 'dotnet run --no-build --kxp-update' command manually.[/]");
+            AnsiConsole.MarkupLineInterpolated($"Unfortunately, the database cannot be updated at this time. Please run the [{Constants.SUCCESS_COLOR}]'dotnet run --no-build --kxp-update'[/] command manually.");
+        }
+
+
+        public override async Task PostExecute(string[] args)
+        {
+            if (!Errors.Any())
+            {
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Update complete![/]\n");
+            }
+
+            await base.PostExecute(args);
         }
 
 

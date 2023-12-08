@@ -24,7 +24,13 @@ namespace Xperience.Xman.Commands
         public abstract string Description { get; }
 
 
+        public virtual Task PreExecute(string[] args) => Task.CompletedTask;
+
+
         public abstract Task Execute(string[] args);
+
+
+        public virtual Task PostExecute(string[] args) => Task.CompletedTask;
 
 
         /// <summary>

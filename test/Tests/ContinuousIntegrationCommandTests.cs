@@ -47,8 +47,10 @@ namespace Xperience.Xman.Tests
         [Test]
         public async Task Execute_StoreParameter_CallsStoreScript()
         {
+            string[] args = new string[] { "ci", "store" };
             var command = new ContinuousIntegrationCommand(shellRunner, new ScriptBuilder(), configManager);
-            await command.Execute(new string[] { "ci", "store" });
+            await command.PreExecute(args);
+            await command.Execute(args);
 
             string expectedScript = "dotnet run --no-build --kxp-ci-store";
 
@@ -59,8 +61,10 @@ namespace Xperience.Xman.Tests
         [Test]
         public async Task Execute_RestoreParameter_CallsRestoreScript()
         {
+            string[] args = new string[] { "ci", "restore" };
             var command = new ContinuousIntegrationCommand(shellRunner, new ScriptBuilder(), configManager);
-            await command.Execute(new string[] { "ci", "restore" });
+            await command.PreExecute(args);
+            await command.Execute(args);
 
             string expectedScript = "dotnet run --no-build --kxp-ci-restore";
 
