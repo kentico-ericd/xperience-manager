@@ -49,7 +49,7 @@ Certain commands such as `update` are executed against the installation indicate
    xman profile
    ```
 
-### Installing a project with the wizard
+### Installing a new project
 
 This command installs a new Xperience by Kentico project in a subfolder of the current directory. The name of the profile and subfolder are determined by the __Project name__ entered during installation. The `xman.json` file contains default installation options, which you may edit to speed up the installation of new instances. For example:
 
