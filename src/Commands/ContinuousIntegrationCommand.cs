@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 
+using Xperience.Xman.Configuration;
 using Xperience.Xman.Services;
 
 namespace Xperience.Xman.Commands
@@ -11,6 +12,8 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class ContinuousIntegrationCommand : AbstractCommand
     {
+        private string? actionName;
+        private ToolProfile? profile;
         private const string STORE = "store";
         private const string RESTORE = "restore";
         private readonly IShellRunner shellRunner;
@@ -44,23 +47,34 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task Execute(string[] args)
+        public override async Task PreExecute(string[] args)
         {
             if (args.Length < 2)
             {
                 throw new InvalidOperationException($"Must provide 1 parameter from '{string.Join(", ", Parameters)}'");
             }
 
-            string action = args[1].ToLower();
-            if (!Parameters.Any(p => p.Equals(action, StringComparison.OrdinalIgnoreCase)))
+            actionName = args[1].ToLower();
+            if (!Parameters.Any(p => p.Equals(actionName, StringComparison.OrdinalIgnoreCase)))
             {
-                throw new InvalidOperationException($"Invalid parameter '{action}'");
+                throw new InvalidOperationException($"Invalid parameter '{actionName}'");
             }
 
-            var profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
+            profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
             PrintCurrentProfile(profile);
 
-            if (action.Equals(STORE, StringComparison.OrdinalIgnoreCase))
+            await base.PreExecute(args);
+        }
+
+
+        public override async Task Execute(string[] args)
+        {
+            if (profile is null)
+            {
+                return;
+            }
+
+            if (actionName?.Equals(STORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await AnsiConsole.Progress()
                     .Columns(new ProgressColumn[]
@@ -77,7 +91,7 @@ namespace Xperience.Xman.Commands
                         await StoreFiles(task, profile);
                     });
             }
-            else if (action.Equals(RESTORE, StringComparison.OrdinalIgnoreCase))
+            else if (actionName?.Equals(RESTORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await AnsiConsole.Progress()
                     .Columns(new ProgressColumn[]
@@ -95,7 +109,18 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task StoreFiles(ProgressTask task, Configuration.Profile profile)
+        public override async Task PostExecute(string[] args)
+        {
+            if (!Errors.Any())
+            {
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]CI {actionName ?? "process"} complete![/]\n");
+            }
+
+            await base.PostExecute(args);
+        }
+
+
+        private async Task StoreFiles(ProgressTask task, ToolProfile profile)
         {
             string ciScript = scriptBuilder.SetScript(ScriptType.StoreContinuousIntegration).Build();
             await shellRunner.Execute(new(ciScript)
@@ -104,7 +129,7 @@ namespace Xperience.Xman.Commands
                 ErrorHandler = ErrorDataReceived,
                 OutputHandler = (o, e) =>
                 {
-                    if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false && e.Data.Any(char.IsDigit))
+                    if ((e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false) && e.Data.Any(char.IsDigit))
                     {
                         // Message is something like "Object type 1/84: Module"
                         string[] progressMessage = e.Data.Split(':');
@@ -130,7 +155,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task RestoreFiles(ProgressTask task, Configuration.Profile profile)
+        private async Task RestoreFiles(ProgressTask task, ToolProfile profile)
         {
             string originalDescription = task.Description;
             string ciScript = scriptBuilder.SetScript(ScriptType.RestoreContinuousIntegration).Build();

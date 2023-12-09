@@ -8,15 +8,21 @@ namespace Xperience.Xman.Configuration
     public class ToolConfiguration
     {
         /// <summary>
-        /// The registered profiles found in the configuration file.
+        /// The version of the dotnet tool that last managed this configuration.
         /// </summary>
-        public List<Profile> Profiles { get; set; } = new();
+        public Version? Version { get; set; }
 
 
         /// <summary>
-        /// The currently active profile as stored in the configuration file.
+        /// The registered profiles found in the configuration file.
         /// </summary>
-        public Profile? CurrentProfile { get; set; }
+        public List<ToolProfile> Profiles { get; set; } = new();
+
+
+        /// <summary>
+        /// The currently active profile name as stored in the configuration file.
+        /// </summary>
+        public string? CurrentProfile { get; set; }
 
 
         /// <summary>

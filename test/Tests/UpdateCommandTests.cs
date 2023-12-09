@@ -26,7 +26,7 @@ namespace Xperience.Xman.Tests
         [SetUp]
         public void UpdateCommandTestsSetUp()
         {
-            configManager.GetCurrentProfile().Returns(new Profile());
+            configManager.GetCurrentProfile().Returns(new ToolProfile());
             updateWizard.Run().Returns(new UpdateOptions
             {
                 Version = version
@@ -57,6 +57,7 @@ namespace Xperience.Xman.Tests
         public async Task Execute_CallsUpdateScripts()
         {
             var command = new UpdateCommand(shellRunner, new ScriptBuilder(), updateWizard, configManager);
+            await command.PreExecute(Array.Empty<string>());
             await command.Execute(Array.Empty<string>());
 
             string[] packageNames = new string[]

@@ -2,6 +2,7 @@ using Spectre.Console;
 
 using System.Diagnostics;
 
+using Xperience.Xman.Configuration;
 using Xperience.Xman.Options;
 using Xperience.Xman.Services;
 using Xperience.Xman.Wizards;
@@ -13,7 +14,8 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class InstallCommand : AbstractCommand
     {
-        private readonly Configuration.Profile profile = new();
+        private InstallOptions? options;
+        private readonly ToolProfile profile = new();
         private readonly IShellRunner shellRunner;
         private readonly IConfigManager configManager;
         private readonly IScriptBuilder scriptBuilder;
@@ -47,24 +49,43 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task Execute(string[] args)
+        public override async Task PreExecute(string[] args)
         {
             // Override default values of InstallOptions with values from config file
             wizard.Options = await configManager.GetDefaultInstallOptions();
-            var options = await wizard.Run();
+            options = await wizard.Run();
+            AnsiConsole.WriteLine();
 
             profile.ProjectName = options.ProjectName;
             profile.WorkingDirectory = Path.GetFullPath(options.ProjectName);
 
-            AnsiConsole.WriteLine();
+            await base.PreExecute(args);
+        }
+
+
+        public override async Task Execute(string[] args)
+        {
+            if (options is null)
+            {
+                throw new InvalidOperationException("The installation options weren't found.");
+            }
+
             await CreateWorkingDirectory(options);
             await InstallTemplate(options);
             await CreateProjectFiles(options);
             await CreateDatabase(options);
+        }
+
+
+        public override async Task PostExecute(string[] args)
+        {
             if (!Errors.Any())
             {
                 await configManager.AddProfile(profile);
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Install complete![/]\n");
             }
+
+            await base.PostExecute(args);
         }
 
 

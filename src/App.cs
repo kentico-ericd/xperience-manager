@@ -1,6 +1,7 @@
+using Newtonsoft.Json;
+
 using Spectre.Console;
 
-using Xperience.Xman.Commands;
 using Xperience.Xman.Repositories;
 using Xperience.Xman.Services;
 
@@ -27,7 +28,16 @@ namespace Xperience.Xman
         /// </summary>
         public async Task Run(string[] args)
         {
-            await configManager.EnsureConfigFile();
+            AnsiConsole.WriteLine();
+            try
+            {
+                await configManager.EnsureConfigFile();
+            }
+            catch (JsonReaderException)
+            {
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]There was an error reading the tool config file {Constants.CONFIG_FILENAME}. Please delete or rename the file and migrate your configuration into the new file created on first run.[/]\n");
+                return;
+            }
 
             string identifier = "help";
             if (args.Length > 0)
@@ -43,19 +53,25 @@ namespace Xperience.Xman
 
             try
             {
-                await command.Execute(args);
+                await command.PreExecute(args);
+                if (!command.StopProcessing)
+                {
+                    await command.Execute(args);
+                }
+
+                if (!command.StopProcessing)
+                {
+                    await command.PostExecute(args);
+                }
+
                 if (command.Errors.Any())
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with errors:\n{string.Join("\n", command.Errors)}[/]");
-                }
-                else if (command is not HelpCommand and not ProfileCommand)
-                {
-                    AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Process complete![/]\n");
+                    AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with errors:\n{string.Join("\n", command.Errors)}[/]\n");
                 }
             }
             catch (Exception e)
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with error:\n{e.Message}[/]");
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with error:\n{e.Message}[/]\n");
             }
         }
     }

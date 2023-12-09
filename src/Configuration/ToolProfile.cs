@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents the configuration of an individual Xperience by Kentico installation.
     /// </summary>
-    public class Profile
+    public class ToolProfile
     {
         /// <summary>
         /// The Xperience by Kentico project name.

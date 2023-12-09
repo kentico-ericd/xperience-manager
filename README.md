@@ -25,29 +25,36 @@ dotnet tool update xperience.xman -g
 
 ## Getting started
 
-This tool must be run from a parent directory containing one or more Xperience by Kentico projects, for example the C:\inetpub\wwwroot directory. When you [install](#installing-a-project-with-the-wizard) a new instance, a new profile is created in the `xman.config` file, allowing you to manage multiple installations without changing directory.
+This tool must be run from a parent directory containing one or more Xperience by Kentico projects, for example the C:\inetpub\wwwroot directory. When you [install](#installing-a-new-project) a new instance, a new profile is created in the `xman.config` file, allowing you to manage multiple installations without changing directory.
 
 ## Usage
 
 The following commands can be executed using the `xman` tool name:
 
 - `?`, `help`
-- `p`, `profile`
-- `i`, `install`
-- `u`, `update`
-- `ci store`, `ci restore`
+- [`i`, `install`](#installing-a-new-project)
+- [`u`, `update`](#updating-a-project-version)
+- [`ci <store> <restore>`](#running-continuous-integration)
+- [`p`, `profile <add> <delete> <switch>`](#managing-profiles)
 
-### Changing profiles
+### Managing profiles
 
 <img src="https://raw.githubusercontent.com/kentico-ericd/xperience-manager/master/img/profiles.png" width="350">
 
 Certain commands such as `update` are executed against the installation indicated by the current profile. The `profile` command shows you the current profile, and allows you to switch profiles. If you only have one profile, that is automatically selected.
 
-1. Run the `profile` command from the directory containing the `xman.json` file:
+To __switch__ profiles, run the `profile` command from the directory containing the `xman.json` file:
 
-   ```bash
-   xman profile
-   ```
+```bash
+xman profile
+```
+
+You can __add__ or __delete__ profiles using the corresponding commands. This can be useful to register Xperience by Kentico installations that weren't installed using the tool.
+
+```bash
+xman p add
+xman p delete
+```
 
 ### Installing a new project
 
@@ -75,7 +82,7 @@ This command installs a new Xperience by Kentico project in a subfolder of the c
 
 Currently, there is a bug with updating the project's database version, so the tool only updates the NuGet packages and builds the project. However, the database update command is provided in the UI for easy copy-pasting.
 
-1. (optional) Select a profile with the [`profile`](#changing-profiles) command
+1. (optional) Select a profile with the [`profile`](#managing-profiles) command
 1. Run the `update` command from the directory containing the `xman.json` file, which will begin the update wizard:
 
    ```bash
@@ -84,9 +91,9 @@ Currently, there is a bug with updating the project's database version, so the t
 
 ### Running Continuous Integration
 
-You can use the `ci` command to serialize the database or restore the CI repository to the database.
+You can use the `ci` command to serialize the database or restore the CI repository to the database. Your project must have been built at least once to run CI commands.
 
-1. (optional) Select a profile with the [`profile`](#changing-profiles) command
+1. (optional) Select a profile with the [`profile`](#managing-profiles) command
 2. Run the desired command to begin the CI process:
 
    - `xman ci store`

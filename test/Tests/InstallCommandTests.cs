@@ -60,14 +60,11 @@ namespace Xperience.Xman.Tests
         }
 
 
-        [TearDown]
-        public void InstallCommandTestsTearDown() => File.Delete(Constants.CONFIG_FILENAME);
-
-
         [Test]
         public async Task Execute_CallsInstallationScripts()
         {
             var command = new InstallCommand(shellRunner, new ScriptBuilder(), installWizard, Substitute.For<IConfigManager>());
+            await command.PreExecute(Array.Empty<string>());
             await command.Execute(Array.Empty<string>());
 
             string expectedProjectFileScript = $"dotnet new {TEMPLATE} -n {PROJECT_NAME}";
