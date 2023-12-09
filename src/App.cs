@@ -28,6 +28,7 @@ namespace Xperience.Xman
         /// </summary>
         public async Task Run(string[] args)
         {
+            AnsiConsole.WriteLine();
             try
             {
                 await configManager.EnsureConfigFile();
