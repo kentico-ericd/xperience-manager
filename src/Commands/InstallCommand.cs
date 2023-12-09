@@ -2,6 +2,7 @@ using Spectre.Console;
 
 using System.Diagnostics;
 
+using Xperience.Xman.Configuration;
 using Xperience.Xman.Options;
 using Xperience.Xman.Services;
 using Xperience.Xman.Wizards;
@@ -14,7 +15,7 @@ namespace Xperience.Xman.Commands
     public class InstallCommand : AbstractCommand
     {
         private InstallOptions? options;
-        private readonly Configuration.Profile profile = new();
+        private readonly ToolProfile profile = new();
         private readonly IShellRunner shellRunner;
         private readonly IConfigManager configManager;
         private readonly IScriptBuilder scriptBuilder;

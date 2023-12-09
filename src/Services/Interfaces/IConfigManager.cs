@@ -17,14 +17,14 @@ namespace Xperience.Xman.Services
         /// <summary>
         /// Adds a profile to the <see cref="ToolConfiguration.Profiles"/>.
         /// </summary>
-        public Task AddProfile(Profile profile);
+        public Task AddProfile(ToolProfile profile);
 
 
         /// <summary>
         /// Gets the current profile, or <c>null</c> if not set. If there is only one profile registered, that
         /// profile is automatically selected.
         /// </summary>
-        public Task<Profile?> GetCurrentProfile();
+        public Task<ToolProfile?> GetCurrentProfile();
 
 
         /// <summary>

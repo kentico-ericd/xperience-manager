@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 
+using Xperience.Xman.Configuration;
 using Xperience.Xman.Services;
 
 namespace Xperience.Xman.Commands
@@ -12,7 +13,7 @@ namespace Xperience.Xman.Commands
     public class ContinuousIntegrationCommand : AbstractCommand
     {
         private string? actionName;
-        private Configuration.Profile? profile;
+        private ToolProfile? profile;
         private const string STORE = "store";
         private const string RESTORE = "restore";
         private readonly IShellRunner shellRunner;
@@ -119,7 +120,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task StoreFiles(ProgressTask task, Configuration.Profile profile)
+        private async Task StoreFiles(ProgressTask task, ToolProfile profile)
         {
             string ciScript = scriptBuilder.SetScript(ScriptType.StoreContinuousIntegration).Build();
             await shellRunner.Execute(new(ciScript)
@@ -128,7 +129,7 @@ namespace Xperience.Xman.Commands
                 ErrorHandler = ErrorDataReceived,
                 OutputHandler = (o, e) =>
                 {
-                    if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false && e.Data.Any(char.IsDigit))
+                    if ((e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false) && e.Data.Any(char.IsDigit))
                     {
                         // Message is something like "Object type 1/84: Module"
                         string[] progressMessage = e.Data.Split(':');
@@ -154,7 +155,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task RestoreFiles(ProgressTask task, Configuration.Profile profile)
+        private async Task RestoreFiles(ProgressTask task, ToolProfile profile)
         {
             string originalDescription = task.Description;
             string ciScript = scriptBuilder.SetScript(ScriptType.RestoreContinuousIntegration).Build();

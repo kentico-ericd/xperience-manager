@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 using Spectre.Console;
 
 using Xperience.Xman.Repositories;
@@ -26,7 +28,15 @@ namespace Xperience.Xman
         /// </summary>
         public async Task Run(string[] args)
         {
-            await configManager.EnsureConfigFile();
+            try
+            {
+                await configManager.EnsureConfigFile();
+            }
+            catch (JsonReaderException)
+            {
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]There was an error reading the tool config file {Constants.CONFIG_FILENAME}. Please delete or rename the file and migrate your configuration into the new file created on first run.[/]\n");
+                return;
+            }
 
             string identifier = "help";
             if (args.Length > 0)
@@ -55,12 +65,12 @@ namespace Xperience.Xman
 
                 if (command.Errors.Any())
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with errors:\n{string.Join("\n", command.Errors)}[/]");
+                    AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with errors:\n{string.Join("\n", command.Errors)}[/]\n");
                 }
             }
             catch (Exception e)
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with error:\n{e.Message}[/]");
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Process failed with error:\n{e.Message}[/]\n");
             }
         }
     }

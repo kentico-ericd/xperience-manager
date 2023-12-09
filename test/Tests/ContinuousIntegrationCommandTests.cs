@@ -22,7 +22,7 @@ namespace Xperience.Xman.Tests
         [SetUp]
         public void ContinuousIntegrationCommandTestsSetUp()
         {
-            configManager.GetCurrentProfile().Returns(new Profile());
+            configManager.GetCurrentProfile().Returns(new ToolProfile());
             shellRunner
                 .Execute(Arg.Any<ShellOptions>())
                 .Returns((x) =>

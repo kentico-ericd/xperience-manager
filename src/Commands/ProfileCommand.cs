@@ -1,5 +1,6 @@
 ﻿using Spectre.Console;
 
+using Xperience.Xman.Configuration;
 using Xperience.Xman.Services;
 
 namespace Xperience.Xman.Commands
@@ -91,7 +92,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task AddProfile(List<Configuration.Profile> profiles)
+        private async Task AddProfile(List<ToolProfile> profiles)
         {
             string name = AnsiConsole.Prompt(new TextPrompt<string>("Enter the [green]name[/] of the subfolder containing your Xperience project:"));
             string fullPath = Path.GetFullPath(name);
@@ -116,7 +117,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task DeleteProfile(List<Configuration.Profile> profiles)
+        private async Task DeleteProfile(List<ToolProfile> profiles)
         {
             string name = AnsiConsole.Prompt(new SelectionPrompt<string>()
                 .Title("Delete which [green]profile[/]?")
@@ -137,7 +138,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task SwitchProfile(List<Configuration.Profile> profiles)
+        private async Task SwitchProfile(List<ToolProfile> profiles)
         {
             var prompt = new SelectionPrompt<string>()
                     .Title("Switch to profile:")

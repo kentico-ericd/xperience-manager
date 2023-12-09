@@ -12,7 +12,7 @@ namespace Xperience.Xman.Services
         private ToolConfiguration? configuration;
 
 
-        public async Task AddProfile(Profile profile)
+        public async Task AddProfile(ToolProfile profile)
         {
             var config = await GetConfig();
             config.Profiles.Add(profile);
@@ -37,7 +37,7 @@ namespace Xperience.Xman.Services
         }
 
 
-        public async Task<Profile?> GetCurrentProfile()
+        public async Task<ToolProfile?> GetCurrentProfile()
         {
             var config = await GetConfig();
             var match = config.Profiles.FirstOrDefault(p => p.ProjectName?.Equals(config.CurrentProfile, StringComparison.OrdinalIgnoreCase) ?? false);
@@ -72,7 +72,7 @@ namespace Xperience.Xman.Services
             }
 
             string text = await File.ReadAllTextAsync(Constants.CONFIG_FILENAME);
-            var config = JsonConvert.DeserializeObject<ToolConfiguration>(text) ?? throw new InvalidOperationException($"The configuration file {Constants.CONFIG_FILENAME} cannot be deserialized.");
+            var config = JsonConvert.DeserializeObject<ToolConfiguration>(text) ?? throw new JsonReaderException($"The configuration file {Constants.CONFIG_FILENAME} cannot be deserialized.");
 
             configuration = config;
 
@@ -80,18 +80,18 @@ namespace Xperience.Xman.Services
         }
 
 
-        public Task EnsureConfigFile()
+        public async Task EnsureConfigFile()
         {
+            var toolVersion = Assembly.GetExecutingAssembly().GetName().Version ?? throw new InvalidOperationException("The tool version couldn't be retrieved.");
             if (File.Exists(Constants.CONFIG_FILENAME))
             {
-                return Task.CompletedTask;
+                await MigrateConfig(toolVersion);
+                return;
             }
 
-            var currentVersion = Assembly.GetExecutingAssembly().GetName().Version ?? throw new InvalidOperationException("The tool version couldn't be retrieved.");
-
-            return WriteConfig(new ToolConfiguration
+            await WriteConfig(new ToolConfiguration
             {
-                Version = currentVersion,
+                Version = toolVersion,
                 DefaultInstallOptions = new()
             });
         }
@@ -110,7 +110,7 @@ namespace Xperience.Xman.Services
             var config = await GetConfig();
 
             // For some reason Profiles.Remove() didn't work, make a new list
-            var newProfiles = new List<Profile>();
+            var newProfiles = new List<ToolProfile>();
             foreach (var p in config.Profiles)
             {
                 if (!p.ProjectName?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? true)
@@ -120,6 +120,21 @@ namespace Xperience.Xman.Services
             }
 
             config.Profiles = newProfiles;
+
+            await WriteConfig(config);
+        }
+
+
+        private async Task MigrateConfig(Version toolVersion)
+        {
+            var config = await GetConfig();
+            if (config.Version?.Equals(toolVersion) ?? false)
+            {
+                return;
+            }
+
+            config.Version = toolVersion;
+            // Perform any migrations from old config version to new version here
 
             await WriteConfig(config);
         }

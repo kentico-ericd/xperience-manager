@@ -1,5 +1,6 @@
 ﻿using Spectre.Console;
 
+using Xperience.Xman.Configuration;
 using Xperience.Xman.Options;
 using Xperience.Xman.Services;
 using Xperience.Xman.Wizards;
@@ -13,7 +14,7 @@ namespace Xperience.Xman.Commands
     public class UpdateCommand : AbstractCommand
     {
         private UpdateOptions? options;
-        private Configuration.Profile? profile;
+        private ToolProfile? profile;
         private readonly IShellRunner shellRunner;
         private readonly IScriptBuilder scriptBuilder;
         private readonly IWizard<UpdateOptions> wizard;
@@ -93,7 +94,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task UpdatePackages(UpdateOptions options, Configuration.Profile profile)
+        private async Task UpdatePackages(UpdateOptions options, ToolProfile profile)
         {
             foreach (string package in packageNames)
             {
@@ -115,7 +116,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task BuildProject(Configuration.Profile profile)
+        private async Task BuildProject(ToolProfile profile)
         {
             if (StopProcessing)
             {

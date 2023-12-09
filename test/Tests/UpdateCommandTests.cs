@@ -26,7 +26,7 @@ namespace Xperience.Xman.Tests
         [SetUp]
         public void UpdateCommandTestsSetUp()
         {
-            configManager.GetCurrentProfile().Returns(new Profile());
+            configManager.GetCurrentProfile().Returns(new ToolProfile());
             updateWizard.Run().Returns(new UpdateOptions
             {
                 Version = version

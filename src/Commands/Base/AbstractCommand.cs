@@ -2,6 +2,8 @@ using System.Diagnostics;
 
 using Spectre.Console;
 
+using Xperience.Xman.Configuration;
+
 namespace Xperience.Xman.Commands
 {
     /// <summary>
@@ -60,6 +62,6 @@ namespace Xperience.Xman.Commands
         }
 
 
-        protected void PrintCurrentProfile(Configuration.Profile? profile) => AnsiConsole.MarkupLineInterpolated($"[[Profile: [{Constants.EMPHASIS_COLOR}]{profile?.ProjectName ?? "None"}[/]]]");
+        protected void PrintCurrentProfile(ToolProfile? profile) => AnsiConsole.MarkupLineInterpolated($"[[Profile: [{Constants.EMPHASIS_COLOR}]{profile?.ProjectName ?? "None"}[/]]]");
     }
 }
