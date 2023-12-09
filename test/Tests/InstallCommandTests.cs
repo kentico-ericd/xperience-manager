@@ -2,8 +2,6 @@
 
 using NUnit.Framework;
 
-using System.Diagnostics;
-
 using Xperience.Xman.Commands;
 using Xperience.Xman.Options;
 using Xperience.Xman.Services;
@@ -14,7 +12,7 @@ namespace Xperience.Xman.Tests
     /// <summary>
     /// Tests for <see cref="InstallCommand"/>.
     /// </summary>
-    public class InstallCommandTests
+    public class InstallCommandTests : TestBase
     {
         private const string DB_NAME = "TESTDB";
         private const string PASSWORD = "PW";
@@ -39,24 +37,7 @@ namespace Xperience.Xman.Tests
                 Template = TEMPLATE
             });
 
-            shellRunner
-                .Execute(Arg.Any<ShellOptions>())
-                .Returns((x) =>
-                {
-                    // Return dummy process
-                    Process cmd = new();
-                    cmd.StartInfo.FileName = "powershell.exe";
-                    cmd.StartInfo.RedirectStandardInput = true;
-                    cmd.StartInfo.CreateNoWindow = true;
-                    cmd.StartInfo.UseShellExecute = false;
-                    cmd.Start();
-
-                    cmd.StandardInput.AutoFlush = true;
-                    cmd.StandardInput.WriteLine("dotnet --version");
-                    cmd.StandardInput.Close();
-
-                    return cmd;
-                });
+            shellRunner.Execute(Arg.Any<ShellOptions>()).Returns((x) => GetDummyProcess());
         }
 
 

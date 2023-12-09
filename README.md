@@ -5,7 +5,7 @@
 
 This tool simplifies the process of installing and managing Xperience by Kentico instances by providing step-by-step wizards with default options provided.
 
-<img src="https://raw.githubusercontent.com/kentico-ericd/xperience-manager/master/img/screenshot.png" width="350">
+<img src="https://raw.githubusercontent.com/kentico-ericd/xperience-manager/master/img/screenshot.png" width="350" />
 
 ## Installing the tool
 
@@ -39,7 +39,7 @@ The following commands can be executed using the `xman` tool name:
 
 ### Managing profiles
 
-<img src="https://raw.githubusercontent.com/kentico-ericd/xperience-manager/master/img/profiles.png" width="350">
+<img src="https://raw.githubusercontent.com/kentico-ericd/xperience-manager/master/img/profiles.png" width="350" />
 
 Certain commands such as `update` are executed against the installation indicated by the current profile. The `profile` command shows you the current profile, and allows you to switch profiles. If you only have one profile, that is automatically selected.
 

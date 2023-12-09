@@ -2,8 +2,6 @@
 
 using NUnit.Framework;
 
-using System.Diagnostics;
-
 using Xperience.Xman.Commands;
 using Xperience.Xman.Configuration;
 using Xperience.Xman.Options;
@@ -15,7 +13,7 @@ namespace Xperience.Xman.Tests
     /// <summary>
     /// Tests for <see cref="UpdateCommand"/>.
     /// </summary>
-    public class UpdateCommandTests
+    public class UpdateCommandTests : TestBase
     {
         private readonly Version version = new(1, 0, 0);
         private readonly IShellRunner shellRunner = Substitute.For<IShellRunner>();
@@ -32,24 +30,7 @@ namespace Xperience.Xman.Tests
                 Version = version
             });
 
-            shellRunner
-                .Execute(Arg.Any<ShellOptions>())
-                .Returns((x) =>
-                {
-                    // Return dummy process
-                    Process cmd = new();
-                    cmd.StartInfo.FileName = "powershell.exe";
-                    cmd.StartInfo.RedirectStandardInput = true;
-                    cmd.StartInfo.CreateNoWindow = true;
-                    cmd.StartInfo.UseShellExecute = false;
-                    cmd.Start();
-
-                    cmd.StandardInput.AutoFlush = true;
-                    cmd.StandardInput.WriteLine("dotnet --version");
-                    cmd.StandardInput.Close();
-
-                    return cmd;
-                });
+            shellRunner.Execute(Arg.Any<ShellOptions>()).Returns((x) => GetDummyProcess());
         }
 
 
