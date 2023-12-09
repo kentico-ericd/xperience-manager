@@ -2,8 +2,6 @@
 
 using NUnit.Framework;
 
-using System.Diagnostics;
-
 using Xperience.Xman.Commands;
 using Xperience.Xman.Configuration;
 using Xperience.Xman.Services;
@@ -13,7 +11,7 @@ namespace Xperience.Xman.Tests
     /// <summary>
     /// Tests for <see cref="ContinuousIntegrationCommand"/>.
     /// </summary>
-    public class ContinuousIntegrationCommandTests
+    public class ContinuousIntegrationCommandTests : TestBase
     {
         private readonly IShellRunner shellRunner = Substitute.For<IShellRunner>();
         private readonly IConfigManager configManager = Substitute.For<IConfigManager>();
@@ -23,24 +21,7 @@ namespace Xperience.Xman.Tests
         public void ContinuousIntegrationCommandTestsSetUp()
         {
             configManager.GetCurrentProfile().Returns(new ToolProfile());
-            shellRunner
-                .Execute(Arg.Any<ShellOptions>())
-                .Returns((x) =>
-                {
-                    // Return dummy process
-                    Process cmd = new();
-                    cmd.StartInfo.FileName = "powershell.exe";
-                    cmd.StartInfo.RedirectStandardInput = true;
-                    cmd.StartInfo.CreateNoWindow = true;
-                    cmd.StartInfo.UseShellExecute = false;
-                    cmd.Start();
-
-                    cmd.StandardInput.AutoFlush = true;
-                    cmd.StandardInput.WriteLine("dotnet --version");
-                    cmd.StandardInput.Close();
-
-                    return cmd;
-                });
+            shellRunner.Execute(Arg.Any<ShellOptions>()).Returns((x) => GetDummyProcess());
         }
 
 
