@@ -25,7 +25,7 @@ dotnet tool update xperience.xman -g
 
 ## Getting started
 
-This tool must be run from a parent directory containing one or more Xperience by Kentico projects, for example the C:\inetpub\wwwroot directory. When you [install](#installing-a-new-project) a new instance, a new profile is created in the `xman.config` file, allowing you to manage multiple installations without changing directory.
+This tool must be run from a parent directory containing one or more Xperience by Kentico projects, for example the C:\inetpub\wwwroot directory. When you [install](#installing-a-new-project) a new instance, a new profile is created in the `xman.json` file, allowing you to manage multiple installations without changing directory.
 
 ## Usage
 
