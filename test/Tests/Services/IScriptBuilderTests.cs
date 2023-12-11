@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Xperience.Xman.Options;
 using Xperience.Xman.Services;
 
-namespace Xperience.Xman.Tests
+namespace Xperience.Xman.Tests.Tests.Services
 {
     /// <summary>
     /// Tests for <see cref="IScriptBuilder"/>.

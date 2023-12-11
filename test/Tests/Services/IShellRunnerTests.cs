@@ -5,7 +5,7 @@ using System.Text;
 
 using Xperience.Xman.Services;
 
-namespace Xperience.Xman.Tests
+namespace Xperience.Xman.Tests.Tests.Services
 {
     /// <summary>
     /// Tests for <see cref="IShellRunner"/>.

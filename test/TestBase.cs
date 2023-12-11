@@ -1,9 +1,15 @@
 using System.Diagnostics;
 
+using NUnit.Framework;
+
 namespace Xperience.Xman.Tests
 {
     public class TestBase
     {
+        [TearDown]
+        public void TearDown() => File.Delete(Constants.CONFIG_FILENAME);
+
+
         /// <summary>
         /// Gets a <see cref="Process"/> which does nothing.
         /// </summary>

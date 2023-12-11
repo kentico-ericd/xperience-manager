@@ -8,7 +8,7 @@ using Xperience.Xman.Options;
 using Xperience.Xman.Services;
 using Xperience.Xman.Wizards;
 
-namespace Xperience.Xman.Tests
+namespace Xperience.Xman.Tests.Tests.Commands
 {
     /// <summary>
     /// Tests for <see cref="UpdateCommand"/>.

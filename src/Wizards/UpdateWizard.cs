@@ -13,19 +13,21 @@ namespace Xperience.Xman.Wizards
     {
         public override async Task InitSteps()
         {
-            var versions = await NuGetVersionHelper.GetPackageVersions("kentico.xperience.templates");
+            var versions = await NuGetVersionHelper.GetPackageVersions(Constants.TEMPLATES_PACKAGE);
             var filtered = versions.Where(v => !v.IsPrerelease && !v.IsLegacyVersion && v.Major >= 25)
                 .Select(v => v.Version)
                 .OrderByDescending(v => v);
 
-            Steps.Add(new Step<Version>(
-                new SelectionPrompt<Version>()
+            Steps.Add(new Step<Version>(new()
+            {
+                Prompt = new SelectionPrompt<Version>()
                     .Title("Which [green]version[/]?")
                     .PageSize(10)
                     .UseConverter(v => $"{v.Major}.{v.Minor}.{v.Build}")
                     .MoreChoicesText("Scroll for more...")
                     .AddChoices(filtered),
-                (v) => Options.Version = v));
+                ValueReceiver = (v) => Options.Version = v
+            }));
         }
     }
 }

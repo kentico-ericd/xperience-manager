@@ -74,7 +74,7 @@ namespace Xperience.Xman.Commands
             }
             else if (actionName?.Equals(ADD, StringComparison.OrdinalIgnoreCase) ?? false)
             {
-                await AddProfile(config.Profiles);
+                await AddProfile();
             }
             else if (actionName?.Equals(DELETE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
@@ -92,19 +92,13 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task AddProfile(List<ToolProfile> profiles)
+        private async Task AddProfile()
         {
             string name = AnsiConsole.Prompt(new TextPrompt<string>("Enter the [green]name[/] of the subfolder containing your Xperience project:"));
             string fullPath = Path.GetFullPath(name);
             if (!Directory.Exists(fullPath))
             {
                 throw new DirectoryNotFoundException($"The directory {fullPath} couldn't be found.");
-            }
-
-            if (profiles.Any(p => p.ProjectName?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? false))
-            {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]There is already a profile named '{name}'[/]");
-                return;
             }
 
             await configManager.AddProfile(new()

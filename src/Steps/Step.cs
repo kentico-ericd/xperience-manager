@@ -7,36 +7,31 @@ namespace Xperience.Xman.Steps
     /// </summary>
     public class Step<T> : IStep
     {
-        private readonly IPrompt<T> prompt;
-        private readonly Action<T>? valueReceiver;
-        private readonly Func<bool>? skipChecker;
+        private readonly StepOptions<T> options;
 
 
         /// <summary>
         /// Initializes a new instance of <see cref="Step{T}"/>.
         /// </summary>
-        /// <param name="prompt">The prompt to show the user when the step begins.</param>
-        /// <param name="valueReceiver">A function that is passed the user input.</param>
-        /// <param name="skipChecker">A function that returns <c>true</c> if this step should be skipped.</param>
-        public Step(IPrompt<T> prompt, Action<T>? valueReceiver = null, Func<bool>? skipChecker = null)
-        {
-            this.prompt = prompt;
-            this.valueReceiver = valueReceiver;
-            this.skipChecker = skipChecker;
-        }
+        public Step(StepOptions<T> options) => this.options = options;
 
 
         public Task Execute()
         {
-            if (skipChecker is not null && skipChecker())
+            if (options.Prompt is null)
             {
                 return Task.CompletedTask;
             }
 
-            var input = AnsiConsole.Prompt(prompt);
-            if (valueReceiver is not null)
+            if (options.SkipChecker is not null && options.SkipChecker())
             {
-                valueReceiver(input);
+                return Task.CompletedTask;
+            }
+
+            var input = AnsiConsole.Prompt(options.Prompt);
+            if (options.ValueReceiver is not null)
+            {
+                options.ValueReceiver(input);
             }
 
             return Task.CompletedTask;

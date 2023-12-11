@@ -6,7 +6,7 @@ using Xperience.Xman.Commands;
 using Xperience.Xman.Configuration;
 using Xperience.Xman.Services;
 
-namespace Xperience.Xman.Tests
+namespace Xperience.Xman.Tests.Tests.Commands
 {
     /// <summary>
     /// Tests for <see cref="ContinuousIntegrationCommand"/>.

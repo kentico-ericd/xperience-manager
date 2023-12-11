@@ -20,54 +20,78 @@ namespace Xperience.Xman.Wizards
 
         public override async Task InitSteps()
         {
-            var versions = await NuGetVersionHelper.GetPackageVersions("kentico.xperience.templates");
+            var versions = await NuGetVersionHelper.GetPackageVersions(Constants.TEMPLATES_PACKAGE);
             var filtered = versions.Where(v => !v.IsPrerelease && !v.IsLegacyVersion && v.Major >= 25)
                 .Select(v => v.Version)
                 .OrderByDescending(v => v);
-            Steps.Add(new Step<Version>(
-                new SelectionPrompt<Version>()
+
+            Steps.Add(new Step<Version>(new()
+            {
+                Prompt = new SelectionPrompt<Version>()
                     .Title("Which [green]version[/]?")
                     .PageSize(10)
                     .UseConverter(v => $"{v.Major}.{v.Minor}.{v.Build}")
                     .MoreChoicesText("Scroll for more...")
                     .AddChoices(filtered),
-                (v) => Options.Version = v));
+                ValueReceiver = (v) => Options.Version = v
+            }));
 
-            Steps.Add(new Step<string>(
-                new SelectionPrompt<string>()
+            Steps.Add(new Step<string>(new()
+            {
+                Prompt = new SelectionPrompt<string>()
                     .Title("Which [green]template[/]?")
                     .AddChoices(templates),
-                (v) => Options.Template = v.ToString()));
+                ValueReceiver = (v) => Options.Template = v.ToString()
+            }));
 
-            Steps.Add(new Step<string>(
-                new TextPrompt<string>("Give your project a [green]name[/]:")
+            Steps.Add(new Step<string>(new()
+            {
+                Prompt = new TextPrompt<string>("Give your project a [green]name[/]:")
                     .DefaultValue(Options.ProjectName),
-                (v) => Options.ProjectName = v));
+                ValueReceiver = (v) => Options.ProjectName = v
+            }));
 
             var cloudPrompt = new ConfirmationPrompt("Prepare for [green]cloud[/] deployment?")
             {
                 DefaultValue = Options.UseCloud
             };
-            Steps.Add(new Step<bool>(cloudPrompt, (v) => Options.UseCloud = v, IsAdminTemplate));
+            Steps.Add(new Step<bool>(new()
+            {
+                Prompt = cloudPrompt,
+                ValueReceiver = (v) => Options.UseCloud = v,
+                SkipChecker = IsAdminTemplate
+            }));
+
 
             var serverPrompt = new TextPrompt<string>("Enter the [green]SQL server[/] name:");
             if (!string.IsNullOrEmpty(Options.ServerName))
             {
                 serverPrompt.DefaultValue(Options.ServerName);
             }
-            Steps.Add(new Step<string>(serverPrompt, (v) => Options.ServerName = v, IsAdminTemplate));
+            Steps.Add(new Step<string>(new()
+            {
+                Prompt = serverPrompt,
+                ValueReceiver = (v) => Options.ServerName = v,
+                SkipChecker = IsAdminTemplate
+            }));
 
-            Steps.Add(new Step<string>(
-                new TextPrompt<string>("Enter the [green]database[/] name:")
+            Steps.Add(new Step<string>(new()
+            {
+                Prompt = new TextPrompt<string>("Enter the [green]database[/] name:")
                     .AllowEmpty()
                     .DefaultValue(Options.DatabaseName),
-                (v) => Options.DatabaseName = v, IsAdminTemplate));
+                ValueReceiver = (v) => Options.DatabaseName = v,
+                SkipChecker = IsAdminTemplate
+            }));
 
-            Steps.Add(new Step<string>(
-                new TextPrompt<string>("Enter the admin [green]password[/]:")
+            Steps.Add(new Step<string>(new()
+            {
+                Prompt = new TextPrompt<string>("Enter the admin [green]password[/]:")
                     .AllowEmpty()
                     .DefaultValue(Options.AdminPassword),
-                (v) => Options.AdminPassword = v, IsAdminTemplate));
+                ValueReceiver = (v) => Options.AdminPassword = v,
+                SkipChecker = IsAdminTemplate
+            }));
         }
 
 

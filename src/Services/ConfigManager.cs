@@ -12,6 +12,10 @@ namespace Xperience.Xman.Services
         public async Task AddProfile(ToolProfile profile)
         {
             var config = await GetConfig();
+            if (config.Profiles.Any(p => p.ProjectName?.Equals(profile.ProjectName, StringComparison.OrdinalIgnoreCase) ?? false))
+            {
+                throw new InvalidOperationException($"There is already a profile named '{profile.ProjectName}.'");
+            }
             config.Profiles.Add(profile);
 
             await WriteConfig(config);
@@ -101,13 +105,7 @@ namespace Xperience.Xman.Services
 
             // For some reason Profiles.Remove() didn't work, make a new list
             var newProfiles = new List<ToolProfile>();
-            foreach (var p in config.Profiles)
-            {
-                if (!p.ProjectName?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? true)
-                {
-                    newProfiles.Add(p);
-                }
-            }
+            newProfiles.AddRange(config.Profiles.Where(p => !p.ProjectName?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? true));
 
             config.Profiles = newProfiles;
 
@@ -123,8 +121,8 @@ namespace Xperience.Xman.Services
                 return;
             }
 
-            config.Version = toolVersion;
             // Perform any migrations from old config version to new version here
+            config.Version = toolVersion;
 
             await WriteConfig(config);
         }
