@@ -12,9 +12,9 @@ namespace Xperience.Xman.Wizards
     public class InstallWizard : AbstractWizard<InstallOptions>
     {
         private readonly IEnumerable<string> templates = new string[] {
-            "kentico-xperience-sample-mvc",
-            "kentico-xperience-mvc",
-            "kentico-xperience-admin-sample"
+            Constants.TEMPLATE_SAMPLE,
+            Constants.TEMPLATE_BLANK,
+            Constants.TEMPLATE_ADMIN
         };
 
 
@@ -48,26 +48,29 @@ namespace Xperience.Xman.Wizards
             {
                 DefaultValue = Options.UseCloud
             };
-            Steps.Add(new Step<bool>(cloudPrompt, (v) => Options.UseCloud = v));
+            Steps.Add(new Step<bool>(cloudPrompt, (v) => Options.UseCloud = v, IsAdminTemplate));
 
             var serverPrompt = new TextPrompt<string>("Enter the [green]SQL server[/] name:");
             if (!string.IsNullOrEmpty(Options.ServerName))
             {
                 serverPrompt.DefaultValue(Options.ServerName);
             }
-            Steps.Add(new Step<string>(serverPrompt, (v) => Options.ServerName = v));
+            Steps.Add(new Step<string>(serverPrompt, (v) => Options.ServerName = v, IsAdminTemplate));
 
             Steps.Add(new Step<string>(
                 new TextPrompt<string>("Enter the [green]database[/] name:")
                     .AllowEmpty()
                     .DefaultValue(Options.DatabaseName),
-                (v) => Options.DatabaseName = v));
+                (v) => Options.DatabaseName = v, IsAdminTemplate));
 
             Steps.Add(new Step<string>(
                 new TextPrompt<string>("Enter the admin [green]password[/]:")
                     .AllowEmpty()
                     .DefaultValue(Options.AdminPassword),
-                (v) => Options.AdminPassword = v));
+                (v) => Options.AdminPassword = v, IsAdminTemplate));
         }
+
+
+        private bool IsAdminTemplate() => Options.Template.Equals(Constants.TEMPLATE_ADMIN, StringComparison.OrdinalIgnoreCase);
     }
 }

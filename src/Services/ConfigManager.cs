@@ -9,9 +9,6 @@ namespace Xperience.Xman.Services
 {
     public class ConfigManager : IConfigManager
     {
-        private ToolConfiguration? configuration;
-
-
         public async Task AddProfile(ToolProfile profile)
         {
             var config = await GetConfig();
@@ -61,11 +58,6 @@ namespace Xperience.Xman.Services
 
         public async Task<ToolConfiguration> GetConfig()
         {
-            if (configuration is not null)
-            {
-                return configuration;
-            }
-
             if (!File.Exists(Constants.CONFIG_FILENAME))
             {
                 throw new FileNotFoundException($"The configuration file {Constants.CONFIG_FILENAME} was not found.");
@@ -73,8 +65,6 @@ namespace Xperience.Xman.Services
 
             string text = await File.ReadAllTextAsync(Constants.CONFIG_FILENAME);
             var config = JsonConvert.DeserializeObject<ToolConfiguration>(text) ?? throw new JsonReaderException($"The configuration file {Constants.CONFIG_FILENAME} cannot be deserialized.");
-
-            configuration = config;
 
             return config;
         }

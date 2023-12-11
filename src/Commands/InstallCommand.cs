@@ -73,7 +73,11 @@ namespace Xperience.Xman.Commands
             await CreateWorkingDirectory(options);
             await InstallTemplate(options);
             await CreateProjectFiles(options);
-            await CreateDatabase(options);
+            // Admin boilerplate project doesn't require database install
+            if (!options.Template.Equals(Constants.TEMPLATE_ADMIN, StringComparison.OrdinalIgnoreCase))
+            {
+                await CreateDatabase(options);
+            }
         }
 
 
@@ -127,9 +131,12 @@ namespace Xperience.Xman.Commands
                 .WithOptions(options)
                 .AppendCloud(options.UseCloud)
                 .Build();
+
+            // Admin boilerplate script doesn't require input
+            bool keepOpen = !options.Template.Equals(Constants.TEMPLATE_ADMIN, StringComparison.OrdinalIgnoreCase);
             await shellRunner.Execute(new(installScript)
             {
-                KeepOpen = true,
+                KeepOpen = keepOpen,
                 WorkingDirectory = profile.WorkingDirectory,
                 ErrorHandler = ErrorDataReceived,
                 OutputHandler = (o, e) =>

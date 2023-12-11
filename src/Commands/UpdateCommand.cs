@@ -72,14 +72,14 @@ namespace Xperience.Xman.Commands
         {
             if (options is null || profile is null)
             {
-                throw new InvalidOperationException("");
+                throw new InvalidOperationException("Options or profile weren't found.");
             }
 
             await UpdatePackages(options, profile);
             await BuildProject(profile);
             // There is currently an issue running the database update script while emulating the ReadKey() input
             // for the script's "Do you want to continue" prompt. The update command must be run manually.
-            AnsiConsole.MarkupLineInterpolated($"Unfortunately, the database cannot be updated at this time. Please run the [{Constants.SUCCESS_COLOR}]'dotnet run --no-build --kxp-update'[/] command manually.");
+            AnsiConsole.MarkupLineInterpolated($"Unfortunately, the database cannot be updated at this time. Please run the [{Constants.SUCCESS_COLOR}]'dotnet run --no-build --kxp-update'[/] command manually if needed.");
         }
 
 
