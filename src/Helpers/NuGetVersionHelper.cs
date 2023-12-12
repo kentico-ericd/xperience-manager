@@ -7,12 +7,15 @@ namespace Xperience.Xman.Helpers
 {
     public static class NuGetVersionHelper
     {
+        private const string NUGET_SOURCE = "https://api.nuget.org/v3/index.json";
+
+
         /// <summary>
         /// Gets all versions of the provided NuGet package.
         /// </summary>
         public static async Task<IEnumerable<NuGetVersion>> GetPackageVersions(string package)
         {
-            var repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
+            var repository = Repository.Factory.GetCoreV3(NUGET_SOURCE);
             var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
 
             return await resource.GetAllVersionsAsync(
@@ -29,9 +32,8 @@ namespace Xperience.Xman.Helpers
         /// </summary>
         public static async Task<Version?> GetLatestVersion(string package, Version currentVersion)
         {
-            var repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
+            var repository = Repository.Factory.GetCoreV3(NUGET_SOURCE);
             var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
-
             var versions = await resource.GetAllVersionsAsync(
                 package,
                 new SourceCacheContext(),

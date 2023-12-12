@@ -35,7 +35,9 @@ namespace Xperience.Xman.Commands
         /// Do not use. Workaround for circular dependency in <see cref="HelpCommand"/> when commands are injected
         /// into the constuctor.
         /// </summary>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         internal InstallCommand()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
         }
 
