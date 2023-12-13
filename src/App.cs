@@ -48,6 +48,7 @@ namespace Xperience.Xman
             var command = commandRepository.Get(identifier);
             if (command is null)
             {
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Invalid command '{identifier}'[/]\n");
                 return;
             }
 

@@ -76,7 +76,7 @@ namespace Xperience.Xman.Commands
             await InstallTemplate(options);
             await CreateProjectFiles(options);
             // Admin boilerplate project doesn't require database install
-            if (!options.Template.Equals(Constants.TEMPLATE_ADMIN, StringComparison.OrdinalIgnoreCase))
+            if (!IsAdminTemplate())
             {
                 await CreateDatabase(options);
             }
@@ -87,7 +87,12 @@ namespace Xperience.Xman.Commands
         {
             if (!Errors.Any())
             {
-                await configManager.AddProfile(profile);
+                // Don't create profile for admin boilerplate since it's meant to be moved/included in another installation
+                if (!IsAdminTemplate())
+                {
+                    await configManager.AddProfile(profile);
+                }
+
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Install complete![/]\n");
             }
 
@@ -135,7 +140,7 @@ namespace Xperience.Xman.Commands
                 .Build();
 
             // Admin boilerplate script doesn't require input
-            bool keepOpen = !options.Template.Equals(Constants.TEMPLATE_ADMIN, StringComparison.OrdinalIgnoreCase);
+            bool keepOpen = !IsAdminTemplate();
             await shellRunner.Execute(new(installScript)
             {
                 KeepOpen = keepOpen,
@@ -179,5 +184,8 @@ namespace Xperience.Xman.Commands
             var installCmd = shellRunner.Execute(new(installScript) { ErrorHandler = ErrorDataReceived });
             await installCmd.WaitForExitAsync();
         }
+
+
+        private bool IsAdminTemplate() => options?.Template.Equals(Constants.TEMPLATE_ADMIN, StringComparison.OrdinalIgnoreCase) ?? false;
     }
 }
