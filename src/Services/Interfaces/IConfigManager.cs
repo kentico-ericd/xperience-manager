@@ -15,6 +15,14 @@ namespace Xperience.Xman.Services
 
 
         /// <summary>
+        /// Adds a <see cref="CDProfile"/> to the provided profile.
+        /// </summary>
+        /// <param name="profile">The profile to modify.</param>
+        /// <param name="cdProfile">The CD profile to add.</param>
+        public Task AddCDProfile(ToolProfile profile, CDProfile cdProfile);
+
+
+        /// <summary>
         /// Adds a profile to the <see cref="ToolConfiguration.Profiles"/>.
         /// </summary>
         public Task AddProfile(ToolProfile profile);

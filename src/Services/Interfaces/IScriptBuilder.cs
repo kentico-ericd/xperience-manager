@@ -14,6 +14,27 @@ namespace Xperience.Xman.Services
 
 
         /// <summary>
+        /// Appends the directory to create if the script is <see cref="ScriptType.CreateDirectory"/>.
+        /// </summary>
+        /// <param name="name">The name of the directory to create.</param>
+        public IScriptBuilder AppendDirectory(string name);
+
+
+        /// <summary>
+        /// Appends a "--path" parameter to the script with the passed value.
+        /// </summary>
+        /// <param name="path">The absolute path to append.</param>
+        public IScriptBuilder AppendPath(string path);
+
+
+        /// <summary>
+        /// Appends a "--project" parameter to a "dotnet run" script with the passed value.
+        /// </summary>
+        /// <param name="path">The absolute path to append.</param>
+        public IScriptBuilder AppendProject(string path);
+
+
+        /// <summary>
         /// Appends a version number to the script if <paramref name="version"/> is not null.
         /// </summary>
         public IScriptBuilder AppendVersion(Version? version);

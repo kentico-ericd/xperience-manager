@@ -15,5 +15,11 @@
         /// The absolute path to the installation's root folder.
         /// </summary>
         public string? WorkingDirectory { get; set; }
+
+
+        /// <summary>
+        /// A list of Continuous Development profiles registered for this installation.
+        /// </summary>
+        public List<CDProfile> ContinuousDevelopmentProfiles { get; set; } = new();
     }
 }

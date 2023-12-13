@@ -9,6 +9,23 @@ namespace Xperience.Xman.Services
 {
     public class ConfigManager : IConfigManager
     {
+        public async Task AddCDProfile(ToolProfile profile, CDProfile cdProfile)
+        {
+            var config = await GetConfig();
+            var matchingProfile = config.Profiles.FirstOrDefault(p => p.ProjectName?.Equals(profile.ProjectName, StringComparison.OrdinalIgnoreCase) ?? false) ??
+                throw new InvalidOperationException($"Profile '{profile.ProjectName}' not found in configuration file.");
+
+            if (matchingProfile.ContinuousDevelopmentProfiles.Any(p => p.EnvironmentName?.Equals(cdProfile.EnvironmentName, StringComparison.OrdinalIgnoreCase) ?? false))
+            {
+                throw new InvalidOperationException($"There is already a CD profile with the environment '{cdProfile.EnvironmentName}.'");
+            }
+
+            matchingProfile.ContinuousDevelopmentProfiles.Add(cdProfile);
+
+            await WriteConfig(config);
+        }
+
+
         public async Task AddProfile(ToolProfile profile)
         {
             var config = await GetConfig();

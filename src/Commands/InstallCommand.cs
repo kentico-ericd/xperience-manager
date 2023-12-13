@@ -80,6 +80,12 @@ namespace Xperience.Xman.Commands
             {
                 await CreateDatabase(options);
             }
+
+            // Don't create profile for admin boilerplate since it's meant to be moved/included in another installation
+            if (!IsAdminTemplate())
+            {
+                await configManager.AddProfile(profile);
+            }
         }
 
 
@@ -87,12 +93,6 @@ namespace Xperience.Xman.Commands
         {
             if (!Errors.Any())
             {
-                // Don't create profile for admin boilerplate since it's meant to be moved/included in another installation
-                if (!IsAdminTemplate())
-                {
-                    await configManager.AddProfile(profile);
-                }
-
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Install complete![/]\n");
             }
 
@@ -102,7 +102,7 @@ namespace Xperience.Xman.Commands
 
         private async Task CreateWorkingDirectory(InstallOptions options)
         {
-            string mkdirScript = scriptBuilder.SetScript(ScriptType.CreateDirectory).WithOptions(options).Build();
+            string mkdirScript = scriptBuilder.SetScript(ScriptType.CreateDirectory).AppendDirectory(options.ProjectName).Build();
             await shellRunner.Execute(new(mkdirScript) { ErrorHandler = ErrorDataReceived }).WaitForExitAsync();
         }
 

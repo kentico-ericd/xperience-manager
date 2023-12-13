@@ -8,7 +8,7 @@ namespace Xperience.Xman.Services
         private string currentScript = string.Empty;
 
         private const string BUILD_SCRIPT = "dotnet build";
-        private const string MKDIR_SCRIPT = $"mkdir {nameof(InstallOptions.ProjectName)}";
+        private const string MKDIR_SCRIPT = $"mkdir";
         private const string INSTALL_PROJECT_SCRIPT = $"dotnet new {nameof(InstallOptions.Template)} -n {nameof(InstallOptions.ProjectName)}";
         private const string INSTALL_DATABASE_SCRIPT = $"dotnet kentico-xperience-dbmanager -- -s \"{nameof(InstallOptions.ServerName)}\" -d \"{nameof(InstallOptions.DatabaseName)}\" -a \"{nameof(InstallOptions.AdminPassword)}\"";
         private const string UNINSTALL_TEMPLATE_SCRIPT = "dotnet new uninstall kentico.xperience.templates";
@@ -17,16 +17,51 @@ namespace Xperience.Xman.Services
         private const string UPDATE_DATABASE_SCRIPT = "dotnet run --no-build --kxp-update";
         private const string CI_STORE_SCRIPT = "dotnet run --no-build --kxp-ci-store";
         private const string CI_RESTORE_SCRIPT = "dotnet run --no-build --kxp-ci-restore";
+        private const string CD_NEW_CONFIG_SCRIPT = "dotnet run --no-build -- --kxp-cd-config";
 
 
-        public string Build()
+        public IScriptBuilder AppendCloud(bool useCloud)
         {
-            if (!ValidateScript())
+            if (currentScriptType.Equals(ScriptType.ProjectInstall) && useCloud)
             {
-                throw new InvalidOperationException("The script is empty or contains placeholder values.");
+                currentScript += " --cloud";
             }
 
-            return currentScript;
+            return this;
+        }
+
+
+        public IScriptBuilder AppendDirectory(string name)
+        {
+            if (currentScriptType.Equals(ScriptType.CreateDirectory))
+            {
+                currentScript += $" {name}";
+            }
+
+            return this;
+        }
+
+
+        public IScriptBuilder AppendPath(string path)
+        {
+            currentScript += $" --path '{path}'";
+
+            return this;
+        }
+
+
+        public IScriptBuilder AppendProject(string path)
+        {
+            if (!currentScript.Contains("dotnet run"))
+            {
+                return this;
+            }
+
+            // Insert --project after "dotnet run"
+            string[] parts = currentScript.Split("dotnet run");
+            currentScript = $"dotnet run --project '{path}' {parts[1]}";
+
+            return this;
         }
 
 
@@ -50,14 +85,14 @@ namespace Xperience.Xman.Services
         }
 
 
-        public IScriptBuilder AppendCloud(bool useCloud)
+        public string Build()
         {
-            if (currentScriptType.Equals(ScriptType.ProjectInstall) && useCloud)
+            if (!ValidateScript())
             {
-                currentScript += " --cloud";
+                throw new InvalidOperationException("The script is empty or contains placeholder values.");
             }
 
-            return this;
+            return currentScript;
         }
 
 
@@ -97,6 +132,7 @@ namespace Xperience.Xman.Services
                 ScriptType.DatabaseUpdate => UPDATE_DATABASE_SCRIPT,
                 ScriptType.RestoreContinuousIntegration => CI_RESTORE_SCRIPT,
                 ScriptType.StoreContinuousIntegration => CI_STORE_SCRIPT,
+                ScriptType.ContinuousDevelopmentNewConfiguration => CD_NEW_CONFIG_SCRIPT,
                 ScriptType.None => string.Empty,
                 _ => string.Empty,
             };
@@ -180,5 +216,11 @@ namespace Xperience.Xman.Services
         /// The script which creates a new directory.
         /// </summary>
         CreateDirectory,
+
+
+        /// <summary>
+        /// The script which creates a new CD configuration file.
+        /// </summary>
+        ContinuousDevelopmentNewConfiguration
     }
 }
