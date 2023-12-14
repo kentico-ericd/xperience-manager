@@ -84,13 +84,13 @@ namespace Xperience.Xman.Commands
             }
 
             var config = await configManager.GetConfig();
+            await EnsureCDStructure(profile, config);
             if (actionName?.Equals(CONFIG, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await ConfigureXml(config, profile);
             }
             else if (actionName?.Equals(STORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
-                await EnsureCDStructure(profile, config);
                 await AnsiConsole.Progress()
                     .Columns(new ProgressColumn[]
                     {

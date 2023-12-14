@@ -48,7 +48,7 @@ namespace Xperience.Xman.Wizards
 
             Steps.Add(new Step<bool>(new()
             {
-                Prompt = new ConfirmationPrompt($"\n[green]Excluded[/] object types: {string.Join(";", Options.ExcludedObjectTypes ?? Enumerable.Empty<string>())}\nWould you like to change them?")
+                Prompt = new ConfirmationPrompt($"[green]Excluded[/] object types: {string.Join(";", Options.ExcludedObjectTypes ?? Enumerable.Empty<string>())}\nWould you like to change them?")
                 {
                     DefaultValue = false
                 },
