@@ -29,5 +29,11 @@ namespace Xperience.Xman.Configuration
         /// The <see cref="InstallOptions"/> stored in the configuration file.
         /// </summary>
         public InstallOptions? DefaultInstallOptions { get; set; }
+
+
+        /// <summary>
+        /// The absolute path to the directory which contains all Continuous Deployment data.
+        /// </summary>
+        public string CDRootPath { get; set; } = Path.Combine(Environment.CurrentDirectory, Constants.CD_CONFIG_DIR);
     }
 }

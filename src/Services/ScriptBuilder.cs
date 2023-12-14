@@ -18,9 +18,9 @@ namespace Xperience.Xman.Services
         private const string UPDATE_DATABASE_SCRIPT = "dotnet run --no-build --kxp-update";
         private const string CI_STORE_SCRIPT = "dotnet run --no-build --kxp-ci-store";
         private const string CI_RESTORE_SCRIPT = "dotnet run --no-build --kxp-ci-restore";
-        private const string CD_NEW_CONFIG_SCRIPT = $"dotnet run --no-build -- --kxp-cd-config --path \"{nameof(ToolProfile.ConfigPath)}\"";
-        private const string CD_STORE_SCRIPT = $"dotnet run --no-build -- --kxp-cd-store --repository-path \"{nameof(ToolProfile.RepositoryPath)}\" --config-path \"{nameof(ToolProfile.ConfigPath)}\"";
-        private const string CD_RESTORE_SCRIPT = $"dotnet run -- --kxp-cd-restore --repository-path \"{nameof(ToolProfile.RepositoryPath)}\"";
+        private const string CD_NEW_CONFIG_SCRIPT = $"dotnet run --no-build -- --kxp-cd-config --path \"{nameof(ContinuousDeploymentConfig.ConfigPath)}\"";
+        private const string CD_STORE_SCRIPT = $"dotnet run --no-build -- --kxp-cd-store --repository-path \"{nameof(ContinuousDeploymentConfig.RepositoryPath)}\" --config-path \"{nameof(ContinuousDeploymentConfig.ConfigPath)}\"";
+        private const string CD_RESTORE_SCRIPT = $"dotnet run -- --kxp-cd-restore --repository-path \"{nameof(ContinuousDeploymentConfig.RepositoryPath)}\"";
 
 
         public IScriptBuilder AppendCloud(bool useCloud)

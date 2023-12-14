@@ -15,17 +15,5 @@
         /// The absolute path to the installation's root folder.
         /// </summary>
         public string? WorkingDirectory { get; set; }
-
-
-        /// <summary>
-        /// The absolute path to the Continuous Deployment configuration file.
-        /// </summary>
-        public string? ConfigPath { get; set; }
-
-
-        /// <summary>
-        /// The absolute path to the Continuous Deployment repository.
-        /// </summary>
-        public string? RepositoryPath { get; set; }
     }
 }
