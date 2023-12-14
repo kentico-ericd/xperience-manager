@@ -1,4 +1,5 @@
-﻿using Xperience.Xman.Options;
+﻿using Xperience.Xman.Configuration;
+using Xperience.Xman.Options;
 
 namespace Xperience.Xman.Services
 {
@@ -17,7 +18,9 @@ namespace Xperience.Xman.Services
         private const string UPDATE_DATABASE_SCRIPT = "dotnet run --no-build --kxp-update";
         private const string CI_STORE_SCRIPT = "dotnet run --no-build --kxp-ci-store";
         private const string CI_RESTORE_SCRIPT = "dotnet run --no-build --kxp-ci-restore";
-        private const string CD_NEW_CONFIG_SCRIPT = "dotnet run --no-build -- --kxp-cd-config";
+        private const string CD_NEW_CONFIG_SCRIPT = $"dotnet run --no-build -- --kxp-cd-config --path \"{nameof(ToolProfile.ConfigPath)}\"";
+        private const string CD_STORE_SCRIPT = $"dotnet run --no-build -- --kxp-cd-store --repository-path \"{nameof(ToolProfile.RepositoryPath)}\" --config-path \"{nameof(ToolProfile.ConfigPath)}\"";
+        private const string CD_RESTORE_SCRIPT = $"dotnet run -- --kxp-cd-restore --repository-path \"{nameof(ToolProfile.RepositoryPath)}\"";
 
 
         public IScriptBuilder AppendCloud(bool useCloud)
@@ -37,29 +40,6 @@ namespace Xperience.Xman.Services
             {
                 currentScript += $" {name}";
             }
-
-            return this;
-        }
-
-
-        public IScriptBuilder AppendPath(string path)
-        {
-            currentScript += $" --path '{path}'";
-
-            return this;
-        }
-
-
-        public IScriptBuilder AppendProject(string path)
-        {
-            if (!currentScript.Contains("dotnet run"))
-            {
-                return this;
-            }
-
-            // Insert --project after "dotnet run"
-            string[] parts = currentScript.Split("dotnet run");
-            currentScript = $"dotnet run --project '{path}' {parts[1]}";
 
             return this;
         }
@@ -96,12 +76,12 @@ namespace Xperience.Xman.Services
         }
 
 
-        public IScriptBuilder WithOptions(IWizardOptions options)
+        public IScriptBuilder WithPlaceholders(object dataObject)
         {
-            // Replace all placeholders in script with option values if non-null or empty
-            foreach (var prop in options.GetType().GetProperties())
+            // Replace all placeholders in script with object values if non-null or empty
+            foreach (var prop in dataObject.GetType().GetProperties())
             {
-                string value = prop.GetValue(options)?.ToString() ?? string.Empty;
+                string value = prop.GetValue(dataObject)?.ToString() ?? string.Empty;
                 if (!string.IsNullOrEmpty(value))
                 {
                     currentScript = currentScript.Replace(prop.Name, value);
@@ -132,7 +112,9 @@ namespace Xperience.Xman.Services
                 ScriptType.DatabaseUpdate => UPDATE_DATABASE_SCRIPT,
                 ScriptType.RestoreContinuousIntegration => CI_RESTORE_SCRIPT,
                 ScriptType.StoreContinuousIntegration => CI_STORE_SCRIPT,
-                ScriptType.ContinuousDevelopmentNewConfiguration => CD_NEW_CONFIG_SCRIPT,
+                ScriptType.ContinuousDeploymentNewConfiguration => CD_NEW_CONFIG_SCRIPT,
+                ScriptType.ContinuousDeploymentStore => CD_STORE_SCRIPT,
+                ScriptType.ContinuousDeploymentRestore => CD_RESTORE_SCRIPT,
                 ScriptType.None => string.Empty,
                 _ => string.Empty,
             };
@@ -219,8 +201,20 @@ namespace Xperience.Xman.Services
 
 
         /// <summary>
-        /// The script which creates a new CD configuration file.
+        /// The script which creates a new Continuous Deployment configuration file.
         /// </summary>
-        ContinuousDevelopmentNewConfiguration
+        ContinuousDeploymentNewConfiguration,
+
+
+        /// <summary>
+        /// The script which stores Continuous Deployment data on the filesystem.
+        /// </summary>
+        ContinuousDeploymentStore,
+
+
+        /// <summary>
+        /// The script which restores Continuous Deployment data to the database.
+        /// </summary>
+        ContinuousDeploymentRestore
     }
 }

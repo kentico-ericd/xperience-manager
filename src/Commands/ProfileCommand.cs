@@ -115,42 +115,30 @@ namespace Xperience.Xman.Commands
 
         private async Task DeleteProfile(List<ToolProfile> profiles)
         {
-            string name = AnsiConsole.Prompt(new SelectionPrompt<string>()
+            var profile = AnsiConsole.Prompt(new SelectionPrompt<ToolProfile>()
                 .Title("Delete which [green]profile[/]?")
                 .PageSize(10)
+                .UseConverter(p => p.ProjectName ?? string.Empty)
                 .MoreChoicesText("Scroll for more...")
-                .AddChoices(profiles.Select(p => p.ProjectName ?? string.Empty)));
+                .AddChoices(profiles));
 
-            var match = profiles.FirstOrDefault(p => p.ProjectName?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? false);
-            if (string.IsNullOrEmpty(name) || match is null)
-            {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]No matching profile found[/]");
-                return;
-            }
+            await configManager.RemoveProfile(profile);
 
-            await configManager.RemoveProfile(name);
-
-            AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Profile '{name}' deleted[/]");
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Profile '{profile.ProjectName}' deleted[/]");
         }
 
 
         private async Task SwitchProfile(List<ToolProfile> profiles)
         {
-            var prompt = new SelectionPrompt<string>()
+            var prompt = new SelectionPrompt<ToolProfile>()
                     .Title("Switch to profile:")
                     .PageSize(10)
+                    .UseConverter(p => p.ProjectName ?? string.Empty)
                     .MoreChoicesText("Scroll for more...")
-                    .AddChoices(profiles.Select(p => p.ProjectName ?? string.Empty));
+                    .AddChoices(profiles);
 
-            string selected = AnsiConsole.Prompt(prompt);
-            if (await configManager.TrySetCurrentProfile(selected))
-            {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Switched to '{selected}'[/]");
-            }
-            else
-            {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.ERROR_COLOR}]Failed to switch to '{selected}'[/]");
-            }
+            var profile = AnsiConsole.Prompt(prompt);
+            await configManager.SetCurrentProfile(profile);
         }
     }
 }

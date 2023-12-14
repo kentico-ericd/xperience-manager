@@ -1,5 +1,3 @@
-using Xperience.Xman.Options;
-
 namespace Xperience.Xman.Services
 {
     /// <summary>
@@ -18,20 +16,6 @@ namespace Xperience.Xman.Services
         /// </summary>
         /// <param name="name">The name of the directory to create.</param>
         public IScriptBuilder AppendDirectory(string name);
-
-
-        /// <summary>
-        /// Appends a "--path" parameter to the script with the passed value.
-        /// </summary>
-        /// <param name="path">The absolute path to append.</param>
-        public IScriptBuilder AppendPath(string path);
-
-
-        /// <summary>
-        /// Appends a "--project" parameter to a "dotnet run" script with the passed value.
-        /// </summary>
-        /// <param name="path">The absolute path to append.</param>
-        public IScriptBuilder AppendProject(string path);
 
 
         /// <summary>
@@ -55,9 +39,9 @@ namespace Xperience.Xman.Services
 
 
         /// <summary>
-        /// Replaces script placeholders with the provided option values. If a property is <c>null</c> or emtpy,
+        /// Replaces script placeholders with the values of the object properties. If a property is <c>null</c> or emtpy,
         /// the placeholder remains in the script.
         /// </summary>
-        public IScriptBuilder WithOptions(IWizardOptions options);
+        public IScriptBuilder WithPlaceholders(object dataObject);
     }
 }

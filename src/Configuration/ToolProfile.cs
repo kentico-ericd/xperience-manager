@@ -18,8 +18,14 @@
 
 
         /// <summary>
-        /// A list of Continuous Development profiles registered for this installation.
+        /// The absolute path to the Continuous Deployment configuration file.
         /// </summary>
-        public List<CDProfile> ContinuousDevelopmentProfiles { get; set; } = new();
+        public string? ConfigPath { get; set; }
+
+
+        /// <summary>
+        /// The absolute path to the Continuous Deployment repository.
+        /// </summary>
+        public string? RepositoryPath { get; set; }
     }
 }

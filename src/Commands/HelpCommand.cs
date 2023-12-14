@@ -19,7 +19,8 @@ namespace Xperience.Xman.Commands
             new ProfileCommand(),
             new InstallCommand(),
             new UpdateCommand(),
-            new ContinuousIntegrationCommand()
+            new ContinuousIntegrationCommand(),
+            new ContinuousDeploymentCommand()
         };
 
 

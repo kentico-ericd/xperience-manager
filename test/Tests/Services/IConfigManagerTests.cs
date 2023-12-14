@@ -80,7 +80,12 @@ namespace Xperience.Xman.Tests.Tests.Services
         {
             File.Copy("Data/config_with_multiple_profiles.json", Constants.CONFIG_FILENAME);
 
-            await configManager.RemoveProfile("1");
+            ToolProfile profile = new()
+            {
+                ProjectName = "1",
+                WorkingDirectory = "C:\\1"
+            };
+            await configManager.RemoveProfile(profile);
             var config = await configManager.GetConfig();
 
             Assert.That(config.Profiles.Count, Is.EqualTo(1));

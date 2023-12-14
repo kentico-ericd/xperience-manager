@@ -108,7 +108,7 @@ namespace Xperience.Xman.Commands
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Updating {package} to version {options.Version}...[/]");
 
                 options.PackageName = package;
-                string packageScript = scriptBuilder.SetScript(ScriptType.PackageUpdate).WithOptions(options).AppendVersion(options.Version).Build();
+                string packageScript = scriptBuilder.SetScript(ScriptType.PackageUpdate).WithPlaceholders(options).AppendVersion(options.Version).Build();
                 await shellRunner.Execute(new(packageScript)
                 {
                     ErrorHandler = ErrorDataReceived,
