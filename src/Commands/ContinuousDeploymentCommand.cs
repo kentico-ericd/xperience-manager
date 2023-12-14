@@ -79,11 +79,41 @@ namespace Xperience.Xman.Commands
             if (actionName?.Equals(STORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await EnsureCDStructure(profile);
-                await StoreFiles(profile);
+                await AnsiConsole.Progress()
+                    .Columns(new ProgressColumn[]
+                    {
+                        new SpinnerColumn(),
+                        new ElapsedTimeColumn(),
+                        new TaskDescriptionColumn(),
+                        new ProgressBarColumn(),
+                        new PercentageColumn()
+                    })
+                    .StartAsync(async ctx =>
+                    {
+                        var task = ctx.AddTask($"[{Constants.EMPHASIS_COLOR}]Running the CD store script[/]");
+                        await StoreFiles(task, profile);
+                    });
             }
             else if (actionName?.Equals(RESTORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
-                await RestoreFiles(profile);
+                var sourceProfile = await GetSourceProfile();
+                if (sourceProfile is null)
+                {
+                    return;
+                }
+
+                await AnsiConsole.Progress()
+                    .Columns(new ProgressColumn[]
+                    {
+                        new SpinnerColumn(),
+                        new ElapsedTimeColumn(),
+                        new TaskDescriptionColumn()
+                    })
+                    .StartAsync(async ctx =>
+                    {
+                        var task = ctx.AddTask($"[{Constants.EMPHASIS_COLOR}]Running the CD restore script[/]");
+                        await RestoreFiles(task, profile, sourceProfile);
+                    });
             }
         }
 
@@ -96,6 +126,33 @@ namespace Xperience.Xman.Commands
             }
 
             await base.PostExecute(args);
+        }
+
+
+        private async Task<ToolProfile?> GetSourceProfile()
+        {
+            if (StopProcessing)
+            {
+                return null;
+            }
+
+            var config = await configManager.GetConfig();
+            var profiles = config.Profiles.Where(p => !p.ProjectName?.Equals(profile.ProjectName, StringComparison.OrdinalIgnoreCase) ?? false);
+            if (!profiles.Any())
+            {
+                AnsiConsole.MarkupLineInterpolated($"There are no profiles to restore CD data from. Use the [{Constants.EMPHASIS_COLOR}]install[/] or [{Constants.EMPHASIS_COLOR}]profile add[/] commands to register a new profile.");
+                StopProcessing = true;
+                return null;
+            }
+
+            var prompt = new SelectionPrompt<ToolProfile>()
+                    .Title("Restore data from which profile?")
+                    .PageSize(10)
+                    .UseConverter(p => p.ProjectName ?? string.Empty)
+                    .MoreChoicesText("Scroll for more...")
+                    .AddChoices(profiles);
+
+            return AnsiConsole.Prompt(prompt);
         }
 
 
@@ -125,40 +182,34 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task RestoreFiles(ToolProfile profile)
+        private async Task RestoreFiles(ProgressTask task, ToolProfile profile, ToolProfile sourceProfile)
         {
             if (StopProcessing)
             {
                 return;
             }
 
-            var config = await configManager.GetConfig();
-            var profiles = config.Profiles.Where(p => !p.ProjectName?.Equals(profile.ProjectName, StringComparison.OrdinalIgnoreCase) ?? false);
-            if (!profiles.Any())
-            {
-                AnsiConsole.MarkupLineInterpolated($"There are no profiles to restore CD data from. Use the [{Constants.EMPHASIS_COLOR}]install[/] or [{Constants.EMPHASIS_COLOR}]profile add[/] commands to register a new profile.");
-                StopProcessing = true;
-                return;
-            }
-
-            var prompt = new SelectionPrompt<ToolProfile>()
-                    .Title("Restore data from which profile?")
-                    .PageSize(10)
-                    .UseConverter(p => p.ProjectName ?? string.Empty)
-                    .MoreChoicesText("Scroll for more...")
-                    .AddChoices(profiles);
-            var sourceProfile = AnsiConsole.Prompt(prompt);
-
+            string originalDescription = task.Description;
             string cdScript = scriptBuilder.SetScript(ScriptType.ContinuousDeploymentRestore).WithPlaceholders(sourceProfile).Build();
             await shellRunner.Execute(new(cdScript)
             {
                 ErrorHandler = ErrorDataReceived,
-                WorkingDirectory = profile.WorkingDirectory
+                WorkingDirectory = profile.WorkingDirectory,
+                OutputHandler = (o, e) =>
+                {
+                    if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false)
+                    {
+                        // Message is something like "Object type Module: updating Activities"
+                        task.Description = e.Data;
+                    }
+                }
             }).WaitForExitAsync();
+
+            task.Description = originalDescription;
         }
 
 
-        private async Task StoreFiles(ToolProfile profile)
+        private async Task StoreFiles(ProgressTask task, ToolProfile profile)
         {
             if (StopProcessing)
             {
@@ -175,6 +226,27 @@ namespace Xperience.Xman.Commands
                     {
                         // For some reason, System.IO.IOException is not caught by the error handler
                         LogError(e.Data, o as Process);
+                    }
+                    else if ((e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false) && e.Data.Any(char.IsDigit))
+                    {
+                        // Message is something like "Object type 1/84: Module"
+                        string[] progressMessage = e.Data.Split(':');
+                        if (progressMessage.Length == 0)
+                        {
+                            return;
+                        }
+
+                        string[] progressNumbers = progressMessage[0].Split('/');
+                        if (progressNumbers.Length < 2)
+                        {
+                            return;
+                        }
+
+                        double progressCurrent = double.Parse(string.Join("", progressNumbers[0].Where(char.IsDigit)));
+                        double progressMax = double.Parse(string.Join("", progressNumbers[1].Where(char.IsDigit)));
+
+                        task.MaxValue = progressMax;
+                        task.Value = progressCurrent;
                     }
                 },
                 WorkingDirectory = profile.WorkingDirectory

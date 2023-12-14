@@ -61,9 +61,9 @@ namespace Xperience.Xman.Commands
             profile.ProjectName = options.ProjectName;
             profile.WorkingDirectory = Path.GetFullPath(options.ProjectName);
 
-            string repositoryPath = Path.Combine(Environment.CurrentDirectory, Constants.CD_CONFIG_DIR, options.ProjectName);
-            profile.RepositoryPath = repositoryPath;
-            profile.ConfigPath = Path.Combine(repositoryPath, "repository.config");
+            string rootPath = Path.Combine(Environment.CurrentDirectory, Constants.CD_CONFIG_DIR, options.ProjectName);
+            profile.RepositoryPath = Path.Combine(rootPath, Constants.CD_FILES_DIR);
+            profile.ConfigPath = Path.Combine(rootPath, "repository.config");
 
             await base.PreExecute(args);
         }

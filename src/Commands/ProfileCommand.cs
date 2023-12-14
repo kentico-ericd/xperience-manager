@@ -139,6 +139,8 @@ namespace Xperience.Xman.Commands
 
             var profile = AnsiConsole.Prompt(prompt);
             await configManager.SetCurrentProfile(profile);
+
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Switched to '{profile.ProjectName}'[/]");
         }
     }
 }
