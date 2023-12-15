@@ -19,6 +19,21 @@ namespace Xperience.Xman.Services
 
 
         /// <summary>
+        /// Appends "--old-salt" or "--new-salt" to the script if the script is <see cref="ScriptType.ResignMacros"/>.
+        /// </summary>
+        /// <param name="salt">The salt value appended to the script. If not provided, the salt from appsettings is used.</param>
+        /// <param name="isOld">If <c>true</c>, "--old-salt" is appended.</param>
+        public IScriptBuilder AppendSalt(string? salt, bool isOld);
+
+
+        /// <summary>
+        /// Appends "--sign-all" and "--username" to the script if the script is <see cref="ScriptType.ResignMacros"/> and
+        /// <paramref name="signAll"/> is <c>true</c>.
+        /// </summary>
+        public IScriptBuilder AppendSignAll(bool signAll, string? userName);
+
+
+        /// <summary>
         /// Appends a version number to the script if <paramref name="version"/> is not null.
         /// </summary>
         public IScriptBuilder AppendVersion(Version? version);

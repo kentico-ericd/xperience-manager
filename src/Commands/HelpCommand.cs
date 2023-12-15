@@ -20,7 +20,8 @@ namespace Xperience.Xman.Commands
             new InstallCommand(),
             new UpdateCommand(),
             new ContinuousIntegrationCommand(),
-            new ContinuousDeploymentCommand()
+            new ContinuousDeploymentCommand(),
+            new MacroCommand()
         };
 
 
