@@ -25,7 +25,7 @@ namespace Xperience.Xman.Tests.Tests.Services
         [Test]
         public void ProjectInstallScript_WithValidOptions_ReturnsValidScript()
         {
-            string script = scriptBuilder.SetScript(ScriptType.ProjectInstall).WithOptions(validInstallOptions).Build();
+            string script = scriptBuilder.SetScript(ScriptType.ProjectInstall).WithPlaceholders(validInstallOptions).Build();
             string expected = $"dotnet new {validInstallOptions.Template} -n {validInstallOptions.ProjectName}";
 
             Assert.That(script, Is.EqualTo(expected));
@@ -36,7 +36,7 @@ namespace Xperience.Xman.Tests.Tests.Services
         public void ProjectInstallScript_WithInvalidOptions_ThrowsException()
         {
             var options = new InstallOptions { Template = string.Empty };
-            var builder = scriptBuilder.SetScript(ScriptType.ProjectInstall).WithOptions(options);
+            var builder = scriptBuilder.SetScript(ScriptType.ProjectInstall).WithPlaceholders(options);
 
             Assert.That(() => builder.Build(), Throws.InvalidOperationException);
         }
@@ -47,7 +47,7 @@ namespace Xperience.Xman.Tests.Tests.Services
         {
             var version = new Version(1, 0, 0);
             string script = scriptBuilder.SetScript(ScriptType.TemplateInstall)
-                .WithOptions(validInstallOptions)
+                .WithPlaceholders(validInstallOptions)
                 .AppendVersion(version)
                 .Build();
             string expected = $"dotnet new install kentico.xperience.templates::{version}";
@@ -61,7 +61,7 @@ namespace Xperience.Xman.Tests.Tests.Services
         {
             var version = new Version(1, 0, 0);
             string script = scriptBuilder.SetScript(ScriptType.PackageUpdate)
-                .WithOptions(validUpdateOptions)
+                .WithPlaceholders(validUpdateOptions)
                 .AppendVersion(version)
                 .Build();
             string expected = $"dotnet add package {validUpdateOptions.PackageName} --version {version}";
@@ -73,7 +73,7 @@ namespace Xperience.Xman.Tests.Tests.Services
         [Test]
         public void DatabaseInstallScript_WithValidOptions_ReturnsValidScript()
         {
-            string script = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithOptions(validInstallOptions).Build();
+            string script = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithPlaceholders(validInstallOptions).Build();
             string expected = $"dotnet kentico-xperience-dbmanager -- -s \"{validInstallOptions.ServerName}\" -d \"{validInstallOptions.DatabaseName}\" -a \"{validInstallOptions.AdminPassword}\"";
 
             Assert.That(script, Is.EqualTo(expected));
@@ -84,7 +84,7 @@ namespace Xperience.Xman.Tests.Tests.Services
         public void DatabaseInstallScript_WithInvalidOptions_ThrowsException()
         {
             var options = new InstallOptions();
-            var builder = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithOptions(options);
+            var builder = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithPlaceholders(options);
 
             Assert.That(() => builder.Build(), Throws.InvalidOperationException);
         }

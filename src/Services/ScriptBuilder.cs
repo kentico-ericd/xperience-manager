@@ -1,4 +1,5 @@
-﻿using Xperience.Xman.Options;
+﻿using Xperience.Xman.Configuration;
+using Xperience.Xman.Options;
 
 namespace Xperience.Xman.Services
 {
@@ -8,7 +9,7 @@ namespace Xperience.Xman.Services
         private string currentScript = string.Empty;
 
         private const string BUILD_SCRIPT = "dotnet build";
-        private const string MKDIR_SCRIPT = $"mkdir {nameof(InstallOptions.ProjectName)}";
+        private const string MKDIR_SCRIPT = $"mkdir";
         private const string INSTALL_PROJECT_SCRIPT = $"dotnet new {nameof(InstallOptions.Template)} -n {nameof(InstallOptions.ProjectName)}";
         private const string INSTALL_DATABASE_SCRIPT = $"dotnet kentico-xperience-dbmanager -- -s \"{nameof(InstallOptions.ServerName)}\" -d \"{nameof(InstallOptions.DatabaseName)}\" -a \"{nameof(InstallOptions.AdminPassword)}\"";
         private const string UNINSTALL_TEMPLATE_SCRIPT = "dotnet new uninstall kentico.xperience.templates";
@@ -17,16 +18,30 @@ namespace Xperience.Xman.Services
         private const string UPDATE_DATABASE_SCRIPT = "dotnet run --no-build --kxp-update";
         private const string CI_STORE_SCRIPT = "dotnet run --no-build --kxp-ci-store";
         private const string CI_RESTORE_SCRIPT = "dotnet run --no-build --kxp-ci-restore";
+        private const string CD_NEW_CONFIG_SCRIPT = $"dotnet run --no-build -- --kxp-cd-config --path \"{nameof(ContinuousDeploymentConfig.ConfigPath)}\"";
+        private const string CD_STORE_SCRIPT = $"dotnet run --no-build -- --kxp-cd-store --repository-path \"{nameof(ContinuousDeploymentConfig.RepositoryPath)}\" --config-path \"{nameof(ContinuousDeploymentConfig.ConfigPath)}\"";
+        private const string CD_RESTORE_SCRIPT = $"dotnet run -- --kxp-cd-restore --repository-path \"{nameof(ContinuousDeploymentConfig.RepositoryPath)}\"";
 
 
-        public string Build()
+        public IScriptBuilder AppendCloud(bool useCloud)
         {
-            if (!ValidateScript())
+            if (currentScriptType.Equals(ScriptType.ProjectInstall) && useCloud)
             {
-                throw new InvalidOperationException("The script is empty or contains placeholder values.");
+                currentScript += " --cloud";
             }
 
-            return currentScript;
+            return this;
+        }
+
+
+        public IScriptBuilder AppendDirectory(string name)
+        {
+            if (currentScriptType.Equals(ScriptType.CreateDirectory))
+            {
+                currentScript += $" {name}";
+            }
+
+            return this;
         }
 
 
@@ -50,23 +65,23 @@ namespace Xperience.Xman.Services
         }
 
 
-        public IScriptBuilder AppendCloud(bool useCloud)
+        public string Build()
         {
-            if (currentScriptType.Equals(ScriptType.ProjectInstall) && useCloud)
+            if (!ValidateScript())
             {
-                currentScript += " --cloud";
+                throw new InvalidOperationException("The script is empty or contains placeholder values.");
             }
 
-            return this;
+            return currentScript;
         }
 
 
-        public IScriptBuilder WithOptions(IWizardOptions options)
+        public IScriptBuilder WithPlaceholders(object dataObject)
         {
-            // Replace all placeholders in script with option values if non-null or empty
-            foreach (var prop in options.GetType().GetProperties())
+            // Replace all placeholders in script with object values if non-null or empty
+            foreach (var prop in dataObject.GetType().GetProperties())
             {
-                string value = prop.GetValue(options)?.ToString() ?? string.Empty;
+                string value = prop.GetValue(dataObject)?.ToString() ?? string.Empty;
                 if (!string.IsNullOrEmpty(value))
                 {
                     currentScript = currentScript.Replace(prop.Name, value);
@@ -97,6 +112,9 @@ namespace Xperience.Xman.Services
                 ScriptType.DatabaseUpdate => UPDATE_DATABASE_SCRIPT,
                 ScriptType.RestoreContinuousIntegration => CI_RESTORE_SCRIPT,
                 ScriptType.StoreContinuousIntegration => CI_STORE_SCRIPT,
+                ScriptType.ContinuousDeploymentNewConfiguration => CD_NEW_CONFIG_SCRIPT,
+                ScriptType.ContinuousDeploymentStore => CD_STORE_SCRIPT,
+                ScriptType.ContinuousDeploymentRestore => CD_RESTORE_SCRIPT,
                 ScriptType.None => string.Empty,
                 _ => string.Empty,
             };
@@ -180,5 +198,23 @@ namespace Xperience.Xman.Services
         /// The script which creates a new directory.
         /// </summary>
         CreateDirectory,
+
+
+        /// <summary>
+        /// The script which creates a new Continuous Deployment configuration file.
+        /// </summary>
+        ContinuousDeploymentNewConfiguration,
+
+
+        /// <summary>
+        /// The script which stores Continuous Deployment data on the filesystem.
+        /// </summary>
+        ContinuousDeploymentStore,
+
+
+        /// <summary>
+        /// The script which restores Continuous Deployment data to the database.
+        /// </summary>
+        ContinuousDeploymentRestore
     }
 }

@@ -1,5 +1,3 @@
-using Xperience.Xman.Options;
-
 namespace Xperience.Xman.Services
 {
     /// <summary>
@@ -11,6 +9,13 @@ namespace Xperience.Xman.Services
         /// Appends " --cloud" to the script if <paramref name="useCloud"/> is true.
         /// </summary>
         public IScriptBuilder AppendCloud(bool useCloud);
+
+
+        /// <summary>
+        /// Appends the directory to create if the script is <see cref="ScriptType.CreateDirectory"/>.
+        /// </summary>
+        /// <param name="name">The name of the directory to create.</param>
+        public IScriptBuilder AppendDirectory(string name);
 
 
         /// <summary>
@@ -34,9 +39,9 @@ namespace Xperience.Xman.Services
 
 
         /// <summary>
-        /// Replaces script placeholders with the provided option values. If a property is <c>null</c> or emtpy,
+        /// Replaces script placeholders with the values of the object properties. If a property is <c>null</c> or emtpy,
         /// the placeholder remains in the script.
         /// </summary>
-        public IScriptBuilder WithOptions(IWizardOptions options);
+        public IScriptBuilder WithPlaceholders(object dataObject);
     }
 }

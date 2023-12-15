@@ -35,6 +35,7 @@ The following commands can be executed using the `xman` tool name:
 - [`i`, `install`](#installing-a-new-project)
 - [`u`, `update`](#updating-a-project-version)
 - [`ci <store> <restore>`](#running-continuous-integration)
+- [`cd <store> <restore> <config>`](#running-continuous-deployment)
 - [`p`, `profile <add> <delete> <switch>`](#managing-profiles)
 
 ### Managing profiles
@@ -98,3 +99,45 @@ You can use the `ci` command to serialize the database or restore the CI reposit
 
    - `xman ci store`
    - `xman ci restore`
+
+### Running Continuous Deployment
+
+This tool can help you manage a local [Continuous Deployment](https://docs.xperience.io/xp/developers-and-admins/ci-cd/continuous-deployment) environment. For example, if you are self-hosting your website and you have __DEV__ and __PROD__ Xperience by Kentico instances, the tool simplifies the process of migrating database changes from lower environments to production.
+
+The CD configuration files and repositories are stored in a subdirectory from where the tool is run from, by default in `/ContinuousDeployment`. You can customize the path by changing the __CDRootPath__ property in `xman.json`:
+
+```json
+{
+    "CDRootPath": "C:\\XperienceCDFiles",
+    ...
+}
+```
+
+The [configuration file](https://docs.xperience.io/xp/developers-and-admins/ci-cd/exclude-objects-from-ci-cd) is automatically created when you run the `cd` command and can be manually edited to fine-tune the CD process. You can also run the `config` command to edit the configuration file using a wizard. For example, you may want to change the [__RestoreMode__](https://docs.xperience.io/xp/developers-and-admins/ci-cd/exclude-objects-from-ci-cd#ExcludeobjectsfromCI/CD-CDrestoremode) before restoring CD data to the database.
+
+1. Select a profile with the [`profile`](#managing-profiles) command. This determines which configuration file is modified
+1. Run the `config` command from the directory containing the `xman.json` file, which will begin the configuration wizard:
+
+   ```bash
+   xman cd config
+   ```
+
+When you are finished development and wish to serialize the CD data to the filesystem, use the `store` command:
+
+1. Select a profile with the [`profile`](#managing-profiles) command. This determines which project's database is serialized
+1. Run the `store` command from the directory containing the `xman.json` file:
+
+   ```bash
+   xman p # switch to DEV profile
+   xman cd store # serialize DEV database
+   ```
+
+To migrate the changes from development to production, run the `restore` command:
+
+1. Select a profile with the [`profile`](#managing-profiles) command. This determines which project's database is updated
+1. Run the `restore` command from the directory containing the `xman.json` file. The tool will display a list of profiles to choose as the __source__ for the restore process (in this example, the DEV profile):
+
+   ```bash
+   xman p # switch to PROD profile
+   xman cd restore # restore DEV CD files to PROD database
+   ```

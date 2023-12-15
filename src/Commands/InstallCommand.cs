@@ -80,6 +80,12 @@ namespace Xperience.Xman.Commands
             {
                 await CreateDatabase(options);
             }
+
+            // Don't create profile for admin boilerplate since it's meant to be moved/included in another installation
+            if (!IsAdminTemplate())
+            {
+                await configManager.AddProfile(profile);
+            }
         }
 
 
@@ -87,12 +93,6 @@ namespace Xperience.Xman.Commands
         {
             if (!Errors.Any())
             {
-                // Don't create profile for admin boilerplate since it's meant to be moved/included in another installation
-                if (!IsAdminTemplate())
-                {
-                    await configManager.AddProfile(profile);
-                }
-
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Install complete![/]\n");
             }
 
@@ -102,7 +102,7 @@ namespace Xperience.Xman.Commands
 
         private async Task CreateWorkingDirectory(InstallOptions options)
         {
-            string mkdirScript = scriptBuilder.SetScript(ScriptType.CreateDirectory).WithOptions(options).Build();
+            string mkdirScript = scriptBuilder.SetScript(ScriptType.CreateDirectory).AppendDirectory(options.ProjectName).Build();
             await shellRunner.Execute(new(mkdirScript) { ErrorHandler = ErrorDataReceived }).WaitForExitAsync();
         }
 
@@ -116,7 +116,7 @@ namespace Xperience.Xman.Commands
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running database creation script...[/]");
 
-            string databaseScript = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithOptions(options).Build();
+            string databaseScript = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithPlaceholders(options).Build();
             await shellRunner.Execute(new(databaseScript)
             {
                 ErrorHandler = ErrorDataReceived,
@@ -135,7 +135,7 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running project creation script...[/]");
 
             string installScript = scriptBuilder.SetScript(ScriptType.ProjectInstall)
-                .WithOptions(options)
+                .WithPlaceholders(options)
                 .AppendCloud(options.UseCloud)
                 .Build();
 
@@ -178,7 +178,7 @@ namespace Xperience.Xman.Commands
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Installing template version {options.Version}...[/]");
 
             string installScript = scriptBuilder.SetScript(ScriptType.TemplateInstall)
-                .WithOptions(options)
+                .WithPlaceholders(options)
                 .AppendVersion(options.Version)
                 .Build();
             var installCmd = shellRunner.Execute(new(installScript) { ErrorHandler = ErrorDataReceived });

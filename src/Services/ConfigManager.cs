@@ -16,25 +16,18 @@ namespace Xperience.Xman.Services
             {
                 throw new InvalidOperationException($"There is already a profile named '{profile.ProjectName}.'");
             }
+
             config.Profiles.Add(profile);
 
             await WriteConfig(config);
         }
 
 
-        public async Task<bool> TrySetCurrentProfile(string profileName)
+        public async Task SetCurrentProfile(ToolProfile profile)
         {
             var config = await GetConfig();
-            var match = config.Profiles.FirstOrDefault(p => p.ProjectName?.Equals(profileName, StringComparison.OrdinalIgnoreCase) ?? false);
-            if (match is null)
-            {
-                return false;
-            }
-
-            config.CurrentProfile = profileName;
+            config.CurrentProfile = profile.ProjectName;
             await WriteConfig(config);
-
-            return true;
         }
 
 
@@ -50,7 +43,7 @@ namespace Xperience.Xman.Services
                 var profile = config.Profiles.FirstOrDefault();
                 if (profile is not null)
                 {
-                    await TrySetCurrentProfile(profile.ProjectName ?? string.Empty);
+                    await SetCurrentProfile(profile);
 
                     return profile;
                 }
@@ -99,13 +92,13 @@ namespace Xperience.Xman.Services
         }
 
 
-        public async Task RemoveProfile(string name)
+        public async Task RemoveProfile(ToolProfile profile)
         {
             var config = await GetConfig();
 
             // For some reason Profiles.Remove() didn't work, make a new list
             var newProfiles = new List<ToolProfile>();
-            newProfiles.AddRange(config.Profiles.Where(p => !p.ProjectName?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? true));
+            newProfiles.AddRange(config.Profiles.Where(p => !p.ProjectName?.Equals(profile.ProjectName, StringComparison.OrdinalIgnoreCase) ?? true));
 
             config.Profiles = newProfiles;
 
@@ -128,6 +121,6 @@ namespace Xperience.Xman.Services
         }
 
 
-        private Task WriteConfig(ToolConfiguration config) => File.WriteAllTextAsync(Constants.CONFIG_FILENAME, JsonConvert.SerializeObject(config));
+        private Task WriteConfig(ToolConfiguration config) => File.WriteAllTextAsync(Constants.CONFIG_FILENAME, JsonConvert.SerializeObject(config, Formatting.Indented));
     }
 }
