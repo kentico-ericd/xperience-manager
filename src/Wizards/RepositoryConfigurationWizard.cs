@@ -5,6 +5,9 @@ using Xperience.Xman.Steps;
 
 namespace Xperience.Xman.Wizards
 {
+    /// <summary>
+    /// A wizard which generates a <see cref="RepositoryConfiguration"/> for customizing Continuous Deployment configuration files.
+    /// </summary>
     public class RepositoryConfigurationWizard : AbstractWizard<RepositoryConfiguration>
     {
         private bool changeIncluded;

@@ -2,6 +2,9 @@
 
 namespace Xperience.Xman.Options
 {
+    /// <summary>
+    /// Represents the CD configuration XML file.
+    /// </summary>
     public class RepositoryConfiguration : IWizardOptions
     {
         public string? RestoreMode { get; set; }
