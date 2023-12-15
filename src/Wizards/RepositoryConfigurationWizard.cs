@@ -40,7 +40,7 @@ namespace Xperience.Xman.Wizards
 
             Steps.Add(new Step<string>(new()
             {
-                Prompt = new TextPrompt<string>("Enter new [green]included[/] object types:")
+                Prompt = new TextPrompt<string>("Enter new [green]included[/] object types separated by semi-colon:")
                     .AllowEmpty(),
                 ValueReceiver = (v) =>
                 {
@@ -62,7 +62,7 @@ namespace Xperience.Xman.Wizards
 
             Steps.Add(new Step<string>(new()
             {
-                Prompt = new TextPrompt<string>("Enter new [green]excluded[/] object types:")
+                Prompt = new TextPrompt<string>("Enter new [green]excluded[/] object types separated by semi-colon:")
                     .AllowEmpty(),
                 ValueReceiver = (v) =>
                 {
