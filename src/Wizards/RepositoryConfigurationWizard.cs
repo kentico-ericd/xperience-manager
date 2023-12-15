@@ -42,7 +42,12 @@ namespace Xperience.Xman.Wizards
             {
                 Prompt = new TextPrompt<string>("Enter new [green]included[/] object types:")
                     .AllowEmpty(),
-                ValueReceiver = (v) => Options.IncludedObjectTypes = new List<string>(v.Split(';')),
+                ValueReceiver = (v) =>
+                {
+                    string[] types = v.Split(';');
+                    var list = new List<string>(types.Where(t => !string.IsNullOrEmpty(t)));
+                    Options.IncludedObjectTypes = list;
+                },
                 SkipChecker = () => !changeIncluded
             }));
 
@@ -59,7 +64,12 @@ namespace Xperience.Xman.Wizards
             {
                 Prompt = new TextPrompt<string>("Enter new [green]excluded[/] object types:")
                     .AllowEmpty(),
-                ValueReceiver = (v) => Options.ExcludedObjectTypes = new List<string>(v.Split(';')),
+                ValueReceiver = (v) =>
+                {
+                    string[] types = v.Split(';');
+                    var list = new List<string>(types.Where(t => !string.IsNullOrEmpty(t)));
+                    Options.ExcludedObjectTypes = list;
+                },
                 SkipChecker = () => !changeExcluded
             }));
 
