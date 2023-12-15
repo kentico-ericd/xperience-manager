@@ -68,17 +68,17 @@ namespace Xperience.Xman.Commands
             }
 
             await AnsiConsole.Progress()
-                    .Columns(new ProgressColumn[]
-                    {
-                        new SpinnerColumn(),
-                        new ElapsedTimeColumn(),
-                        new TaskDescriptionColumn()
-                    })
-                    .StartAsync(async ctx =>
-                    {
-                        var task = ctx.AddTask($"[{Constants.EMPHASIS_COLOR}]Re-signing macros...[/]");
-                        await ResignMacros(task, profile, options);
-                    });
+                .Columns(new ProgressColumn[]
+                {
+                    new SpinnerColumn(),
+                    new ElapsedTimeColumn(),
+                    new TaskDescriptionColumn()
+                })
+                .StartAsync(async ctx =>
+                {
+                    var task = ctx.AddTask($"[{Constants.EMPHASIS_COLOR}]Re-signing macros...[/]");
+                    await ResignMacros(task, profile, options);
+                });
         }
 
 

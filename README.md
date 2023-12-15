@@ -34,6 +34,7 @@ The following commands can be executed using the `xman` tool name:
 - `?`, `help`
 - [`i`, `install`](#installing-a-new-project)
 - [`u`, `update`](#updating-a-project-version)
+- [`m`, `macros`](#re-signing-macros)
 - [`ci <store> <restore>`](#running-continuous-integration)
 - [`cd <store> <restore> <config>`](#running-continuous-deployment)
 - [`p`, `profile <add> <delete> <switch>`](#managing-profiles)
@@ -88,6 +89,17 @@ Currently, there is a bug with updating the project's database version, so the t
 
    ```bash
    xman update
+   ```
+
+### Re-signing macros
+
+See [our documentation](https://docs.xperience.io/xp/developers-and-admins/configuration/macro-expressions/macro-signatures) for more information about macro signatures and the available options.
+
+1. (optional) Select a profile with the [`profile`](#managing-profiles) command
+1. Run the `macros` command from the directory containing the `xman.json` file, which will begin the macro wizard:
+
+   ```bash
+   xman macros
    ```
 
 ### Running Continuous Integration
