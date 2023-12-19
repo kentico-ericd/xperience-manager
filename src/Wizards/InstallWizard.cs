@@ -51,6 +51,13 @@ namespace Xperience.Xman.Wizards
                 ValueReceiver = (v) => Options.ProjectName = v
             }));
 
+            Steps.Add(new Step<string>(new()
+            {
+                Prompt = new TextPrompt<string>("Install [green]where[/]?")
+                    .DefaultValue(Options.InstallRootPath),
+                ValueReceiver = (v) => Options.InstallRootPath = v
+            }));
+
             var cloudPrompt = new ConfirmationPrompt("Prepare for [green]cloud[/] deployment?")
             {
                 DefaultValue = Options.UseCloud

@@ -21,6 +21,7 @@ namespace Xperience.Xman.Services
         private const string CD_NEW_CONFIG_SCRIPT = $"dotnet run --no-build -- --kxp-cd-config --path \"{nameof(ContinuousDeploymentConfig.ConfigPath)}\"";
         private const string CD_STORE_SCRIPT = $"dotnet run --no-build -- --kxp-cd-store --repository-path \"{nameof(ContinuousDeploymentConfig.RepositoryPath)}\" --config-path \"{nameof(ContinuousDeploymentConfig.ConfigPath)}\"";
         private const string CD_RESTORE_SCRIPT = $"dotnet run -- --kxp-cd-restore --repository-path \"{nameof(ContinuousDeploymentConfig.RepositoryPath)}\"";
+        private const string MACRO_SCRIPT = "dotnet run --no-build -- --kxp-resign-macros";
 
 
         public IScriptBuilder AppendCloud(bool useCloud)
@@ -34,12 +35,38 @@ namespace Xperience.Xman.Services
         }
 
 
-        public IScriptBuilder AppendDirectory(string name)
+        public IScriptBuilder AppendDirectory(string? path)
         {
             if (currentScriptType.Equals(ScriptType.CreateDirectory))
             {
-                currentScript += $" {name}";
+                currentScript += $" \"{path}\"";
             }
+
+            return this;
+        }
+
+
+        public IScriptBuilder AppendSalt(string? salt, bool isOld)
+        {
+            if (string.IsNullOrEmpty(salt) || !currentScriptType.Equals(ScriptType.ResignMacros))
+            {
+                return this;
+            }
+
+            currentScript += $" {(isOld ? "--old-salt" : "--new-salt")} \"{salt}\"";
+
+            return this;
+        }
+
+
+        public IScriptBuilder AppendSignAll(bool signAll, string? userName)
+        {
+            if (!signAll || string.IsNullOrEmpty(userName) || !currentScriptType.Equals(ScriptType.ResignMacros))
+            {
+                return this;
+            }
+
+            currentScript += $" --sign-all --username \"{userName}\"";
 
             return this;
         }
@@ -115,6 +142,7 @@ namespace Xperience.Xman.Services
                 ScriptType.ContinuousDeploymentNewConfiguration => CD_NEW_CONFIG_SCRIPT,
                 ScriptType.ContinuousDeploymentStore => CD_STORE_SCRIPT,
                 ScriptType.ContinuousDeploymentRestore => CD_RESTORE_SCRIPT,
+                ScriptType.ResignMacros => MACRO_SCRIPT,
                 ScriptType.None => string.Empty,
                 _ => string.Empty,
             };
@@ -215,6 +243,12 @@ namespace Xperience.Xman.Services
         /// <summary>
         /// The script which restores Continuous Deployment data to the database.
         /// </summary>
-        ContinuousDeploymentRestore
+        ContinuousDeploymentRestore,
+
+
+        /// <summary>
+        /// The script which re-signs macros.
+        /// </summary>
+        ResignMacros,
     }
 }

@@ -26,6 +26,13 @@ namespace Xperience.Xman.Options
 
 
         /// <summary>
+        /// The absolute path of the parent directory to install the project within. E.g. if set to
+        /// "C:\inetpub\wwwroot" a new installation will be created in "C:\inetpub\wwwroot\projectname."
+        /// </summary>
+        public string InstallRootPath { get; set; } = Environment.CurrentDirectory;
+
+
+        /// <summary>
         /// If <c>true</c>, the "--cloud" parameter is used during installation.
         /// </summary>
         public bool UseCloud { get; set; } = false;
