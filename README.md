@@ -25,7 +25,37 @@ dotnet tool update xperience.xman -g
 
 ## Getting started
 
-This tool must be run from a parent directory containing one or more Xperience by Kentico projects, for example the C:\inetpub\wwwroot directory. When you [install](#installing-a-new-project) a new instance, a new profile is created in the `xman.json` file, allowing you to manage multiple installations without changing directory.
+This tool can be run from anywhere, as long as the directory contains the [configuration file](#configuration-file). If there is no configuration file, a new one will be created when you run the tool. When you [install](#installing-a-new-project) a new instance, a new profile is created in the configuration file, allowing you to manage multiple installations without changing directory.
+
+## Configuration file
+
+The `xman.json` file contains information about the tool, your default options, and [profiles](#managing-profiles). This file will be automatically created if it doesn't exist when you run a command like `xman p`.
+
+```json
+{
+  "Version": "3.1.0.0",
+  "Profiles": [
+    {
+      "ProjectName": "28dev",
+      "WorkingDirectory": "C:\\inetpub\\wwwroot\\28dev"
+    }
+  ],
+  "CurrentProfile": "28dev",
+  "DefaultInstallOptions": {
+    "Version": null, // Version cannot have a default value
+    "Template": "kentico-xperience-sample-mvc",
+    "ProjectName": "myproject",
+    "InstallRootPath": "C:\\inetpub\\wwwroot",
+    "UseCloud": false,
+    "DatabaseName": "xperience",
+    "ServerName": "my-server",
+    "AdminPassword": "mypassword"
+  },
+  "CDRootPath": "C:\\inetpub\\wwwroot\\ContinuousDeployment"
+}
+```
+
+You can edit this file to change the `DefaultInstallOptions` used when [installing](#installing-a-new-project) new Xperience by Kentico projects, and the location of the [Continuous Deployment](#running-continuous-deployment) files.
 
 ## Usage
 
@@ -41,15 +71,16 @@ The following commands can be executed using the `xman` tool name:
 
 ### Managing profiles
 
-<img src="https://raw.githubusercontent.com/kentico-ericd/xperience-manager/master/img/profiles.png" width="350" />
-
 Certain commands such as `update` are executed against the installation indicated by the current profile. The `profile` command shows you the current profile, and allows you to switch profiles. If you only have one profile, that is automatically selected.
 
-To __switch__ profiles, run the `profile` command from the directory containing the `xman.json` file:
+To __switch__ profiles, run the `profile` command from the directory containing the [configuration file](#configuration-file):
 
 ```bash
 xman profile
 ```
+
+<img src="https://raw.githubusercontent.com/kentico-ericd/xperience-manager/master/img/profiles.png" width="350" />
+
 
 You can __add__ or __delete__ profiles using the corresponding commands. This can be useful to register Xperience by Kentico installations that weren't installed using the tool.
 
@@ -60,21 +91,9 @@ xman p delete
 
 ### Installing a new project
 
-This command installs a new Xperience by Kentico project in a subfolder of the current directory. The name of the profile and subfolder are determined by the __Project name__ entered during installation. The `xman.json` file contains default installation options, which you may edit to speed up the installation of new instances. For example:
+When installing a new project, a new folder will be created in the `InstallRootPath` of the [configuration file](#configuration-file), or in a custom directory that you specify in the installation wizard. After installation, a new [profile](#managing-profiles) is created for the instance.
 
-```json
-"DefaultInstallOptions": {
-   "AdminPassword": "mypassword",
-   "DatabaseName": "mycompany",
-   "ProjectName": "mysite",
-   "ServerName": "company-server",
-   "Template": "kentico-xperience-sample-mvc",
-   "UseCloud": true,
-   "Version": null //Version cannot have a default value
-},
-```
-
-1. Run the `install` command from the directory containing the `xman.json` file, which will begin the installation wizard:
+1. Run the `install` command from the directory containing the [configuration file](#configuration-file) which will begin the installation wizard:
 
    ```bash
    xman install
@@ -85,7 +104,7 @@ This command installs a new Xperience by Kentico project in a subfolder of the c
 Currently, there is a bug with updating the project's database version, so the tool only updates the NuGet packages and builds the project. However, the database update command is provided in the UI for easy copy-pasting.
 
 1. (optional) Select a profile with the [`profile`](#managing-profiles) command
-1. Run the `update` command from the directory containing the `xman.json` file, which will begin the update wizard:
+1. Run the `update` command from the directory containing the [configuration file](#configuration-file), which will begin the update wizard:
 
    ```bash
    xman update
@@ -96,7 +115,7 @@ Currently, there is a bug with updating the project's database version, so the t
 See [our documentation](https://docs.xperience.io/xp/developers-and-admins/configuration/macro-expressions/macro-signatures) for more information about macro signatures and the available options.
 
 1. (optional) Select a profile with the [`profile`](#managing-profiles) command
-1. Run the `macros` command from the directory containing the `xman.json` file, which will begin the macro wizard:
+1. Run the `macros` command from the directory containing the [configuration file](#configuration-file), which will begin the macro wizard:
 
    ```bash
    xman macros
@@ -107,7 +126,7 @@ See [our documentation](https://docs.xperience.io/xp/developers-and-admins/confi
 You can use the `ci` command to serialize the database or restore the CI repository to the database. Your project must have been built at least once to run CI commands.
 
 1. (optional) Select a profile with the [`profile`](#managing-profiles) command
-2. Run the desired command to begin the CI process:
+2. Run the desired command from the directory containing the [configuration file](#configuration-file) to begin the CI process:
 
    - `xman ci store`
    - `xman ci restore`
@@ -116,7 +135,7 @@ You can use the `ci` command to serialize the database or restore the CI reposit
 
 This tool can help you manage a local [Continuous Deployment](https://docs.xperience.io/xp/developers-and-admins/ci-cd/continuous-deployment) environment. For example, if you are self-hosting your website and you have __DEV__ and __PROD__ Xperience by Kentico instances, the tool simplifies the process of migrating database changes from lower environments to production.
 
-The CD configuration files and repositories are stored in a subdirectory from where the tool is run from, by default in `/ContinuousDeployment`. You can customize the path by changing the __CDRootPath__ property in `xman.json`:
+You can customize the location of the CD files by changing the __CDRootPath__ property in the [configuration file](#configuration-file):
 
 ```json
 {
@@ -125,10 +144,10 @@ The CD configuration files and repositories are stored in a subdirectory from wh
 }
 ```
 
-The [configuration file](https://docs.xperience.io/xp/developers-and-admins/ci-cd/exclude-objects-from-ci-cd) is automatically created when you run the `cd` command and can be manually edited to fine-tune the CD process. You can also run the `config` command to edit the configuration file using a wizard. For example, you may want to change the [__RestoreMode__](https://docs.xperience.io/xp/developers-and-admins/ci-cd/exclude-objects-from-ci-cd#ExcludeobjectsfromCI/CD-CDrestoremode) before restoring CD data to the database.
+Your project's [CD configuration file](https://docs.xperience.io/xp/developers-and-admins/ci-cd/exclude-objects-from-ci-cd) is automatically created when you run the `cd` command and can be manually edited to fine-tune the CD process. You can also run the `config` command to edit the configuration file using a wizard. For example, you may want to change the [__RestoreMode__](https://docs.xperience.io/xp/developers-and-admins/ci-cd/exclude-objects-from-ci-cd#ExcludeobjectsfromCI/CD-CDrestoremode) before restoring CD data to the database.
 
 1. Select a profile with the [`profile`](#managing-profiles) command. This determines which configuration file is modified
-1. Run the `config` command from the directory containing the `xman.json` file, which will begin the configuration wizard:
+1. Run the `config` command from the directory containing the [configuration file](#configuration-file), which will begin the configuration wizard:
 
    ```bash
    xman cd config
@@ -137,7 +156,7 @@ The [configuration file](https://docs.xperience.io/xp/developers-and-admins/ci-c
 When you are finished development and wish to serialize the CD data to the filesystem, use the `store` command:
 
 1. Select a profile with the [`profile`](#managing-profiles) command. This determines which project's database is serialized
-1. Run the `store` command from the directory containing the `xman.json` file:
+1. Run the `store` command from the directory containing the [configuration file](#configuration-file):
 
    ```bash
    xman p # switch to DEV profile
@@ -147,7 +166,7 @@ When you are finished development and wish to serialize the CD data to the files
 To migrate the changes from development to production, run the `restore` command:
 
 1. Select a profile with the [`profile`](#managing-profiles) command. This determines which project's database is updated
-1. Run the `restore` command from the directory containing the `xman.json` file. The tool will display a list of profiles to choose as the __source__ for the restore process (in this example, the DEV profile):
+1. Run the `restore` command from the directory containing the [configuration file](#configuration-file). The tool will display a list of profiles to choose as the __source__ for the restore process (in this example, the DEV profile):
 
    ```bash
    xman p # switch to PROD profile
