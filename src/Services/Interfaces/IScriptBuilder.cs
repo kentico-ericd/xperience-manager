@@ -14,8 +14,8 @@ namespace Xperience.Xman.Services
         /// <summary>
         /// Appends the directory to create if the script is <see cref="ScriptType.CreateDirectory"/>.
         /// </summary>
-        /// <param name="name">The name of the directory to create.</param>
-        public IScriptBuilder AppendDirectory(string name);
+        /// <param name="path">The path of the directory to create.</param>
+        public IScriptBuilder AppendDirectory(string? path);
 
 
         /// <summary>

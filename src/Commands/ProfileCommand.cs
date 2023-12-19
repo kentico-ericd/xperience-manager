@@ -1,7 +1,9 @@
 ﻿using Spectre.Console;
 
 using Xperience.Xman.Configuration;
+using Xperience.Xman.Options;
 using Xperience.Xman.Services;
+using Xperience.Xman.Wizards;
 
 namespace Xperience.Xman.Commands
 {
@@ -12,6 +14,7 @@ namespace Xperience.Xman.Commands
         private const string DELETE = "delete";
         private const string SWITCH = "switch";
         private readonly IConfigManager configManager;
+        private readonly IWizard<NewProfileOptions> wizard;
 
 
         public override IEnumerable<string> Keywords => new string[] { "p", "profile" };
@@ -34,7 +37,11 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public ProfileCommand(IConfigManager configManager) => this.configManager = configManager;
+        public ProfileCommand(IConfigManager configManager, IWizard<NewProfileOptions> wizard)
+        {
+            this.configManager = configManager;
+            this.wizard = wizard;
+        }
 
 
         public override async Task PreExecute(string[] args)
@@ -96,20 +103,19 @@ namespace Xperience.Xman.Commands
 
         private async Task AddProfile()
         {
-            string name = AnsiConsole.Prompt(new TextPrompt<string>("Enter the [green]name[/] of the subfolder containing your Xperience project:"));
-            string fullPath = Path.GetFullPath(name);
-            if (!Directory.Exists(fullPath))
+            var options = await wizard.Run();
+            if (!Directory.Exists(options.WorkingDirectory))
             {
-                throw new DirectoryNotFoundException($"The directory {fullPath} couldn't be found.");
+                throw new DirectoryNotFoundException($"The directory {options.WorkingDirectory} couldn't be found.");
             }
 
             await configManager.AddProfile(new()
             {
-                ProjectName = name,
-                WorkingDirectory = fullPath
+                ProjectName = options.Name,
+                WorkingDirectory = options.WorkingDirectory
             });
 
-            AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Profile '{name}' added[/]");
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Profile '{options.Name}' added[/]");
         }
 
 

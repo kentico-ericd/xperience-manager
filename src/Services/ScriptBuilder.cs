@@ -35,11 +35,11 @@ namespace Xperience.Xman.Services
         }
 
 
-        public IScriptBuilder AppendDirectory(string name)
+        public IScriptBuilder AppendDirectory(string? path)
         {
             if (currentScriptType.Equals(ScriptType.CreateDirectory))
             {
-                currentScript += $" {name}";
+                currentScript += $" \"{path}\"";
             }
 
             return this;

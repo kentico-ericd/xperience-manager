@@ -59,7 +59,7 @@ namespace Xperience.Xman.Commands
             AnsiConsole.WriteLine();
 
             profile.ProjectName = options.ProjectName;
-            profile.WorkingDirectory = Path.GetFullPath(options.ProjectName);
+            profile.WorkingDirectory = $"{options.InstallRootPath}\\{options.ProjectName}";
 
             await base.PreExecute(args);
         }
@@ -72,7 +72,7 @@ namespace Xperience.Xman.Commands
                 throw new InvalidOperationException("The installation options weren't found.");
             }
 
-            await CreateWorkingDirectory(options);
+            await CreateWorkingDirectory();
             await InstallTemplate(options);
             await CreateProjectFiles(options);
             // Admin boilerplate project doesn't require database install
@@ -100,9 +100,11 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task CreateWorkingDirectory(InstallOptions options)
+        private async Task CreateWorkingDirectory()
         {
-            string mkdirScript = scriptBuilder.SetScript(ScriptType.CreateDirectory).AppendDirectory(options.ProjectName).Build();
+            string mkdirScript = scriptBuilder.SetScript(ScriptType.CreateDirectory)
+                .AppendDirectory(profile.WorkingDirectory)
+                .Build();
             await shellRunner.Execute(new(mkdirScript) { ErrorHandler = ErrorDataReceived }).WaitForExitAsync();
         }
 
@@ -116,7 +118,9 @@ namespace Xperience.Xman.Commands
 
             AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Running database creation script...[/]");
 
-            string databaseScript = scriptBuilder.SetScript(ScriptType.DatabaseInstall).WithPlaceholders(options).Build();
+            string databaseScript = scriptBuilder.SetScript(ScriptType.DatabaseInstall)
+                .WithPlaceholders(options)
+                .Build();
             await shellRunner.Execute(new(databaseScript)
             {
                 ErrorHandler = ErrorDataReceived,
