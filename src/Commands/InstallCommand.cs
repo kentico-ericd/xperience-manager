@@ -50,7 +50,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task Execute(ToolProfile? profile, string[] args)
+        public override async Task Execute(ToolProfile? profile, string? action)
         {
             // Override default values of InstallOptions with values from config file
             wizard.Options = await configManager.GetDefaultInstallOptions();
@@ -77,14 +77,14 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PostExecute(ToolProfile? profile, string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string? action)
         {
             if (!Errors.Any())
             {
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Install complete![/]\n");
             }
 
-            await base.PostExecute(profile, args);
+            await base.PostExecute(profile, action);
         }
 
 

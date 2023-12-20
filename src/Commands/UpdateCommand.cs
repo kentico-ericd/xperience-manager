@@ -13,7 +13,6 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class UpdateCommand : AbstractCommand
     {
-        private UpdateOptions? options;
         private readonly IShellRunner shellRunner;
         private readonly IScriptBuilder scriptBuilder;
         private readonly IWizard<UpdateOptions> wizard;
@@ -59,20 +58,9 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PreExecute(ToolProfile? profile, string[] args)
+        public override async Task Execute(ToolProfile? profile, string? action)
         {
-            await base.PreExecute(profile, args);
-
-            options = await wizard.Run();
-        }
-
-
-        public override async Task Execute(ToolProfile? profile, string[] args)
-        {
-            if (options is null)
-            {
-                throw new InvalidOperationException("Options weren't found.");
-            }
+            var options = await wizard.Run();
 
             await UpdatePackages(options, profile);
             // There is currently an issue running the database update script while emulating the ReadKey() input
@@ -81,14 +69,14 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PostExecute(ToolProfile? profile, string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string? action)
         {
             if (!Errors.Any())
             {
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Update complete![/]\n");
             }
 
-            await base.PostExecute(profile, args);
+            await base.PostExecute(profile, action);
         }
 
 

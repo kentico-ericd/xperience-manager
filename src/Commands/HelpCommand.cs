@@ -37,7 +37,7 @@ namespace Xperience.Xman.Commands
         public override string Description => "Displays the help menu (this screen)";
 
 
-        public override async Task Execute(ToolProfile? profile, string[] args)
+        public override async Task Execute(ToolProfile? profile, string? action)
         {
             AnsiConsole.Write(
                 new FigletText("xman")

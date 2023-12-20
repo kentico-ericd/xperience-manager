@@ -39,7 +39,7 @@ namespace Xperience.Xman.Commands
         public SettingsCommand(IAppSettingsManager appSettingsManager) => this.appSettingsManager = appSettingsManager;
 
 
-        public override async Task Execute(ToolProfile? profile, string[] args)
+        public override async Task Execute(ToolProfile? profile, string? action)
         {
             string connStringName = "CMSConnectionString";
             string? connString = await appSettingsManager.GetConnectionString(profile, connStringName);
@@ -64,11 +64,11 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PostExecute(ToolProfile? profile, string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string? action)
         {
             AnsiConsole.WriteLine();
 
-            await base.PostExecute(profile, args);
+            await base.PostExecute(profile, action);
         }
 
 

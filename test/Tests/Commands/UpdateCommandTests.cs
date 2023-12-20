@@ -35,8 +35,8 @@ namespace Xperience.Xman.Tests.Tests.Commands
         public async Task Execute_CallsUpdateScripts()
         {
             var command = new UpdateCommand(shellRunner, new ScriptBuilder(), updateWizard);
-            await command.PreExecute(new(), Array.Empty<string>());
-            await command.Execute(new(), Array.Empty<string>());
+            await command.PreExecute(new(), string.Empty);
+            await command.Execute(new(), string.Empty);
 
             string[] packageNames = new string[]
             {

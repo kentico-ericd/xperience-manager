@@ -44,17 +44,17 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task Execute(ToolProfile? profile, string[] args) => await BuildProject(profile);
+        public override async Task Execute(ToolProfile? profile, string? action) => await BuildProject(profile);
 
 
-        public override async Task PostExecute(ToolProfile? profile, string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string? action)
         {
             if (!Errors.Any())
             {
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Build complete![/]\n");
             }
 
-            await base.PostExecute(profile, args);
+            await base.PostExecute(profile, action);
         }
 
 

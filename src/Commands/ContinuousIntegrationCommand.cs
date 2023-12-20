@@ -12,7 +12,6 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class ContinuousIntegrationCommand : AbstractCommand
     {
-        private string? actionName;
         private const string STORE = "store";
         private const string RESTORE = "restore";
         private readonly IShellRunner shellRunner;
@@ -49,20 +48,20 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task Execute(ToolProfile? profile, string[] args)
+        public override async Task PreExecute(ToolProfile? profile, string? action)
         {
-            if (args.Length < 2)
+            if (string.IsNullOrEmpty(action) || !Parameters.Any(p => p.Equals(action, StringComparison.OrdinalIgnoreCase)))
             {
-                throw new InvalidOperationException($"Must provide 1 parameter from '{string.Join(", ", Parameters)}'");
+                throw new InvalidOperationException($"Must provide one parameter from '{string.Join(", ", Parameters)}'");
             }
 
-            actionName = args[1].ToLower();
-            if (!Parameters.Any(p => p.Equals(actionName, StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new InvalidOperationException($"Invalid parameter '{actionName}'");
-            }
+            await base.PreExecute(profile, action);
+        }
 
-            if (actionName?.Equals(STORE, StringComparison.OrdinalIgnoreCase) ?? false)
+
+        public override async Task Execute(ToolProfile? profile, string? action)
+        {
+            if (action?.Equals(STORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await AnsiConsole.Progress()
                     .Columns(new ProgressColumn[]
@@ -79,7 +78,7 @@ namespace Xperience.Xman.Commands
                         await StoreFiles(task, profile);
                     });
             }
-            else if (actionName?.Equals(RESTORE, StringComparison.OrdinalIgnoreCase) ?? false)
+            else if (action?.Equals(RESTORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await AnsiConsole.Progress()
                     .Columns(new ProgressColumn[]
@@ -97,14 +96,14 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PostExecute(ToolProfile? profile, string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string? action)
         {
             if (!Errors.Any())
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]CI {actionName ?? "process"} complete![/]\n");
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]CI {action ?? "process"} complete![/]\n");
             }
 
-            await base.PostExecute(profile, args);
+            await base.PostExecute(profile, action);
         }
 
 

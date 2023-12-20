@@ -43,52 +43,59 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task Execute(ToolProfile? profile, string[] args)
+        public override async Task PreExecute(ToolProfile? profile, string? action)
         {
-            string actionName = args.Length < 2 ? SWITCH : args[1];
-            if (!Parameters.Any(p => p.Equals(actionName, StringComparison.OrdinalIgnoreCase)))
+            action ??= SWITCH;
+            if (!Parameters.Any(p => p.Equals(action, StringComparison.OrdinalIgnoreCase)))
             {
-                throw new InvalidOperationException($"Invalid parameter '{actionName}'");
+                throw new InvalidOperationException($"Must provide one parameter from '{string.Join(", ", Parameters)}'");
             }
 
+            await base.PreExecute(profile, action);
+        }
+
+
+        public override async Task Execute(ToolProfile? profile, string? action)
+        {
+            action ??= SWITCH;
             var config = await configManager.GetConfig();
 
             // Can't switch or delete if there are no profiles
             if (!config.Profiles.Any() &&
-                (actionName.Equals(SWITCH, StringComparison.OrdinalIgnoreCase) || actionName.Equals(DELETE, StringComparison.OrdinalIgnoreCase)))
+                (action.Equals(SWITCH, StringComparison.OrdinalIgnoreCase) || action.Equals(DELETE, StringComparison.OrdinalIgnoreCase)))
             {
                 AnsiConsole.MarkupLineInterpolated($"There are no registered profiles. Install a new instance with [{Constants.SUCCESS_COLOR}]xman i[/] to add a profile.\n");
                 StopProcessing = true;
                 return;
             }
 
-            if (config.Profiles.Count == 1 && actionName.Equals(SWITCH, StringComparison.OrdinalIgnoreCase))
+            if (config.Profiles.Count == 1 && action.Equals(SWITCH, StringComparison.OrdinalIgnoreCase))
             {
                 AnsiConsole.WriteLine("You're currently using the only registered profile.\n");
                 StopProcessing = true;
                 return;
             }
 
-            if (actionName?.Equals(SWITCH, StringComparison.OrdinalIgnoreCase) ?? false)
+            if (action?.Equals(SWITCH, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await SwitchProfile(config.Profiles);
             }
-            else if (actionName?.Equals(ADD, StringComparison.OrdinalIgnoreCase) ?? false)
+            else if (action?.Equals(ADD, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await AddProfile();
             }
-            else if (actionName?.Equals(DELETE, StringComparison.OrdinalIgnoreCase) ?? false)
+            else if (action?.Equals(DELETE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await DeleteProfile(config.Profiles);
             }
         }
 
 
-        public override async Task PostExecute(ToolProfile? profile, string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string? action)
         {
             AnsiConsole.WriteLine();
 
-            await base.PostExecute(profile, args);
+            await base.PostExecute(profile, action);
         }
 
 

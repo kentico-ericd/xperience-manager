@@ -29,7 +29,7 @@ namespace Xperience.Xman.Commands
         public virtual bool RequiresProfile { get; set; }
 
 
-        public virtual Task PreExecute(ToolProfile? profile, string[] args)
+        public virtual Task PreExecute(ToolProfile? profile, string? action)
         {
             if (RequiresProfile)
             {
@@ -47,10 +47,10 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public abstract Task Execute(ToolProfile? profile, string[] args);
+        public abstract Task Execute(ToolProfile? profile, string? action);
 
 
-        public virtual Task PostExecute(ToolProfile? profile, string[] args) => Task.CompletedTask;
+        public virtual Task PostExecute(ToolProfile? profile, string? action) => Task.CompletedTask;
 
 
         /// <summary>

@@ -45,8 +45,8 @@ namespace Xperience.Xman.Tests.Tests.Commands
         public async Task Execute_CallsInstallationScripts()
         {
             var command = new InstallCommand(shellRunner, new ScriptBuilder(), installWizard, Substitute.For<IConfigManager>());
-            await command.PreExecute(new(), Array.Empty<string>());
-            await command.Execute(new(), Array.Empty<string>());
+            await command.PreExecute(new(), string.Empty);
+            await command.Execute(new(), string.Empty);
 
             string expectedProjectFileScript = $"dotnet new {TEMPLATE} -n {PROJECT_NAME}";
             string expectedUninstallScript = "dotnet new uninstall kentico.xperience.templates";

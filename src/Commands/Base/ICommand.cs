@@ -48,23 +48,23 @@ namespace Xperience.Xman.Commands
         /// Runs before <see cref="Execute"/>.
         /// </summary>
         /// <param name="profile">The active profile.</param>
-        /// <param name="args">The arguments provided by the user.</param>
-        public Task PreExecute(ToolProfile? profile, string[] args);
+        /// <param name="action">A value from <see cref="Parameters"/> passed, if any</param>
+        public Task PreExecute(ToolProfile? profile, string? action);
 
 
         /// <summary>
         /// Executes the command.
         /// </summary>
         /// <param name="profile">The active profile.</param>
-        /// <param name="args">The arguments provided by the user.</param>
-        public Task Execute(ToolProfile? profile, string[] args);
+        /// <param name="action">A value from <see cref="Parameters"/> passed, if any</param>
+        public Task Execute(ToolProfile? profile, string? action);
 
 
         /// <summary>
         /// Runs after <see cref="Execute"/>.
         /// </summary>
         /// <param name="profile">The active profile.</param>
-        /// <param name="args">The arguments provided by the user.</param>
-        public Task PostExecute(ToolProfile? profile, string[] args);
+        /// <param name="action">A value from <see cref="Parameters"/> passed, if any</param>
+        public Task PostExecute(ToolProfile? profile, string? action);
     }
 }
