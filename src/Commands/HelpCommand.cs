@@ -21,7 +21,9 @@ namespace Xperience.Xman.Commands
             new UpdateCommand(),
             new ContinuousIntegrationCommand(),
             new ContinuousDeploymentCommand(),
-            new MacroCommand()
+            new MacroCommand(),
+            new BuildCommand(),
+            new SettingsCommand()
         };
 
 
@@ -41,8 +43,7 @@ namespace Xperience.Xman.Commands
                     .LeftJustified()
                     .Color(Color.Orange3));
 
-            var assembly = Assembly.GetExecutingAssembly();
-            var v = assembly.GetName().Version;
+            var v = Assembly.GetExecutingAssembly().GetName().Version;
             if (v is not null)
             {
                 AnsiConsole.WriteLine($" v{v.Major}.{v.Minor}.{v.Build}");

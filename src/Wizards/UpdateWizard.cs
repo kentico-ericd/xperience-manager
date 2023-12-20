@@ -21,7 +21,7 @@ namespace Xperience.Xman.Wizards
             Steps.Add(new Step<Version>(new()
             {
                 Prompt = new SelectionPrompt<Version>()
-                    .Title("Which [green]version[/]?")
+                    .Title($"Which [{Constants.SUCCESS_COLOR}]version[/]?")
                     .PageSize(10)
                     .UseConverter(v => $"{v.Major}.{v.Minor}.{v.Build}")
                     .MoreChoicesText("Scroll for more...")

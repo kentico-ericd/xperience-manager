@@ -102,6 +102,12 @@ namespace Xperience.Xman.Commands
 
         private async Task CreateWorkingDirectory()
         {
+            if (string.IsNullOrEmpty(profile.WorkingDirectory))
+            {
+                LogError("Unable to load working directory.", null);
+                return;
+            }
+
             string mkdirScript = scriptBuilder.SetScript(ScriptType.CreateDirectory)
                 .AppendDirectory(profile.WorkingDirectory)
                 .Build();

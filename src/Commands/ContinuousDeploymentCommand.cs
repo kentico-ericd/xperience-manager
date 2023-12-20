@@ -214,7 +214,9 @@ namespace Xperience.Xman.Commands
 
             if (!File.Exists(cdConfig.ConfigPath))
             {
-                string cdScript = scriptBuilder.SetScript(ScriptType.ContinuousDeploymentNewConfiguration).WithPlaceholders(cdConfig).Build();
+                string cdScript = scriptBuilder.SetScript(ScriptType.ContinuousDeploymentNewConfiguration)
+                    .WithPlaceholders(cdConfig)
+                    .Build();
                 await shellRunner.Execute(new(cdScript)
                 {
                     ErrorHandler = ErrorDataReceived,
@@ -243,7 +245,9 @@ namespace Xperience.Xman.Commands
             };
 
             string originalDescription = task.Description;
-            string cdScript = scriptBuilder.SetScript(ScriptType.ContinuousDeploymentRestore).WithPlaceholders(cdConfig).Build();
+            string cdScript = scriptBuilder.SetScript(ScriptType.ContinuousDeploymentRestore)
+                .WithPlaceholders(cdConfig)
+                .Build();
             await shellRunner.Execute(new(cdScript)
             {
                 ErrorHandler = ErrorDataReceived,
@@ -279,7 +283,9 @@ namespace Xperience.Xman.Commands
                 ConfigPath = Path.Combine(config.CDRootPath, profile.ProjectName, Constants.CD_CONFIG_NAME),
                 RepositoryPath = Path.Combine(config.CDRootPath, profile.ProjectName, Constants.CD_FILES_DIR)
             };
-            string cdScript = scriptBuilder.SetScript(ScriptType.ContinuousDeploymentStore).WithPlaceholders(cdConfig).Build();
+            string cdScript = scriptBuilder.SetScript(ScriptType.ContinuousDeploymentStore)
+                .WithPlaceholders(cdConfig)
+                .Build();
             await shellRunner.Execute(new(cdScript)
             {
                 ErrorHandler = ErrorDataReceived,
