@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using System.Text;
+using Spectre.Console;
 
 using Xperience.Xman.Configuration;
 using Xperience.Xman.Services;
@@ -83,18 +84,19 @@ namespace Xperience.Xman.Commands
             var keyToUpdate = AnsiConsole.Prompt(new SelectionPrompt<ConfigurationKey>()
                 .Title($"Set which [{Constants.PROMPT_COLOR}]key[/]?")
                 .PageSize(10)
-                .UseConverter(v =>
-                {
-                    string line = $"[{Constants.SUCCESS_COLOR}][[{v.KeyName}]][/] {v.Description}";
-                    if (v.ActualValue is not null)
-                    {
-                        line += $"\n     - Existing value: [{Constants.EMPHASIS_COLOR}]{v.ActualValue}[/]";
-                    }
-
-                    return line;
-                })
+                .UseConverter(v => $"{v.KeyName}{(v.ActualValue is not null ? $" ({Truncate(v.ActualValue.ToString(), 12)})" : string.Empty)}")
                 .MoreChoicesText("Scroll for more...")
                 .AddChoices(keys));
+
+            var header = new StringBuilder($"\n[{Constants.PROMPT_COLOR} underline]{keyToUpdate.KeyName}[/]");
+            if (keyToUpdate.ActualValue is not null)
+            {
+                header.AppendLine($"\nValue: [{Constants.PROMPT_COLOR} underline]{keyToUpdate.ActualValue.ToString().EscapeMarkup()}[/]");
+            }
+
+            header.AppendLine($"\n{keyToUpdate.Description}\n");
+            AnsiConsole.Write(new Markup(header.ToString()).Centered());
+
             string newValue = AnsiConsole.Prompt(new TextPrompt<string>($"Enter the new value for [{Constants.PROMPT_COLOR}]{keyToUpdate.KeyName}[/]:"));
             object converted = Convert.ChangeType(newValue, keyToUpdate.ValueType) ?? throw new InvalidCastException($"The key value cannot be cast into type {keyToUpdate.ValueType.Name}");
             keyToUpdate.ActualValue = converted;
@@ -103,12 +105,17 @@ namespace Xperience.Xman.Commands
         }
 
 
+        private string? Truncate(string? value, int maxLength, string truncationSuffix = "...") => value?.Length > maxLength
+                ? value[..maxLength] + truncationSuffix
+                : value;
+
+
         private async Task UpdateConnectionString(ToolProfile? profile, string name)
         {
             string newConnString = AnsiConsole.Prompt(new TextPrompt<string>($"Enter new [{Constants.PROMPT_COLOR}]connection string[/]:"));
             await appSettingsManager.SetConnectionString(profile, name, newConnString);
 
-            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Connection string updated![/]");
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Connection string updated![/]\n");
         }
 
 
@@ -130,9 +137,9 @@ namespace Xperience.Xman.Commands
                 }
 
                 await appSettingsManager.SetKeyValue(profile, updatedKey.KeyName, updatedKey.ActualValue);
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Updated the {updatedKey.KeyName} key![/]");
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Updated the {updatedKey.KeyName} key![/]\n");
 
-                updateSettings = ConfirmUpdateSettings($"Update another [{Constants.PROMPT_COLOR}]configuration keys[/]?");
+                updateSettings = ConfirmUpdateSettings($"Update another [{Constants.PROMPT_COLOR}]configuration key[/]?");
             }
         }
     }
