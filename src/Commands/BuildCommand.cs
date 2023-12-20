@@ -10,10 +10,8 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class BuildCommand : AbstractCommand
     {
-        private ToolProfile? profile;
         private readonly IShellRunner shellRunner;
         private readonly IScriptBuilder scriptBuilder;
-        private readonly IConfigManager configManager;
 
 
         public override IEnumerable<string> Keywords => new string[] { "b", "build" };
@@ -23,6 +21,9 @@ namespace Xperience.Xman.Commands
 
 
         public override string Description => "Builds a project";
+
+
+        public override bool RequiresProfile => true;
 
 
         /// <summary>
@@ -36,46 +37,28 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public BuildCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder, IConfigManager configManager)
+        public BuildCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder)
         {
             this.shellRunner = shellRunner;
             this.scriptBuilder = scriptBuilder;
-            this.configManager = configManager;
         }
 
 
-        public override async Task PreExecute(string[] args)
-        {
-            profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
-            PrintCurrentProfile(profile);
-
-            AnsiConsole.WriteLine();
-        }
+        public override async Task Execute(ToolProfile? profile, string[] args) => await BuildProject(profile);
 
 
-        public override async Task Execute(string[] args)
-        {
-            if (profile is null)
-            {
-                throw new InvalidOperationException("There is no active profile.");
-            }
-
-            await BuildProject(profile);
-        }
-
-
-        public override async Task PostExecute(string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string[] args)
         {
             if (!Errors.Any())
             {
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Build complete![/]\n");
             }
 
-            await base.PostExecute(args);
+            await base.PostExecute(profile, args);
         }
 
 
-        private async Task BuildProject(ToolProfile profile)
+        private async Task BuildProject(ToolProfile? profile)
         {
             if (StopProcessing)
             {
@@ -88,7 +71,7 @@ namespace Xperience.Xman.Commands
             await shellRunner.Execute(new(buildScript)
             {
                 ErrorHandler = ErrorDataReceived,
-                WorkingDirectory = profile.WorkingDirectory
+                WorkingDirectory = profile?.WorkingDirectory
             }).WaitForExitAsync();
         }
     }

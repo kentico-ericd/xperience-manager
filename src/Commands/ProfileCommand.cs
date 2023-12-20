@@ -9,7 +9,6 @@ namespace Xperience.Xman.Commands
 {
     public class ProfileCommand : AbstractCommand
     {
-        private string? actionName;
         private const string ADD = "add";
         private const string DELETE = "delete";
         private const string SWITCH = "switch";
@@ -44,9 +43,9 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PreExecute(string[] args)
+        public override async Task Execute(ToolProfile? profile, string[] args)
         {
-            actionName = args.Length < 2 ? SWITCH : args[1];
+            string actionName = args.Length < 2 ? SWITCH : args[1];
             if (!Parameters.Any(p => p.Equals(actionName, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new InvalidOperationException($"Invalid parameter '{actionName}'");
@@ -63,20 +62,13 @@ namespace Xperience.Xman.Commands
                 return;
             }
 
-            var profile = await configManager.GetCurrentProfile();
-            PrintCurrentProfile(profile);
-
             if (config.Profiles.Count == 1 && actionName.Equals(SWITCH, StringComparison.OrdinalIgnoreCase))
             {
                 AnsiConsole.WriteLine("You're currently using the only registered profile.\n");
                 StopProcessing = true;
+                return;
             }
-        }
 
-
-        public override async Task Execute(string[] args)
-        {
-            var config = await configManager.GetConfig();
             if (actionName?.Equals(SWITCH, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await SwitchProfile(config.Profiles);
@@ -92,12 +84,11 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PostExecute(string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string[] args)
         {
-            // Add some padding after messages
             AnsiConsole.WriteLine();
 
-            await base.PostExecute(args);
+            await base.PostExecute(profile, args);
         }
 
 

@@ -14,13 +14,13 @@ namespace Xperience.Xman.Wizards
         {
             Steps.Add(new Step<string>(new()
             {
-                Prompt = new TextPrompt<string>($"Give your profile a [{Constants.SUCCESS_COLOR}]name[/]:"),
+                Prompt = new TextPrompt<string>($"Give your profile a [{Constants.PROMPT_COLOR}]name[/]:"),
                 ValueReceiver = (v) => Options.Name = v,
             }));
 
             Steps.Add(new Step<string>(new()
             {
-                Prompt = new TextPrompt<string>($"Enter the [{Constants.SUCCESS_COLOR}]full path[/] of the folder containing your Xperience project:"),
+                Prompt = new TextPrompt<string>($"Enter the [{Constants.PROMPT_COLOR}]full path[/] of the folder containing your Xperience project:"),
                 ValueReceiver = (v) => Options.WorkingDirectory = v,
             }));
 

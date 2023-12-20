@@ -15,7 +15,6 @@ namespace Xperience.Xman.Commands
     public class ContinuousDeploymentCommand : AbstractCommand
     {
         private string? actionName;
-        private ToolProfile? profile;
         private const string STORE = "store";
         private const string RESTORE = "restore";
         private const string CONFIG = "config";
@@ -33,6 +32,9 @@ namespace Xperience.Xman.Commands
 
 
         public override string Description => "Stores or restores CD data, or edits the config file";
+
+
+        public override bool RequiresProfile => true;
 
 
         /// <summary>
@@ -56,7 +58,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PreExecute(string[] args)
+        public override async Task Execute(ToolProfile? profile, string[] args)
         {
             if (args.Length < 2)
             {
@@ -67,20 +69,6 @@ namespace Xperience.Xman.Commands
             if (!Parameters.Any(p => p.Equals(actionName, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new InvalidOperationException($"Invalid parameter '{actionName}'");
-            }
-
-            profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
-            PrintCurrentProfile(profile);
-
-            await base.PreExecute(args);
-        }
-
-
-        public override async Task Execute(string[] args)
-        {
-            if (profile is null)
-            {
-                return;
             }
 
             var config = await configManager.GetConfig();
@@ -108,7 +96,7 @@ namespace Xperience.Xman.Commands
             }
             else if (actionName?.Equals(RESTORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
-                var sourceProfile = GetSourceProfile(config);
+                var sourceProfile = GetSourceProfile(profile, config);
                 if (sourceProfile is null)
                 {
                     return;
@@ -130,25 +118,25 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PostExecute(string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string[] args)
         {
             if (!Errors.Any())
             {
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]CD {actionName ?? "process"} complete![/]\n");
             }
 
-            await base.PostExecute(args);
+            await base.PostExecute(profile, args);
         }
 
 
-        private async Task ConfigureXml(ToolConfiguration toolConfig, ToolProfile profile)
+        private async Task ConfigureXml(ToolConfiguration toolConfig, ToolProfile? profile)
         {
             if (StopProcessing)
             {
                 return;
             }
 
-            if (string.IsNullOrEmpty(profile.ProjectName))
+            if (string.IsNullOrEmpty(profile?.ProjectName))
             {
                 throw new InvalidOperationException("Unable to load profile name.");
             }
@@ -166,7 +154,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private ToolProfile? GetSourceProfile(ToolConfiguration config)
+        private ToolProfile? GetSourceProfile(ToolProfile? profile, ToolConfiguration config)
         {
             if (StopProcessing)
             {
@@ -192,14 +180,14 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task EnsureCDStructure(ToolProfile profile, ToolConfiguration config)
+        private async Task EnsureCDStructure(ToolProfile? profile, ToolConfiguration config)
         {
             if (StopProcessing)
             {
                 return;
             }
 
-            if (string.IsNullOrEmpty(profile.ProjectName))
+            if (string.IsNullOrEmpty(profile?.ProjectName))
             {
                 throw new InvalidOperationException("Unable to load profile name.");
             }
@@ -226,7 +214,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task RestoreFiles(ProgressTask task, ToolProfile profile, ToolProfile sourceProfile, ToolConfiguration config)
+        private async Task RestoreFiles(ProgressTask task, ToolProfile? profile, ToolProfile sourceProfile, ToolConfiguration config)
         {
             if (StopProcessing)
             {
@@ -251,7 +239,7 @@ namespace Xperience.Xman.Commands
             await shellRunner.Execute(new(cdScript)
             {
                 ErrorHandler = ErrorDataReceived,
-                WorkingDirectory = profile.WorkingDirectory,
+                WorkingDirectory = profile?.WorkingDirectory,
                 OutputHandler = (o, e) =>
                 {
                     if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false)
@@ -266,14 +254,14 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task StoreFiles(ProgressTask task, ToolProfile profile, ToolConfiguration config)
+        private async Task StoreFiles(ProgressTask task, ToolProfile? profile, ToolConfiguration config)
         {
             if (StopProcessing)
             {
                 return;
             }
 
-            if (string.IsNullOrEmpty(profile.ProjectName))
+            if (string.IsNullOrEmpty(profile?.ProjectName))
             {
                 throw new InvalidOperationException("Unable to load profile name.");
             }

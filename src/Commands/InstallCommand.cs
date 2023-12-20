@@ -14,8 +14,7 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class InstallCommand : AbstractCommand
     {
-        private InstallOptions? options;
-        private readonly ToolProfile profile = new();
+        private readonly ToolProfile newInstallationProfile = new();
         private readonly IShellRunner shellRunner;
         private readonly IConfigManager configManager;
         private readonly IScriptBuilder scriptBuilder;
@@ -51,65 +50,54 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PreExecute(string[] args)
+        public override async Task Execute(ToolProfile? profile, string[] args)
         {
             // Override default values of InstallOptions with values from config file
             wizard.Options = await configManager.GetDefaultInstallOptions();
-            options = await wizard.Run();
+            var options = await wizard.Run();
             AnsiConsole.WriteLine();
 
-            profile.ProjectName = options.ProjectName;
-            profile.WorkingDirectory = $"{options.InstallRootPath}\\{options.ProjectName}";
-
-            await base.PreExecute(args);
-        }
-
-
-        public override async Task Execute(string[] args)
-        {
-            if (options is null)
-            {
-                throw new InvalidOperationException("The installation options weren't found.");
-            }
+            newInstallationProfile.ProjectName = options.ProjectName;
+            newInstallationProfile.WorkingDirectory = $"{options.InstallRootPath}\\{options.ProjectName}";
 
             await CreateWorkingDirectory();
             await InstallTemplate(options);
             await CreateProjectFiles(options);
             // Admin boilerplate project doesn't require database install
-            if (!IsAdminTemplate())
+            if (!IsAdminTemplate(options))
             {
                 await CreateDatabase(options);
             }
 
             // Don't create profile for admin boilerplate since it's meant to be moved/included in another installation
-            if (!IsAdminTemplate())
+            if (!IsAdminTemplate(options))
             {
-                await configManager.AddProfile(profile);
+                await configManager.AddProfile(newInstallationProfile);
             }
         }
 
 
-        public override async Task PostExecute(string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string[] args)
         {
             if (!Errors.Any())
             {
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Install complete![/]\n");
             }
 
-            await base.PostExecute(args);
+            await base.PostExecute(profile, args);
         }
 
 
         private async Task CreateWorkingDirectory()
         {
-            if (string.IsNullOrEmpty(profile.WorkingDirectory))
+            if (string.IsNullOrEmpty(newInstallationProfile.WorkingDirectory))
             {
                 LogError("Unable to load working directory.", null);
                 return;
             }
 
             string mkdirScript = scriptBuilder.SetScript(ScriptType.CreateDirectory)
-                .AppendDirectory(profile.WorkingDirectory)
+                .AppendDirectory(newInstallationProfile.WorkingDirectory)
                 .Build();
             await shellRunner.Execute(new(mkdirScript) { ErrorHandler = ErrorDataReceived }).WaitForExitAsync();
         }
@@ -130,7 +118,7 @@ namespace Xperience.Xman.Commands
             await shellRunner.Execute(new(databaseScript)
             {
                 ErrorHandler = ErrorDataReceived,
-                WorkingDirectory = profile.WorkingDirectory
+                WorkingDirectory = newInstallationProfile.WorkingDirectory
             }).WaitForExitAsync();
         }
 
@@ -150,11 +138,11 @@ namespace Xperience.Xman.Commands
                 .Build();
 
             // Admin boilerplate script doesn't require input
-            bool keepOpen = !IsAdminTemplate();
+            bool keepOpen = !IsAdminTemplate(options);
             await shellRunner.Execute(new(installScript)
             {
                 KeepOpen = keepOpen,
-                WorkingDirectory = profile.WorkingDirectory,
+                WorkingDirectory = newInstallationProfile.WorkingDirectory,
                 ErrorHandler = ErrorDataReceived,
                 OutputHandler = (o, e) =>
                 {
@@ -196,6 +184,6 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private bool IsAdminTemplate() => options?.Template.Equals(Constants.TEMPLATE_ADMIN, StringComparison.OrdinalIgnoreCase) ?? false;
+        private bool IsAdminTemplate(InstallOptions options) => options?.Template.Equals(Constants.TEMPLATE_ADMIN, StringComparison.OrdinalIgnoreCase) ?? false;
     }
 }

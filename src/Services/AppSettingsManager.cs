@@ -7,8 +7,13 @@ namespace Xperience.Xman.Services
 {
     public class AppSettingsManager : IAppSettingsManager
     {
-        public async Task<string?> GetConnectionString(ToolProfile profile, string name)
+        public async Task<string?> GetConnectionString(ToolProfile? profile, string name)
         {
+            if (profile is null)
+            {
+                throw new InvalidOperationException("No active profile.");
+            }
+
             var appSettings = await LoadSettings(profile);
             var connectionStrings = appSettings["ConnectionStrings"];
             if (connectionStrings is null)
@@ -20,8 +25,13 @@ namespace Xperience.Xman.Services
         }
 
 
-        public async Task<IEnumerable<ConfigurationKey>> GetConfigurationKeys(ToolProfile profile)
+        public async Task<IEnumerable<ConfigurationKey>> GetConfigurationKeys(ToolProfile? profile)
         {
+            if (profile is null)
+            {
+                throw new InvalidOperationException("No active profile.");
+            }
+
             var appSettings = await LoadSettings(profile);
             var populatedKeys = Constants.ConfigurationKeys
                 .Where(key => appSettings.Properties().Select(p => p.Name).Contains(key.KeyName, StringComparer.OrdinalIgnoreCase))
@@ -34,8 +44,13 @@ namespace Xperience.Xman.Services
         }
 
 
-        public async Task SetConnectionString(ToolProfile profile, string name, string connectionString)
+        public async Task SetConnectionString(ToolProfile? profile, string name, string connectionString)
         {
+            if (profile is null)
+            {
+                throw new InvalidOperationException("No active profile.");
+            }
+
             var appSettings = await LoadSettings(profile);
             var connectionStrings = appSettings["ConnectionStrings"] ?? throw new InvalidOperationException("ConnectionStrings section not found.");
             connectionStrings[name] = connectionString;
@@ -44,8 +59,13 @@ namespace Xperience.Xman.Services
         }
 
 
-        public async Task SetKeyValue(ToolProfile profile, string keyName, object value)
+        public async Task SetKeyValue(ToolProfile? profile, string keyName, object value)
         {
+            if (profile is null)
+            {
+                throw new InvalidOperationException("No active profile.");
+            }
+
             var appSettings = await LoadSettings(profile);
             appSettings[keyName] = JToken.FromObject(value);
 

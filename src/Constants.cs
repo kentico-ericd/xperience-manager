@@ -13,6 +13,7 @@ namespace Xperience.Xman
         public const string SUCCESS_COLOR = "green";
         public const string ERROR_COLOR = "red";
         public const string EMPHASIS_COLOR = "deepskyblue3_1";
+        public const string PROMPT_COLOR = "lightgoldenrod2_2";
 
         public const string TEMPLATES_PACKAGE = "kentico.xperience.templates";
         public const string TEMPLATE_SAMPLE = "kentico-xperience-sample-mvc";

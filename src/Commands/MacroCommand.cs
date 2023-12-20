@@ -12,12 +12,9 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class MacroCommand : AbstractCommand
     {
-        private MacroOptions? options;
-        private ToolProfile? profile;
         private readonly IShellRunner shellRunner;
         private readonly IScriptBuilder scriptBuilder;
         private readonly IWizard<MacroOptions> wizard;
-        private readonly IConfigManager configManager;
 
 
         public override IEnumerable<string> Keywords => new string[] { "m", "macros" };
@@ -27,6 +24,9 @@ namespace Xperience.Xman.Commands
 
 
         public override string Description => "Re-signs macro signatures";
+
+
+        public override bool RequiresProfile => true;
 
 
         /// <summary>
@@ -40,32 +40,18 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public MacroCommand(IWizard<MacroOptions> wizard, IShellRunner shellRunner, IScriptBuilder scriptBuilder, IConfigManager configManager)
+        public MacroCommand(IWizard<MacroOptions> wizard, IShellRunner shellRunner, IScriptBuilder scriptBuilder)
         {
             this.wizard = wizard;
             this.shellRunner = shellRunner;
             this.scriptBuilder = scriptBuilder;
-            this.configManager = configManager;
         }
 
 
-        public override async Task PreExecute(string[] args)
+        public override async Task Execute(ToolProfile? profile, string[] args)
         {
-            profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
-            PrintCurrentProfile(profile);
-
-            options = await wizard.Run();
-
+            var options = await wizard.Run();
             AnsiConsole.WriteLine();
-        }
-
-
-        public override async Task Execute(string[] args)
-        {
-            if (options is null || profile is null)
-            {
-                throw new InvalidOperationException("Unable to load required settings.");
-            }
 
             await AnsiConsole.Progress()
                 .Columns(new ProgressColumn[]
@@ -82,18 +68,18 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PostExecute(string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string[] args)
         {
             if (!Errors.Any())
             {
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Macros re-signed![/]\n");
             }
 
-            await base.PostExecute(args);
+            await base.PostExecute(profile, args);
         }
 
 
-        private async Task ResignMacros(ProgressTask task, ToolProfile profile, MacroOptions options)
+        private async Task ResignMacros(ProgressTask task, ToolProfile? profile, MacroOptions options)
         {
             string originalDescription = task.Description;
 
@@ -105,7 +91,7 @@ namespace Xperience.Xman.Commands
             await shellRunner.Execute(new(macroScript)
             {
                 ErrorHandler = ErrorDataReceived,
-                WorkingDirectory = profile.WorkingDirectory,
+                WorkingDirectory = profile?.WorkingDirectory,
                 OutputHandler = (o, e) =>
                 {
                     if (e.Data?.Contains("Processing", StringComparison.OrdinalIgnoreCase) ?? false)

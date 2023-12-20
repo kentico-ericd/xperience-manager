@@ -3,7 +3,6 @@
 using NUnit.Framework;
 
 using Xperience.Xman.Commands;
-using Xperience.Xman.Configuration;
 using Xperience.Xman.Options;
 using Xperience.Xman.Services;
 using Xperience.Xman.Wizards;
@@ -17,14 +16,12 @@ namespace Xperience.Xman.Tests.Tests.Commands
     {
         private readonly Version version = new(1, 0, 0);
         private readonly IShellRunner shellRunner = Substitute.For<IShellRunner>();
-        private readonly IConfigManager configManager = Substitute.For<IConfigManager>();
         private readonly IWizard<UpdateOptions> updateWizard = Substitute.For<IWizard<UpdateOptions>>();
 
 
         [SetUp]
         public void UpdateCommandTestsSetUp()
         {
-            configManager.GetCurrentProfile().Returns(new ToolProfile());
             updateWizard.Run().Returns(new UpdateOptions
             {
                 Version = version
@@ -37,9 +34,9 @@ namespace Xperience.Xman.Tests.Tests.Commands
         [Test]
         public async Task Execute_CallsUpdateScripts()
         {
-            var command = new UpdateCommand(shellRunner, new ScriptBuilder(), updateWizard, configManager);
-            await command.PreExecute(Array.Empty<string>());
-            await command.Execute(Array.Empty<string>());
+            var command = new UpdateCommand(shellRunner, new ScriptBuilder(), updateWizard);
+            await command.PreExecute(new(), Array.Empty<string>());
+            await command.Execute(new(), Array.Empty<string>());
 
             string[] packageNames = new string[]
             {
@@ -51,7 +48,6 @@ namespace Xperience.Xman.Tests.Tests.Commands
                 "kentico.xperience.webapp"
             };
 
-            shellRunner.Received().Execute(Arg.Is<ShellOptions>(x => x.Script.Equals("dotnet build")));
             foreach (string p in packageNames)
             {
                 shellRunner.Received().Execute(Arg.Is<ShellOptions>(x => x.Script.Equals($"dotnet add package {p} --version {version}")));

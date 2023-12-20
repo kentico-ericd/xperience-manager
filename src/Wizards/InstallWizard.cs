@@ -28,7 +28,7 @@ namespace Xperience.Xman.Wizards
             Steps.Add(new Step<Version>(new()
             {
                 Prompt = new SelectionPrompt<Version>()
-                    .Title($"Which [{Constants.SUCCESS_COLOR}]version[/]?")
+                    .Title($"Which [{Constants.PROMPT_COLOR}]version[/]?")
                     .PageSize(10)
                     .UseConverter(v => $"{v.Major}.{v.Minor}.{v.Build}")
                     .MoreChoicesText("Scroll for more...")
@@ -39,26 +39,26 @@ namespace Xperience.Xman.Wizards
             Steps.Add(new Step<string>(new()
             {
                 Prompt = new SelectionPrompt<string>()
-                    .Title($"Which [{Constants.SUCCESS_COLOR}]template[/]?")
+                    .Title($"Which [{Constants.PROMPT_COLOR}]template[/]?")
                     .AddChoices(templates),
                 ValueReceiver = (v) => Options.Template = v.ToString()
             }));
 
             Steps.Add(new Step<string>(new()
             {
-                Prompt = new TextPrompt<string>($"Give your project a [{Constants.SUCCESS_COLOR}]name[/]:")
+                Prompt = new TextPrompt<string>($"Give your project a [{Constants.PROMPT_COLOR}]name[/]:")
                     .DefaultValue(Options.ProjectName),
                 ValueReceiver = (v) => Options.ProjectName = v
             }));
 
             Steps.Add(new Step<string>(new()
             {
-                Prompt = new TextPrompt<string>($"Install [{Constants.SUCCESS_COLOR}]where[/]?")
+                Prompt = new TextPrompt<string>($"Install [{Constants.PROMPT_COLOR}]where[/]?")
                     .DefaultValue(Options.InstallRootPath),
                 ValueReceiver = (v) => Options.InstallRootPath = v
             }));
 
-            var cloudPrompt = new ConfirmationPrompt($"Prepare for [{Constants.SUCCESS_COLOR}]cloud[/] deployment?")
+            var cloudPrompt = new ConfirmationPrompt($"Prepare for [{Constants.PROMPT_COLOR}]cloud[/] deployment?")
             {
                 DefaultValue = Options.UseCloud
             };
@@ -70,7 +70,7 @@ namespace Xperience.Xman.Wizards
             }));
 
 
-            var serverPrompt = new TextPrompt<string>($"Enter the [{Constants.SUCCESS_COLOR}]SQL server[/] name:");
+            var serverPrompt = new TextPrompt<string>($"Enter the [{Constants.PROMPT_COLOR}]SQL server[/] name:");
             if (!string.IsNullOrEmpty(Options.ServerName))
             {
                 serverPrompt.DefaultValue(Options.ServerName);
@@ -84,7 +84,7 @@ namespace Xperience.Xman.Wizards
 
             Steps.Add(new Step<string>(new()
             {
-                Prompt = new TextPrompt<string>($"Enter the [{Constants.SUCCESS_COLOR}]database[/] name:")
+                Prompt = new TextPrompt<string>($"Enter the [{Constants.PROMPT_COLOR}]database[/] name:")
                     .AllowEmpty()
                     .DefaultValue(Options.DatabaseName),
                 ValueReceiver = (v) => Options.DatabaseName = v,
@@ -93,7 +93,7 @@ namespace Xperience.Xman.Wizards
 
             Steps.Add(new Step<string>(new()
             {
-                Prompt = new TextPrompt<string>($"Enter the admin [{Constants.SUCCESS_COLOR}]password[/]:")
+                Prompt = new TextPrompt<string>($"Enter the admin [{Constants.PROMPT_COLOR}]password[/]:")
                     .AllowEmpty()
                     .DefaultValue(Options.AdminPassword),
                 ValueReceiver = (v) => Options.AdminPassword = v,

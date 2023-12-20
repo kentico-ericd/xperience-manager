@@ -14,11 +14,9 @@ namespace Xperience.Xman.Commands
     public class UpdateCommand : AbstractCommand
     {
         private UpdateOptions? options;
-        private ToolProfile? profile;
         private readonly IShellRunner shellRunner;
         private readonly IScriptBuilder scriptBuilder;
         private readonly IWizard<UpdateOptions> wizard;
-        private readonly IConfigManager configManager;
         private readonly IEnumerable<string> packageNames = new string[]
         {
             "kentico.xperience.admin",
@@ -39,6 +37,9 @@ namespace Xperience.Xman.Commands
         public override string Description => "Updates a project's NuGet packages and database version";
 
 
+        public override bool RequiresProfile => true;
+
+
         /// <summary>
         /// Do not use. Workaround for circular dependency in <see cref="HelpCommand"/> when commands are injected
         /// into the constuctor.
@@ -50,53 +51,48 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public UpdateCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder, IWizard<UpdateOptions> wizard, IConfigManager configManager)
+        public UpdateCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder, IWizard<UpdateOptions> wizard)
         {
             this.wizard = wizard;
             this.shellRunner = shellRunner;
             this.scriptBuilder = scriptBuilder;
-            this.configManager = configManager;
         }
 
 
-        public override async Task PreExecute(string[] args)
+        public override async Task PreExecute(ToolProfile? profile, string[] args)
         {
-            profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
-            PrintCurrentProfile(profile);
+            await base.PreExecute(profile, args);
 
             options = await wizard.Run();
-
-            AnsiConsole.WriteLine();
         }
 
 
-        public override async Task Execute(string[] args)
+        public override async Task Execute(ToolProfile? profile, string[] args)
         {
-            if (options is null || profile is null)
+            if (options is null)
             {
-                throw new InvalidOperationException("Options or profile weren't found.");
+                throw new InvalidOperationException("Options weren't found.");
             }
 
             await UpdatePackages(options, profile);
-            await BuildProject(profile);
             // There is currently an issue running the database update script while emulating the ReadKey() input
             // for the script's "Do you want to continue" prompt. The update command must be run manually.
-            AnsiConsole.MarkupLineInterpolated($"Unfortunately, the database cannot be updated at this time. Please run the [{Constants.SUCCESS_COLOR}]'dotnet run --no-build --kxp-update'[/] command manually if needed.");
+            AnsiConsole.MarkupLineInterpolated($"Unfortunately, the database cannot be updated at this time. You can build the project and run the [{Constants.EMPHASIS_COLOR}]'dotnet run --no-build --kxp-update'[/] command manually if needed.");
         }
 
 
-        public override async Task PostExecute(string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string[] args)
         {
             if (!Errors.Any())
             {
                 AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Update complete![/]\n");
             }
 
-            await base.PostExecute(args);
+            await base.PostExecute(profile, args);
         }
 
 
-        private async Task UpdatePackages(UpdateOptions options, ToolProfile profile)
+        private async Task UpdatePackages(UpdateOptions options, ToolProfile? profile)
         {
             foreach (string package in packageNames)
             {
@@ -115,27 +111,9 @@ namespace Xperience.Xman.Commands
                 await shellRunner.Execute(new(packageScript)
                 {
                     ErrorHandler = ErrorDataReceived,
-                    WorkingDirectory = profile.WorkingDirectory
+                    WorkingDirectory = profile?.WorkingDirectory
                 }).WaitForExitAsync();
             }
-        }
-
-
-        private async Task BuildProject(ToolProfile profile)
-        {
-            if (StopProcessing)
-            {
-                return;
-            }
-
-            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Attempting to build the project...[/]");
-
-            string buildScript = scriptBuilder.SetScript(ScriptType.BuildProject).Build();
-            await shellRunner.Execute(new(buildScript)
-            {
-                ErrorHandler = ErrorDataReceived,
-                WorkingDirectory = profile.WorkingDirectory
-            }).WaitForExitAsync();
         }
     }
 }

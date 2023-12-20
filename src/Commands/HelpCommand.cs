@@ -2,6 +2,7 @@ using Spectre.Console;
 
 using System.Reflection;
 
+using Xperience.Xman.Configuration;
 using Xperience.Xman.Helpers;
 
 namespace Xperience.Xman.Commands
@@ -36,12 +37,12 @@ namespace Xperience.Xman.Commands
         public override string Description => "Displays the help menu (this screen)";
 
 
-        public override async Task Execute(string[] args)
+        public override async Task Execute(ToolProfile? profile, string[] args)
         {
             AnsiConsole.Write(
                 new FigletText("xman")
                     .LeftJustified()
-                    .Color(Color.Orange3));
+                    .Color(Color.LightGoldenrod2_1));
 
             var v = Assembly.GetExecutingAssembly().GetName().Version;
             if (v is not null)

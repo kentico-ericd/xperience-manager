@@ -26,13 +26,31 @@ namespace Xperience.Xman.Commands
         public abstract string Description { get; }
 
 
-        public virtual Task PreExecute(string[] args) => Task.CompletedTask;
+        public virtual bool RequiresProfile { get; set; }
 
 
-        public abstract Task Execute(string[] args);
+        public virtual Task PreExecute(ToolProfile? profile, string[] args)
+        {
+            if (RequiresProfile)
+            {
+                if (profile is null)
+                {
+                    throw new InvalidOperationException("This command requires a profile.");
+                }
+                else
+                {
+                    PrintCurrentProfile(profile);
+                }
+            }
+
+            return Task.CompletedTask;
+        }
 
 
-        public virtual Task PostExecute(string[] args) => Task.CompletedTask;
+        public abstract Task Execute(ToolProfile? profile, string[] args);
+
+
+        public virtual Task PostExecute(ToolProfile? profile, string[] args) => Task.CompletedTask;
 
 
         /// <summary>
@@ -62,6 +80,13 @@ namespace Xperience.Xman.Commands
         }
 
 
-        protected void PrintCurrentProfile(ToolProfile? profile) => AnsiConsole.MarkupLineInterpolated($"[[Profile: [{Constants.EMPHASIS_COLOR}]{profile?.ProjectName ?? "None"}[/]]]");
+        protected void PrintCurrentProfile(ToolProfile? profile)
+        {
+            AnsiConsole.Write(new Rule("Current profile:") { Justification = Justify.Left });
+            AnsiConsole.MarkupLineInterpolated($"Name: [{Constants.EMPHASIS_COLOR}]{profile?.ProjectName ?? "None"}[/]");
+            AnsiConsole.MarkupLineInterpolated($"Path: [{Constants.EMPHASIS_COLOR}]{profile?.WorkingDirectory ?? "None"}[/]");
+            AnsiConsole.Write(new Rule());
+            AnsiConsole.WriteLine();
+        }
     }
 }

@@ -1,3 +1,5 @@
+using Xperience.Xman.Configuration;
+
 namespace Xperience.Xman.Commands
 {
     /// <summary>
@@ -36,21 +38,33 @@ namespace Xperience.Xman.Commands
 
 
         /// <summary>
+        /// If <c>true</c>, the command requires a <see cref="ToolProfile"/> to be active and
+        /// will throw an exception if not set.
+        /// </summary>
+        public bool RequiresProfile { get; set; }
+
+
+        /// <summary>
         /// Runs before <see cref="Execute"/>.
         /// </summary>
-        public Task PreExecute(string[] args);
+        /// <param name="profile">The active profile.</param>
+        /// <param name="args">The arguments provided by the user.</param>
+        public Task PreExecute(ToolProfile? profile, string[] args);
 
 
         /// <summary>
         /// Executes the command.
         /// </summary>
+        /// <param name="profile">The active profile.</param>
         /// <param name="args">The arguments provided by the user.</param>
-        public Task Execute(string[] args);
+        public Task Execute(ToolProfile? profile, string[] args);
 
 
         /// <summary>
         /// Runs after <see cref="Execute"/>.
         /// </summary>
-        public Task PostExecute(string[] args);
+        /// <param name="profile">The active profile.</param>
+        /// <param name="args">The arguments provided by the user.</param>
+        public Task PostExecute(ToolProfile? profile, string[] args);
     }
 }
