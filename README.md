@@ -65,6 +65,7 @@ The following commands can be executed using the `xman` tool name:
 - [`i`, `install`](#installing-a-new-project)
 - [`u`, `update`](#updating-a-project-version)
 - [`m`, `macros`](#re-signing-macros)
+- [`b`, `build`](#building-projects)
 - [`s`, `settings`](#modifying-appsettingsjson)
 - [`ci <store> <restore>`](#running-continuous-integration)
 - [`cd <store> <restore> <config>`](#running-continuous-deployment)
@@ -132,6 +133,15 @@ See [our documentation](https://docs.xperience.io/xp/developers-and-admins/confi
 
    ```bash
    xman macros
+   ```
+
+### Building projects
+
+1. (optional) Select a profile with the [`profile`](#managing-profiles) command
+1. Run the `build` command from the directory containing the [configuration file](#configuration-file) to build the current profile's instance:
+
+   ```bash
+   xman build
    ```
 
 ### Running Continuous Integration
