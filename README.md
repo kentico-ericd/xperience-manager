@@ -162,8 +162,7 @@ You can customize the location of the CD files by changing the __CDRootPath__ pr
 
 ```json
 {
-    "CDRootPath": "C:\\XperienceCDFiles",
-    ...
+    "CDRootPath": "C:\\XperienceCDFiles"
 }
 ```
 
