@@ -65,6 +65,7 @@ The following commands can be executed using the `xman` tool name:
 - [`i`, `install`](#installing-a-new-project)
 - [`u`, `update`](#updating-a-project-version)
 - [`m`, `macros`](#re-signing-macros)
+- [`s`, `settings`](#modifying-appsettingsjson)
 - [`ci <store> <restore>`](#running-continuous-integration)
 - [`cd <store> <restore> <config>`](#running-continuous-deployment)
 - [`p`, `profile <add> <delete> <switch>`](#managing-profiles)
@@ -80,7 +81,6 @@ xman profile
 ```
 
 <img src="https://raw.githubusercontent.com/kentico-ericd/xperience-manager/master/img/profiles.png" width="350" />
-
 
 You can __add__ or __delete__ profiles using the corresponding commands. This can be useful to register Xperience by Kentico installations that weren't installed using the tool.
 
@@ -109,6 +109,19 @@ Currently, there is a bug with updating the project's database version, so the t
    ```bash
    xman update
    ```
+
+### Modifying appsettings.json
+
+This tool can assist with changing the _CMSConnectionString_ as well as setting any supported [configuration keys](https://docs.xperience.io/xp/developers-and-admins/configuration/reference-configuration-keys).
+
+1. (optional) Select a profile with the [`profile`](#managing-profiles) command
+1. Run the `settings` command from the directory containing the [configuration file](#configuration-file), which will begin the settings wizard:
+
+   ```bash
+   xman settings
+   ```
+
+<img src="https://raw.githubusercontent.com/kentico-ericd/xperience-manager/master/img/settings.png" width="350" />
 
 ### Re-signing macros
 
