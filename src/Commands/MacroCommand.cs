@@ -50,6 +50,11 @@ namespace Xperience.Xman.Commands
 
         public override async Task Execute(ToolProfile? profile, string? action)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             var options = await wizard.Run();
             AnsiConsole.WriteLine();
 
@@ -81,8 +86,12 @@ namespace Xperience.Xman.Commands
 
         private async Task ResignMacros(ProgressTask task, ToolProfile? profile, MacroOptions options)
         {
-            string originalDescription = task.Description;
+            if (StopProcessing)
+            {
+                return;
+            }
 
+            string originalDescription = task.Description;
             string? salt = string.IsNullOrEmpty(options.OldSalt) ? options.NewSalt : options.OldSalt;
             string macroScript = scriptBuilder.SetScript(ScriptType.ResignMacros)
                 .AppendSignAll(options.SignAll, options.UserName)

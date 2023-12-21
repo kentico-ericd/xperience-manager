@@ -35,7 +35,7 @@ namespace Xperience.Xman.Commands
             {
                 if (profile is null)
                 {
-                    throw new InvalidOperationException("This command requires a profile.");
+                    LogError("This command requires a profile.");
                 }
                 else
                 {
@@ -68,7 +68,7 @@ namespace Xperience.Xman.Commands
         /// <summary>
         /// Adds an error to <see cref="Errors"/> and stops additional processing.
         /// </summary>
-        protected void LogError(string message, Process? process)
+        protected void LogError(string message, Process? process = null)
         {
             Errors.Add(message);
 

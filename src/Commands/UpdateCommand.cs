@@ -60,6 +60,11 @@ namespace Xperience.Xman.Commands
 
         public override async Task Execute(ToolProfile? profile, string? action)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             var options = await wizard.Run();
 
             await UpdatePackages(options, profile);

@@ -52,7 +52,8 @@ namespace Xperience.Xman.Commands
         {
             if (string.IsNullOrEmpty(action) || !Parameters.Any(p => p.Equals(action, StringComparison.OrdinalIgnoreCase)))
             {
-                throw new InvalidOperationException($"Must provide one parameter from '{string.Join(", ", Parameters)}'");
+                LogError($"Must provide one parameter from '{string.Join(", ", Parameters)}'");
+                return;
             }
 
             await base.PreExecute(profile, action);
@@ -61,6 +62,11 @@ namespace Xperience.Xman.Commands
 
         public override async Task Execute(ToolProfile? profile, string? action)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             if (action?.Equals(STORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await AnsiConsole.Progress()
@@ -109,6 +115,11 @@ namespace Xperience.Xman.Commands
 
         private async Task StoreFiles(ProgressTask task, ToolProfile? profile)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             string ciScript = scriptBuilder.SetScript(ScriptType.StoreContinuousIntegration).Build();
             await shellRunner.Execute(new(ciScript)
             {
@@ -144,6 +155,11 @@ namespace Xperience.Xman.Commands
 
         private async Task RestoreFiles(ProgressTask task, ToolProfile? profile)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             string originalDescription = task.Description;
             string ciScript = scriptBuilder.SetScript(ScriptType.RestoreContinuousIntegration).Build();
             await shellRunner.Execute(new(ciScript)

@@ -42,6 +42,11 @@ namespace Xperience.Xman.Commands
 
         public override async Task Execute(ToolProfile? profile, string? action)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             string connStringName = "CMSConnectionString";
             string? connString = await appSettingsManager.GetConnectionString(profile, connStringName);
             if (connString is null)
@@ -53,7 +58,7 @@ namespace Xperience.Xman.Commands
                 AnsiConsole.Write(new Markup($"[{Constants.PROMPT_COLOR} underline]{connStringName}[/]\n{connString}\n\n").Centered());
                 bool updateConnection = AnsiConsole.Prompt(new ConfirmationPrompt($"Do you want to change the [{Constants.PROMPT_COLOR}]{connStringName}?[/]")
                 {
-                    DefaultValue = true
+                    DefaultValue = false
                 });
                 if (updateConnection)
                 {
@@ -79,26 +84,33 @@ namespace Xperience.Xman.Commands
         });
 
 
-        private ConfigurationKey GetNewSettingsKey(IEnumerable<ConfigurationKey> keys)
+        private ConfigurationKey? GetNewSettingsKey(IEnumerable<ConfigurationKey> keys)
         {
             var keyToUpdate = AnsiConsole.Prompt(new SelectionPrompt<ConfigurationKey>()
                 .Title($"Set which [{Constants.PROMPT_COLOR}]key[/]?")
                 .PageSize(10)
-                .UseConverter(v => $"{v.KeyName}{(v.ActualValue is not null ? $" ({Truncate(v.ActualValue.ToString(), 12)})" : string.Empty)}")
+                .UseConverter(v => $"{v.KeyName}{(v.ActualValue is not null ?
+                    $" [{Constants.SUCCESS_COLOR}]({Truncate(v.ActualValue.ToString(), 12)})[/]" : string.Empty)}")
                 .MoreChoicesText("Scroll for more...")
                 .AddChoices(keys));
 
             var header = new StringBuilder($"\n[{Constants.PROMPT_COLOR} underline]{keyToUpdate.KeyName}[/]");
             if (keyToUpdate.ActualValue is not null)
             {
-                header.AppendLine($"\nValue: [{Constants.PROMPT_COLOR} underline]{keyToUpdate.ActualValue.ToString().EscapeMarkup()}[/]");
+                header.AppendLine($"\nValue: {keyToUpdate.ActualValue}");
             }
 
             header.AppendLine($"\n{keyToUpdate.Description}\n");
             AnsiConsole.Write(new Markup(header.ToString()).Centered());
 
-            string newValue = AnsiConsole.Prompt(new TextPrompt<string>($"Enter the new value for [{Constants.PROMPT_COLOR}]{keyToUpdate.KeyName}[/]:"));
-            object converted = Convert.ChangeType(newValue, keyToUpdate.ValueType) ?? throw new InvalidCastException($"The key value cannot be cast into type {keyToUpdate.ValueType.Name}");
+            string newValue = AnsiConsole.Prompt(new TextPrompt<string>($"New value [{Constants.EMPHASIS_COLOR}]({keyToUpdate.ValueType.Name.ToLower()})[/]:"));
+            object converted = Convert.ChangeType(newValue, keyToUpdate.ValueType);
+            if (converted is null)
+            {
+                LogError($"The key value cannot be cast into type {keyToUpdate.ValueType.Name}");
+                return null;
+            }
+
             keyToUpdate.ActualValue = converted;
 
             return keyToUpdate;
@@ -112,6 +124,11 @@ namespace Xperience.Xman.Commands
 
         private async Task UpdateConnectionString(ToolProfile? profile, string name)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             string newConnString = AnsiConsole.Prompt(new TextPrompt<string>($"Enter new [{Constants.PROMPT_COLOR}]connection string[/]:"));
             await appSettingsManager.SetConnectionString(profile, name, newConnString);
 
@@ -121,6 +138,11 @@ namespace Xperience.Xman.Commands
 
         private async Task UpdateSettings(ToolProfile? profile)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             bool updateSettings = ConfirmUpdateSettings($"Do you want to update your [{Constants.PROMPT_COLOR}]configuration keys[/]?");
             if (!updateSettings)
             {
@@ -131,9 +153,10 @@ namespace Xperience.Xman.Commands
             while (updateSettings)
             {
                 var updatedKey = GetNewSettingsKey(keys);
-                if (updatedKey.ActualValue is null)
+                if (updatedKey?.ActualValue is null)
                 {
-                    throw new InvalidOperationException($"Failed to set new value for key {updatedKey.KeyName}");
+                    LogError($"Failed to set new value for key {updatedKey?.KeyName}");
+                    return;
                 }
 
                 await appSettingsManager.SetKeyValue(profile, updatedKey.KeyName, updatedKey.ActualValue);

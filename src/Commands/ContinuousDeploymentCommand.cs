@@ -61,7 +61,7 @@ namespace Xperience.Xman.Commands
         {
             if (string.IsNullOrEmpty(action) || !Parameters.Any(p => p.Equals(action, StringComparison.OrdinalIgnoreCase)))
             {
-                throw new InvalidOperationException($"Must provide one parameter from '{string.Join(", ", Parameters)}'");
+                LogError($"Must provide one parameter from '{string.Join(", ", Parameters)}'");
             }
 
             await base.PreExecute(profile, action);
@@ -70,6 +70,11 @@ namespace Xperience.Xman.Commands
 
         public override async Task Execute(ToolProfile? profile, string? action)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             var config = await configManager.GetConfig();
             await EnsureCDStructure(profile, config);
             if (action?.Equals(CONFIG, StringComparison.OrdinalIgnoreCase) ?? false)
@@ -137,7 +142,8 @@ namespace Xperience.Xman.Commands
 
             if (string.IsNullOrEmpty(profile?.ProjectName))
             {
-                throw new InvalidOperationException("Unable to load profile name.");
+                LogError("Unable to load profile name.");
+                return;
             }
 
             ContinuousDeploymentConfig cdConfig = new()
@@ -146,7 +152,13 @@ namespace Xperience.Xman.Commands
                 RepositoryPath = Path.Combine(toolConfig.CDRootPath, profile.ProjectName, Constants.CD_FILES_DIR)
             };
 
-            var repoConfig = await cdXmlManager.GetConfig(cdConfig.ConfigPath) ?? throw new InvalidOperationException("Unable to read repository configuration.");
+            var repoConfig = await cdXmlManager.GetConfig(cdConfig.ConfigPath);
+            if (repoConfig is null)
+            {
+                LogError("Unable to read repository configuration.");
+                return;
+            }
+
             wizard.Options = repoConfig;
             var options = await wizard.Run();
             cdXmlManager.WriteConfig(options, cdConfig.ConfigPath);
@@ -163,8 +175,7 @@ namespace Xperience.Xman.Commands
             var profiles = config.Profiles.Where(p => !p.ProjectName?.Equals(profile?.ProjectName, StringComparison.OrdinalIgnoreCase) ?? false);
             if (!profiles.Any())
             {
-                AnsiConsole.MarkupLineInterpolated($"There are no profiles to restore CD data from. Use the [{Constants.EMPHASIS_COLOR}]install[/] or [{Constants.EMPHASIS_COLOR}]profile add[/] commands to register a new profile.");
-                StopProcessing = true;
+                LogError("There are no profiles to restore CD data from. Use the 'install' or 'profile add' commands to register a new profile.");
                 return null;
             }
 
@@ -188,7 +199,8 @@ namespace Xperience.Xman.Commands
 
             if (string.IsNullOrEmpty(profile?.ProjectName))
             {
-                throw new InvalidOperationException("Unable to load profile name.");
+                LogError("Unable to load profile name.");
+                return;
             }
 
             ContinuousDeploymentConfig cdConfig = new()
@@ -222,7 +234,8 @@ namespace Xperience.Xman.Commands
 
             if (string.IsNullOrEmpty(sourceProfile.ProjectName))
             {
-                throw new InvalidOperationException("Unable to load profile name.");
+                LogError("Unable to load profile name.");
+                return;
             }
 
             ContinuousDeploymentConfig cdConfig = new()
@@ -262,7 +275,8 @@ namespace Xperience.Xman.Commands
 
             if (string.IsNullOrEmpty(profile?.ProjectName))
             {
-                throw new InvalidOperationException("Unable to load profile name.");
+                LogError("Unable to load profile name.");
+                return;
             }
 
             ContinuousDeploymentConfig cdConfig = new()

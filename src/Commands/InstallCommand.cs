@@ -52,6 +52,11 @@ namespace Xperience.Xman.Commands
 
         public override async Task Execute(ToolProfile? profile, string? action)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             // Override default values of InstallOptions with values from config file
             wizard.Options = await configManager.GetDefaultInstallOptions();
             var options = await wizard.Run();
@@ -90,9 +95,14 @@ namespace Xperience.Xman.Commands
 
         private async Task CreateWorkingDirectory()
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             if (string.IsNullOrEmpty(newInstallationProfile.WorkingDirectory))
             {
-                LogError("Unable to load working directory.", null);
+                LogError("Unable to load working directory.");
                 return;
             }
 

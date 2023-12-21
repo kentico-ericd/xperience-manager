@@ -45,10 +45,16 @@ namespace Xperience.Xman.Commands
 
         public override async Task PreExecute(ToolProfile? profile, string? action)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             action ??= SWITCH;
             if (!Parameters.Any(p => p.Equals(action, StringComparison.OrdinalIgnoreCase)))
             {
-                throw new InvalidOperationException($"Must provide one parameter from '{string.Join(", ", Parameters)}'");
+                LogError($"Must provide one parameter from '{string.Join(", ", Parameters)}'");
+                return;
             }
 
             await base.PreExecute(profile, action);
@@ -57,6 +63,11 @@ namespace Xperience.Xman.Commands
 
         public override async Task Execute(ToolProfile? profile, string? action)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             action ??= SWITCH;
             var config = await configManager.GetConfig();
 
@@ -65,14 +76,12 @@ namespace Xperience.Xman.Commands
                 (action.Equals(SWITCH, StringComparison.OrdinalIgnoreCase) || action.Equals(DELETE, StringComparison.OrdinalIgnoreCase)))
             {
                 AnsiConsole.MarkupLineInterpolated($"There are no registered profiles. Install a new instance with [{Constants.SUCCESS_COLOR}]xman i[/] to add a profile.\n");
-                StopProcessing = true;
                 return;
             }
 
             if (config.Profiles.Count == 1 && action.Equals(SWITCH, StringComparison.OrdinalIgnoreCase))
             {
                 AnsiConsole.WriteLine("You're currently using the only registered profile.\n");
-                StopProcessing = true;
                 return;
             }
 
@@ -101,10 +110,16 @@ namespace Xperience.Xman.Commands
 
         private async Task AddProfile()
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             var options = await wizard.Run();
             if (!Directory.Exists(options.WorkingDirectory))
             {
-                throw new DirectoryNotFoundException($"The directory {options.WorkingDirectory} couldn't be found.");
+                LogError($"The directory {options.WorkingDirectory} couldn't be found.");
+                return;
             }
 
             await configManager.AddProfile(new()
@@ -119,6 +134,11 @@ namespace Xperience.Xman.Commands
 
         private async Task DeleteProfile(List<ToolProfile> profiles)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             var profile = AnsiConsole.Prompt(new SelectionPrompt<ToolProfile>()
                 .Title("Delete which [green]profile[/]?")
                 .PageSize(10)
@@ -134,6 +154,11 @@ namespace Xperience.Xman.Commands
 
         private async Task SwitchProfile(List<ToolProfile> profiles)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             var prompt = new SelectionPrompt<ToolProfile>()
                     .Title("Switch to profile:")
                     .PageSize(10)
