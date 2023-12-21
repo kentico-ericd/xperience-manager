@@ -26,13 +26,31 @@ namespace Xperience.Xman.Commands
         public abstract string Description { get; }
 
 
-        public virtual Task PreExecute(string[] args) => Task.CompletedTask;
+        public virtual bool RequiresProfile { get; set; }
 
 
-        public abstract Task Execute(string[] args);
+        public virtual Task PreExecute(ToolProfile? profile, string? action)
+        {
+            if (RequiresProfile)
+            {
+                if (profile is null)
+                {
+                    LogError("This command requires a profile.");
+                }
+                else
+                {
+                    PrintCurrentProfile(profile);
+                }
+            }
+
+            return Task.CompletedTask;
+        }
 
 
-        public virtual Task PostExecute(string[] args) => Task.CompletedTask;
+        public abstract Task Execute(ToolProfile? profile, string? action);
+
+
+        public virtual Task PostExecute(ToolProfile? profile, string? action) => Task.CompletedTask;
 
 
         /// <summary>
@@ -50,7 +68,7 @@ namespace Xperience.Xman.Commands
         /// <summary>
         /// Adds an error to <see cref="Errors"/> and stops additional processing.
         /// </summary>
-        protected void LogError(string message, Process? process)
+        protected void LogError(string message, Process? process = null)
         {
             Errors.Add(message);
 
@@ -62,6 +80,13 @@ namespace Xperience.Xman.Commands
         }
 
 
-        protected void PrintCurrentProfile(ToolProfile? profile) => AnsiConsole.MarkupLineInterpolated($"[[Profile: [{Constants.EMPHASIS_COLOR}]{profile?.ProjectName ?? "None"}[/]]]");
+        protected void PrintCurrentProfile(ToolProfile? profile)
+        {
+            AnsiConsole.Write(new Rule("Current profile:") { Justification = Justify.Left });
+            AnsiConsole.MarkupLineInterpolated($"Name: [{Constants.EMPHASIS_COLOR}]{profile?.ProjectName ?? "None"}[/]");
+            AnsiConsole.MarkupLineInterpolated($"Path: [{Constants.EMPHASIS_COLOR}]{profile?.WorkingDirectory ?? "None"}[/]");
+            AnsiConsole.Write(new Rule());
+            AnsiConsole.WriteLine();
+        }
     }
 }

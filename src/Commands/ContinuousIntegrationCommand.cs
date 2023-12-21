@@ -12,13 +12,10 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class ContinuousIntegrationCommand : AbstractCommand
     {
-        private string? actionName;
-        private ToolProfile? profile;
         private const string STORE = "store";
         private const string RESTORE = "restore";
         private readonly IShellRunner shellRunner;
         private readonly IScriptBuilder scriptBuilder;
-        private readonly IConfigManager configManager;
 
 
         public override IEnumerable<string> Keywords => new string[] { "ci" };
@@ -28,6 +25,9 @@ namespace Xperience.Xman.Commands
 
 
         public override string Description => "Stores or restores CI data";
+
+
+        public override bool RequiresProfile => true;
 
 
         /// <summary>
@@ -41,42 +41,33 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public ContinuousIntegrationCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder, IConfigManager configManager)
+        public ContinuousIntegrationCommand(IShellRunner shellRunner, IScriptBuilder scriptBuilder)
         {
             this.shellRunner = shellRunner;
             this.scriptBuilder = scriptBuilder;
-            this.configManager = configManager;
         }
 
 
-        public override async Task PreExecute(string[] args)
+        public override async Task PreExecute(ToolProfile? profile, string? action)
         {
-            if (args.Length < 2)
+            if (string.IsNullOrEmpty(action) || !Parameters.Any(p => p.Equals(action, StringComparison.OrdinalIgnoreCase)))
             {
-                throw new InvalidOperationException($"Must provide 1 parameter from '{string.Join(", ", Parameters)}'");
+                LogError($"Must provide one parameter from '{string.Join(", ", Parameters)}'");
+                return;
             }
 
-            actionName = args[1].ToLower();
-            if (!Parameters.Any(p => p.Equals(actionName, StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new InvalidOperationException($"Invalid parameter '{actionName}'");
-            }
-
-            profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
-            PrintCurrentProfile(profile);
-
-            await base.PreExecute(args);
+            await base.PreExecute(profile, action);
         }
 
 
-        public override async Task Execute(string[] args)
+        public override async Task Execute(ToolProfile? profile, string? action)
         {
-            if (profile is null)
+            if (StopProcessing)
             {
                 return;
             }
 
-            if (actionName?.Equals(STORE, StringComparison.OrdinalIgnoreCase) ?? false)
+            if (action?.Equals(STORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await AnsiConsole.Progress()
                     .Columns(new ProgressColumn[]
@@ -93,7 +84,7 @@ namespace Xperience.Xman.Commands
                         await StoreFiles(task, profile);
                     });
             }
-            else if (actionName?.Equals(RESTORE, StringComparison.OrdinalIgnoreCase) ?? false)
+            else if (action?.Equals(RESTORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await AnsiConsole.Progress()
                     .Columns(new ProgressColumn[]
@@ -111,23 +102,28 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PostExecute(string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string? action)
         {
             if (!Errors.Any())
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]CI {actionName ?? "process"} complete![/]\n");
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]CI {action ?? "process"} complete![/]\n");
             }
 
-            await base.PostExecute(args);
+            await base.PostExecute(profile, action);
         }
 
 
-        private async Task StoreFiles(ProgressTask task, ToolProfile profile)
+        private async Task StoreFiles(ProgressTask task, ToolProfile? profile)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             string ciScript = scriptBuilder.SetScript(ScriptType.StoreContinuousIntegration).Build();
             await shellRunner.Execute(new(ciScript)
             {
-                WorkingDirectory = profile.WorkingDirectory,
+                WorkingDirectory = profile?.WorkingDirectory,
                 ErrorHandler = ErrorDataReceived,
                 OutputHandler = (o, e) =>
                 {
@@ -157,13 +153,18 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task RestoreFiles(ProgressTask task, ToolProfile profile)
+        private async Task RestoreFiles(ProgressTask task, ToolProfile? profile)
         {
+            if (StopProcessing)
+            {
+                return;
+            }
+
             string originalDescription = task.Description;
             string ciScript = scriptBuilder.SetScript(ScriptType.RestoreContinuousIntegration).Build();
             await shellRunner.Execute(new(ciScript)
             {
-                WorkingDirectory = profile.WorkingDirectory,
+                WorkingDirectory = profile?.WorkingDirectory,
                 ErrorHandler = ErrorDataReceived,
                 OutputHandler = (o, e) =>
                 {

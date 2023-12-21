@@ -54,15 +54,17 @@ namespace Xperience.Xman
 
             try
             {
-                await command.PreExecute(args);
+                var activeProfile = await configManager.GetCurrentProfile();
+                string? actionName = args.Length > 1 ? args[1].ToLower() : null;
+                await command.PreExecute(activeProfile, actionName);
                 if (!command.StopProcessing)
                 {
-                    await command.Execute(args);
+                    await command.Execute(activeProfile, actionName);
                 }
 
                 if (!command.StopProcessing)
                 {
-                    await command.PostExecute(args);
+                    await command.PostExecute(activeProfile, actionName);
                 }
 
                 if (command.Errors.Any())

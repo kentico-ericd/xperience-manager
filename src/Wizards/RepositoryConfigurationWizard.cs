@@ -25,7 +25,7 @@ namespace Xperience.Xman.Wizards
             Steps.Add(new Step<string>(new()
             {
                 Prompt = new SelectionPrompt<string>()
-                    .Title($"Which [green]RestoreMode[/]? [green]({Options.RestoreMode})[/]")
+                    .Title($"Which [{Constants.PROMPT_COLOR}]RestoreMode[/]? [{Constants.SUCCESS_COLOR}]({Options.RestoreMode})[/]")
                     .PageSize(10)
                     .MoreChoicesText("Scroll for more...")
                     .AddChoices(restoreModes),
@@ -34,7 +34,7 @@ namespace Xperience.Xman.Wizards
 
             Steps.Add(new Step<bool>(new()
             {
-                Prompt = new ConfirmationPrompt($"[green]Included[/] object types: {string.Join(";", Options.IncludedObjectTypes ?? Enumerable.Empty<string>())}\nWould you like to change them?")
+                Prompt = new ConfirmationPrompt($"[{Constants.PROMPT_COLOR}]Included[/] object types: {string.Join(";", Options.IncludedObjectTypes ?? Enumerable.Empty<string>())}\nWould you like to change them?")
                 {
                     DefaultValue = false
                 },
@@ -43,7 +43,7 @@ namespace Xperience.Xman.Wizards
 
             Steps.Add(new Step<string>(new()
             {
-                Prompt = new TextPrompt<string>("Enter new [green]included[/] object types separated by semi-colon:")
+                Prompt = new TextPrompt<string>($"Enter new [{Constants.PROMPT_COLOR}]included[/] object types separated by semi-colon:")
                     .AllowEmpty(),
                 ValueReceiver = (v) =>
                 {
@@ -56,7 +56,7 @@ namespace Xperience.Xman.Wizards
 
             Steps.Add(new Step<bool>(new()
             {
-                Prompt = new ConfirmationPrompt($"[green]Excluded[/] object types: {string.Join(";", Options.ExcludedObjectTypes ?? Enumerable.Empty<string>())}\nWould you like to change them?")
+                Prompt = new ConfirmationPrompt($"[{Constants.PROMPT_COLOR}]Excluded[/] object types: {string.Join(";", Options.ExcludedObjectTypes ?? Enumerable.Empty<string>())}\nWould you like to change them?")
                 {
                     DefaultValue = false
                 },
@@ -65,7 +65,7 @@ namespace Xperience.Xman.Wizards
 
             Steps.Add(new Step<string>(new()
             {
-                Prompt = new TextPrompt<string>("Enter new [green]excluded[/] object types separated by semi-colon:")
+                Prompt = new TextPrompt<string>($"Enter new [{Constants.PROMPT_COLOR}]excluded[/] object types separated by semi-colon:")
                     .AllowEmpty(),
                 ValueReceiver = (v) =>
                 {

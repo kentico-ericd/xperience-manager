@@ -14,7 +14,7 @@ namespace Xperience.Xman.Wizards
         {
             Steps.Add(new Step<bool>(new()
             {
-                Prompt = new ConfirmationPrompt($"[green]Sign all[/] macros?")
+                Prompt = new ConfirmationPrompt($"[{Constants.PROMPT_COLOR}]Sign all[/] macros?")
                 {
                     DefaultValue = true
                 },
@@ -23,21 +23,21 @@ namespace Xperience.Xman.Wizards
 
             Steps.Add(new Step<string>(new()
             {
-                Prompt = new TextPrompt<string>("[green]Username[/]:"),
+                Prompt = new TextPrompt<string>($"[{Constants.PROMPT_COLOR}]Username[/]:"),
                 ValueReceiver = (v) => Options.UserName = v,
                 SkipChecker = () => !Options.SignAll
             }));
 
             Steps.Add(new Step<string>(new()
             {
-                Prompt = new TextPrompt<string>("[green]Old[/] salt:"),
+                Prompt = new TextPrompt<string>($"[{Constants.PROMPT_COLOR}]Old[/] salt:"),
                 ValueReceiver = (v) => Options.OldSalt = v,
                 SkipChecker = () => Options.SignAll
             }));
 
             Steps.Add(new Step<string>(new()
             {
-                Prompt = new TextPrompt<string>("[green]New[/] salt? Leave empty to use the salt in appsettings:")
+                Prompt = new TextPrompt<string>($"[{Constants.PROMPT_COLOR}]New[/] salt? Leave empty to use the salt in appsettings:")
                     .AllowEmpty(),
                 ValueReceiver = (v) => Options.NewSalt = v,
             }));

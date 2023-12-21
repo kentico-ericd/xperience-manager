@@ -14,8 +14,6 @@ namespace Xperience.Xman.Commands
     /// </summary>
     public class ContinuousDeploymentCommand : AbstractCommand
     {
-        private string? actionName;
-        private ToolProfile? profile;
         private const string STORE = "store";
         private const string RESTORE = "restore";
         private const string CONFIG = "config";
@@ -33,6 +31,9 @@ namespace Xperience.Xman.Commands
 
 
         public override string Description => "Stores or restores CD data, or edits the config file";
+
+
+        public override bool RequiresProfile => true;
 
 
         /// <summary>
@@ -56,40 +57,31 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PreExecute(string[] args)
+        public override async Task PreExecute(ToolProfile? profile, string? action)
         {
-            if (args.Length < 2)
+            if (string.IsNullOrEmpty(action) || !Parameters.Any(p => p.Equals(action, StringComparison.OrdinalIgnoreCase)))
             {
-                throw new InvalidOperationException($"Must provide 1 parameter from '{string.Join(", ", Parameters)}'");
+                LogError($"Must provide one parameter from '{string.Join(", ", Parameters)}'");
             }
 
-            actionName = args[1].ToLower();
-            if (!Parameters.Any(p => p.Equals(actionName, StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new InvalidOperationException($"Invalid parameter '{actionName}'");
-            }
-
-            profile = await configManager.GetCurrentProfile() ?? throw new InvalidOperationException("There is no active profile.");
-            PrintCurrentProfile(profile);
-
-            await base.PreExecute(args);
+            await base.PreExecute(profile, action);
         }
 
 
-        public override async Task Execute(string[] args)
+        public override async Task Execute(ToolProfile? profile, string? action)
         {
-            if (profile is null)
+            if (StopProcessing)
             {
                 return;
             }
 
             var config = await configManager.GetConfig();
             await EnsureCDStructure(profile, config);
-            if (actionName?.Equals(CONFIG, StringComparison.OrdinalIgnoreCase) ?? false)
+            if (action?.Equals(CONFIG, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await ConfigureXml(config, profile);
             }
-            else if (actionName?.Equals(STORE, StringComparison.OrdinalIgnoreCase) ?? false)
+            else if (action?.Equals(STORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 await AnsiConsole.Progress()
                     .Columns(new ProgressColumn[]
@@ -106,9 +98,9 @@ namespace Xperience.Xman.Commands
                         await StoreFiles(task, profile, config);
                     });
             }
-            else if (actionName?.Equals(RESTORE, StringComparison.OrdinalIgnoreCase) ?? false)
+            else if (action?.Equals(RESTORE, StringComparison.OrdinalIgnoreCase) ?? false)
             {
-                var sourceProfile = GetSourceProfile(config);
+                var sourceProfile = GetSourceProfile(profile, config);
                 if (sourceProfile is null)
                 {
                     return;
@@ -130,27 +122,28 @@ namespace Xperience.Xman.Commands
         }
 
 
-        public override async Task PostExecute(string[] args)
+        public override async Task PostExecute(ToolProfile? profile, string? action)
         {
             if (!Errors.Any())
             {
-                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]CD {actionName ?? "process"} complete![/]\n");
+                AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]CD {action ?? "process"} complete![/]\n");
             }
 
-            await base.PostExecute(args);
+            await base.PostExecute(profile, action);
         }
 
 
-        private async Task ConfigureXml(ToolConfiguration toolConfig, ToolProfile profile)
+        private async Task ConfigureXml(ToolConfiguration toolConfig, ToolProfile? profile)
         {
             if (StopProcessing)
             {
                 return;
             }
 
-            if (string.IsNullOrEmpty(profile.ProjectName))
+            if (string.IsNullOrEmpty(profile?.ProjectName))
             {
-                throw new InvalidOperationException("Unable to load profile name.");
+                LogError("Unable to load profile name.");
+                return;
             }
 
             ContinuousDeploymentConfig cdConfig = new()
@@ -159,14 +152,20 @@ namespace Xperience.Xman.Commands
                 RepositoryPath = Path.Combine(toolConfig.CDRootPath, profile.ProjectName, Constants.CD_FILES_DIR)
             };
 
-            var repoConfig = await cdXmlManager.GetConfig(cdConfig.ConfigPath) ?? throw new InvalidOperationException("Unable to read repository configuration.");
+            var repoConfig = await cdXmlManager.GetConfig(cdConfig.ConfigPath);
+            if (repoConfig is null)
+            {
+                LogError("Unable to read repository configuration.");
+                return;
+            }
+
             wizard.Options = repoConfig;
             var options = await wizard.Run();
             cdXmlManager.WriteConfig(options, cdConfig.ConfigPath);
         }
 
 
-        private ToolProfile? GetSourceProfile(ToolConfiguration config)
+        private ToolProfile? GetSourceProfile(ToolProfile? profile, ToolConfiguration config)
         {
             if (StopProcessing)
             {
@@ -176,8 +175,7 @@ namespace Xperience.Xman.Commands
             var profiles = config.Profiles.Where(p => !p.ProjectName?.Equals(profile?.ProjectName, StringComparison.OrdinalIgnoreCase) ?? false);
             if (!profiles.Any())
             {
-                AnsiConsole.MarkupLineInterpolated($"There are no profiles to restore CD data from. Use the [{Constants.EMPHASIS_COLOR}]install[/] or [{Constants.EMPHASIS_COLOR}]profile add[/] commands to register a new profile.");
-                StopProcessing = true;
+                LogError("There are no profiles to restore CD data from. Use the 'install' or 'profile add' commands to register a new profile.");
                 return null;
             }
 
@@ -192,16 +190,17 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task EnsureCDStructure(ToolProfile profile, ToolConfiguration config)
+        private async Task EnsureCDStructure(ToolProfile? profile, ToolConfiguration config)
         {
             if (StopProcessing)
             {
                 return;
             }
 
-            if (string.IsNullOrEmpty(profile.ProjectName))
+            if (string.IsNullOrEmpty(profile?.ProjectName))
             {
-                throw new InvalidOperationException("Unable to load profile name.");
+                LogError("Unable to load profile name.");
+                return;
             }
 
             ContinuousDeploymentConfig cdConfig = new()
@@ -214,7 +213,9 @@ namespace Xperience.Xman.Commands
 
             if (!File.Exists(cdConfig.ConfigPath))
             {
-                string cdScript = scriptBuilder.SetScript(ScriptType.ContinuousDeploymentNewConfiguration).WithPlaceholders(cdConfig).Build();
+                string cdScript = scriptBuilder.SetScript(ScriptType.ContinuousDeploymentNewConfiguration)
+                    .WithPlaceholders(cdConfig)
+                    .Build();
                 await shellRunner.Execute(new(cdScript)
                 {
                     ErrorHandler = ErrorDataReceived,
@@ -224,7 +225,7 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task RestoreFiles(ProgressTask task, ToolProfile profile, ToolProfile sourceProfile, ToolConfiguration config)
+        private async Task RestoreFiles(ProgressTask task, ToolProfile? profile, ToolProfile sourceProfile, ToolConfiguration config)
         {
             if (StopProcessing)
             {
@@ -233,7 +234,8 @@ namespace Xperience.Xman.Commands
 
             if (string.IsNullOrEmpty(sourceProfile.ProjectName))
             {
-                throw new InvalidOperationException("Unable to load profile name.");
+                LogError("Unable to load profile name.");
+                return;
             }
 
             ContinuousDeploymentConfig cdConfig = new()
@@ -243,11 +245,13 @@ namespace Xperience.Xman.Commands
             };
 
             string originalDescription = task.Description;
-            string cdScript = scriptBuilder.SetScript(ScriptType.ContinuousDeploymentRestore).WithPlaceholders(cdConfig).Build();
+            string cdScript = scriptBuilder.SetScript(ScriptType.ContinuousDeploymentRestore)
+                .WithPlaceholders(cdConfig)
+                .Build();
             await shellRunner.Execute(new(cdScript)
             {
                 ErrorHandler = ErrorDataReceived,
-                WorkingDirectory = profile.WorkingDirectory,
+                WorkingDirectory = profile?.WorkingDirectory,
                 OutputHandler = (o, e) =>
                 {
                     if (e.Data?.Contains("Object type", StringComparison.OrdinalIgnoreCase) ?? false)
@@ -262,16 +266,17 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task StoreFiles(ProgressTask task, ToolProfile profile, ToolConfiguration config)
+        private async Task StoreFiles(ProgressTask task, ToolProfile? profile, ToolConfiguration config)
         {
             if (StopProcessing)
             {
                 return;
             }
 
-            if (string.IsNullOrEmpty(profile.ProjectName))
+            if (string.IsNullOrEmpty(profile?.ProjectName))
             {
-                throw new InvalidOperationException("Unable to load profile name.");
+                LogError("Unable to load profile name.");
+                return;
             }
 
             ContinuousDeploymentConfig cdConfig = new()
@@ -279,7 +284,9 @@ namespace Xperience.Xman.Commands
                 ConfigPath = Path.Combine(config.CDRootPath, profile.ProjectName, Constants.CD_CONFIG_NAME),
                 RepositoryPath = Path.Combine(config.CDRootPath, profile.ProjectName, Constants.CD_FILES_DIR)
             };
-            string cdScript = scriptBuilder.SetScript(ScriptType.ContinuousDeploymentStore).WithPlaceholders(cdConfig).Build();
+            string cdScript = scriptBuilder.SetScript(ScriptType.ContinuousDeploymentStore)
+                .WithPlaceholders(cdConfig)
+                .Build();
             await shellRunner.Execute(new(cdScript)
             {
                 ErrorHandler = ErrorDataReceived,
