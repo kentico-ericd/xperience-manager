@@ -87,7 +87,7 @@ namespace Xperience.Xman.Commands
 
             if (action?.Equals(SWITCH, StringComparison.OrdinalIgnoreCase) ?? false)
             {
-                await SwitchProfile(config.Profiles);
+                await SwitchProfile(config.Profiles, profile);
             }
             else if (action?.Equals(ADD, StringComparison.OrdinalIgnoreCase) ?? false)
             {
@@ -152,24 +152,26 @@ namespace Xperience.Xman.Commands
         }
 
 
-        private async Task SwitchProfile(List<ToolProfile> profiles)
+        private async Task SwitchProfile(List<ToolProfile> profiles, ToolProfile? profile)
         {
             if (StopProcessing)
             {
                 return;
             }
 
+            PrintCurrentProfile(profile);
+
             var prompt = new SelectionPrompt<ToolProfile>()
-                    .Title("Switch to profile:")
-                    .PageSize(10)
-                    .UseConverter(p => p.ProjectName ?? string.Empty)
-                    .MoreChoicesText("Scroll for more...")
-                    .AddChoices(profiles);
+                .Title("Switch to profile:")
+                .PageSize(10)
+                .UseConverter(p => p.ProjectName ?? string.Empty)
+                .MoreChoicesText("Scroll for more...")
+                .AddChoices(profiles);
 
-            var profile = AnsiConsole.Prompt(prompt);
-            await configManager.SetCurrentProfile(profile);
+            var newProfile = AnsiConsole.Prompt(prompt);
+            await configManager.SetCurrentProfile(newProfile);
 
-            AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Switched to '{profile.ProjectName}'[/]");
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.SUCCESS_COLOR}]Switched to '{newProfile.ProjectName}'[/]");
         }
     }
 }
