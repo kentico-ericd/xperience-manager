@@ -7,13 +7,11 @@ namespace Xperience.Xman.Services
 {
     public class AppSettingsManager : IAppSettingsManager
     {
-        public async Task<string?> GetConnectionString(ToolProfile? profile, string name)
-        {
-            if (profile is null)
-            {
-                throw new InvalidOperationException("No active profile.");
-            }
+        private readonly string cmsHeadlessSection = "CMSHeadless";
 
+
+        public async Task<string?> GetConnectionString(ToolProfile profile, string name)
+        {
             var appSettings = await LoadSettings(profile);
             var connectionStrings = appSettings["ConnectionStrings"];
             if (connectionStrings is null)
@@ -25,13 +23,21 @@ namespace Xperience.Xman.Services
         }
 
 
-        public async Task<IEnumerable<ConfigurationKey>> GetConfigurationKeys(ToolProfile? profile)
+        public async Task<CmsHeadlessConfiguration> GetCmsHeadlessConfiguration(ToolProfile profile)
         {
-            if (profile is null)
+            var appSettings = await LoadSettings(profile);
+            var headlessConfig = appSettings.GetValue(cmsHeadlessSection)?.ToObject<CmsHeadlessConfiguration>();
+            if (headlessConfig is null)
             {
-                throw new InvalidOperationException("No active profile.");
+                return new CmsHeadlessConfiguration();
             }
 
+            return headlessConfig;
+        }
+
+
+        public async Task<IEnumerable<ConfigurationKey>> GetConfigurationKeys(ToolProfile profile)
+        {
             var appSettings = await LoadSettings(profile);
             var populatedKeys = Constants.ConfigurationKeys
                 .Where(key => appSettings.Properties().Select(p => p.Name).Contains(key.KeyName, StringComparer.OrdinalIgnoreCase))
@@ -44,13 +50,17 @@ namespace Xperience.Xman.Services
         }
 
 
-        public async Task SetConnectionString(ToolProfile? profile, string name, string connectionString)
+        public async Task SetCmsHeadlessConfiguration(ToolProfile profile, CmsHeadlessConfiguration headlessConfiguration)
         {
-            if (profile is null)
-            {
-                throw new InvalidOperationException("No active profile.");
-            }
+            var appSettings = await LoadSettings(profile);
+            appSettings[cmsHeadlessSection] = JToken.FromObject(headlessConfiguration);
 
+            await WriteAppSettings(profile, appSettings);
+        }
+
+
+        public async Task SetConnectionString(ToolProfile profile, string name, string connectionString)
+        {
             var appSettings = await LoadSettings(profile);
             var connectionStrings = appSettings["ConnectionStrings"] ?? throw new InvalidOperationException("ConnectionStrings section not found.");
             connectionStrings[name] = connectionString;
@@ -59,13 +69,8 @@ namespace Xperience.Xman.Services
         }
 
 
-        public async Task SetKeyValue(ToolProfile? profile, string keyName, object value)
+        public async Task SetKeyValue(ToolProfile profile, string keyName, object value)
         {
-            if (profile is null)
-            {
-                throw new InvalidOperationException("No active profile.");
-            }
-
             var appSettings = await LoadSettings(profile);
             appSettings[keyName] = JToken.FromObject(value);
 
