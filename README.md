@@ -112,7 +112,7 @@ Currently, there is a bug with updating the project's database version, so the t
 
 ### Modifying appsettings.json
 
-This tool can assist with changing the _CMSConnectionString_ as well as setting any supported [configuration keys](https://docs.xperience.io/xp/developers-and-admins/configuration/reference-configuration-keys).
+This tool can assist with changing the _CMSConnectionString_, supported [configuration keys](https://docs.xperience.io/xp/developers-and-admins/configuration/reference-configuration-keys), and the [headless API](https://docs.xperience.io/xp/developers-and-admins/configuration/headless-channel-management#Headlesschannelmanagement-ConfiguretheheadlessAPI).
 
 1. (optional) Select a profile with the [`profile`](#managing-profiles) command
 1. Run the `settings` command from the directory containing the [configuration file](#configuration-file), which will begin the settings wizard:

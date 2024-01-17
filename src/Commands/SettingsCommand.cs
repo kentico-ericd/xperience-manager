@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
-using Newtonsoft.Json;
+
 using Spectre.Console;
 
 using Xperience.Xman.Configuration;
