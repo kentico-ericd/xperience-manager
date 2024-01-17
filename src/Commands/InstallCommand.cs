@@ -68,15 +68,11 @@ namespace Xperience.Xman.Commands
             await CreateWorkingDirectory();
             await InstallTemplate(options);
             await CreateProjectFiles(options);
-            // Admin boilerplate project doesn't require database install
+
+            // Admin boilerplate project doesn't require database install or profile
             if (!IsAdminTemplate(options))
             {
                 await CreateDatabase(options);
-            }
-
-            // Don't create profile for admin boilerplate since it's meant to be moved/included in another installation
-            if (!IsAdminTemplate(options))
-            {
                 await configManager.AddProfile(newInstallationProfile);
             }
         }
