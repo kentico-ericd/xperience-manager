@@ -7,6 +7,9 @@ using Xperience.Xman.Wizards;
 
 namespace Xperience.Xman.Commands
 {
+    /// <summary>
+    /// A command which generates code files for Xperience by Kentico object types.
+    /// </summary>
     public class CodeGenerateCommand : AbstractCommand
     {
         private readonly IShellRunner shellRunner;

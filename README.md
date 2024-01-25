@@ -66,6 +66,7 @@ The following commands can be executed using the `xman` tool name:
 - [`u`, `update`](#updating-a-project-version)
 - [`m`, `macros`](#re-signing-macros)
 - [`b`, `build`](#building-projects)
+- [`g`, `generate`](#generating-code-for-object-types)
 - [`s`, `settings`](#modifying-appsettingsjson)
 - [`ci <store> <restore>`](#running-continuous-integration)
 - [`cd <store> <restore> <config>`](#running-continuous-deployment)
@@ -140,6 +141,17 @@ See [our documentation](https://docs.xperience.io/xp/developers-and-admins/confi
 
    ```bash
    xman build
+   ```
+
+### Generating code for object types
+
+See [our documentation](https://docs.xperience.io/xp/developers-and-admins/api/generate-code-files-for-system-objects) for more information about code file generation.
+
+1. (optional) Select a profile with the [`profile`](#managing-profiles) command
+1. Run the `generate` command from the directory containing the [configuration file](#configuration-file) which will begin the generation wizard:
+
+   ```bash
+   xman generate
    ```
 
 ### Running Continuous Integration
