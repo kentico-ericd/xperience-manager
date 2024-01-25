@@ -11,7 +11,6 @@ namespace Xperience.Xman.Services
             cmd.StartInfo.Arguments = "-noprofile -nologo";
             cmd.StartInfo.RedirectStandardInput = true;
             cmd.StartInfo.CreateNoWindow = true;
-            cmd.StartInfo.UseShellExecute = false;
             if (!string.IsNullOrEmpty(options.WorkingDirectory))
             {
                 cmd.StartInfo.WorkingDirectory = options.WorkingDirectory;

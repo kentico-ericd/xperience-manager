@@ -68,9 +68,8 @@ namespace Xperience.Xman.Commands
             var options = await wizard.Run();
 
             await UpdatePackages(options, profile);
-            // There is currently an issue running the database update script while emulating the ReadKey() input
-            // for the script's "Do you want to continue" prompt. The update command must be run manually.
-            AnsiConsole.MarkupLineInterpolated($"Unfortunately, the database cannot be updated at this time. You can build the project and run the [{Constants.EMPHASIS_COLOR}]'dotnet run --no-build --kxp-update'[/] command manually if needed.");
+            await BuildProject(profile);
+            await UpdateDatabase(profile);
         }
 
 
@@ -82,6 +81,24 @@ namespace Xperience.Xman.Commands
             }
 
             await base.PostExecute(profile, action);
+        }
+
+
+        private async Task BuildProject(ToolProfile? profile)
+        {
+            if (StopProcessing)
+            {
+                return;
+            }
+
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Attempting to build the project...[/]");
+
+            string buildScript = scriptBuilder.SetScript(ScriptType.BuildProject).Build();
+            await shellRunner.Execute(new(buildScript)
+            {
+                ErrorHandler = ErrorDataReceived,
+                WorkingDirectory = profile?.WorkingDirectory
+            }).WaitForExitAsync();
         }
 
 
@@ -107,6 +124,23 @@ namespace Xperience.Xman.Commands
                     WorkingDirectory = profile?.WorkingDirectory
                 }).WaitForExitAsync();
             }
+        }
+
+
+        private async Task UpdateDatabase(ToolProfile? profile)
+        {
+            if (StopProcessing)
+            {
+                return;
+            }
+
+            AnsiConsole.MarkupLineInterpolated($"[{Constants.EMPHASIS_COLOR}]Updating database...[/]");
+            string dbScript = scriptBuilder.SetScript(ScriptType.DatabaseUpdate).Build();
+            await shellRunner.Execute(new(dbScript)
+            {
+                ErrorHandler = ErrorDataReceived,
+                WorkingDirectory = profile?.WorkingDirectory
+            }).WaitForExitAsync();
         }
     }
 }

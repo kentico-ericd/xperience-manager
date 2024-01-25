@@ -15,13 +15,14 @@ namespace Xperience.Xman.Services
         private const string UNINSTALL_TEMPLATE_SCRIPT = "dotnet new uninstall kentico.xperience.templates";
         private const string INSTALL_TEMPLATE_SCRIPT = "dotnet new install kentico.xperience.templates";
         private const string UPDATE_PACKAGE_SCRIPT = $"dotnet add package {nameof(UpdateOptions.PackageName)}";
-        private const string UPDATE_DATABASE_SCRIPT = "dotnet run --no-build --kxp-update";
+        private const string UPDATE_DATABASE_SCRIPT = "dotnet run --no-build --kxp-update -- --skip-confirmation";
         private const string CI_STORE_SCRIPT = "dotnet run --no-build --kxp-ci-store";
         private const string CI_RESTORE_SCRIPT = "dotnet run --no-build --kxp-ci-restore";
         private const string CD_NEW_CONFIG_SCRIPT = $"dotnet run --no-build -- --kxp-cd-config --path \"{nameof(ContinuousDeploymentConfig.ConfigPath)}\"";
         private const string CD_STORE_SCRIPT = $"dotnet run --no-build -- --kxp-cd-store --repository-path \"{nameof(ContinuousDeploymentConfig.RepositoryPath)}\" --config-path \"{nameof(ContinuousDeploymentConfig.ConfigPath)}\"";
         private const string CD_RESTORE_SCRIPT = $"dotnet run -- --kxp-cd-restore --repository-path \"{nameof(ContinuousDeploymentConfig.RepositoryPath)}\"";
         private const string MACRO_SCRIPT = "dotnet run --no-build -- --kxp-resign-macros";
+        private const string CODEGEN_SCRIPT = $"dotnet run -- --kxp-codegen --skip-confirmation --type \"{nameof(CodeGenerateOptions.Type)}\" --location \"{nameof(CodeGenerateOptions.Location)}\" --include \"{nameof(CodeGenerateOptions.Include)}\" --exclude \"{nameof(CodeGenerateOptions.Exclude)}\" --with-provider-class {nameof(CodeGenerateOptions.WithProviderClass)}";
 
 
         public IScriptBuilder AppendCloud(bool useCloud)
@@ -40,6 +41,17 @@ namespace Xperience.Xman.Services
             if (currentScriptType.Equals(ScriptType.CreateDirectory))
             {
                 currentScript += $" \"{path}\"";
+            }
+
+            return this;
+        }
+
+
+        public IScriptBuilder AppendNamespace(string? nameSpace)
+        {
+            if (currentScriptType.Equals(ScriptType.GenerateCode) && !string.IsNullOrEmpty(nameSpace))
+            {
+                currentScript += $" --namespace \"{nameSpace}\"";
             }
 
             return this;
@@ -143,6 +155,7 @@ namespace Xperience.Xman.Services
                 ScriptType.ContinuousDeploymentStore => CD_STORE_SCRIPT,
                 ScriptType.ContinuousDeploymentRestore => CD_RESTORE_SCRIPT,
                 ScriptType.ResignMacros => MACRO_SCRIPT,
+                ScriptType.GenerateCode => CODEGEN_SCRIPT,
                 ScriptType.None => string.Empty,
                 _ => string.Empty,
             };
@@ -250,5 +263,10 @@ namespace Xperience.Xman.Services
         /// The script which re-signs macros.
         /// </summary>
         ResignMacros,
+
+        /// <summary>
+        /// The script which generates code files for Xperience objects.
+        /// </summary>
+        GenerateCode,
     }
 }

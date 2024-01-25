@@ -102,8 +102,6 @@ When installing a new project, a new folder will be created in the `InstallRootP
 
 ### Updating a project version
 
-Currently, there is a bug with updating the project's database version, so the tool only updates the NuGet packages and builds the project. However, the database update command is provided in the UI for easy copy-pasting.
-
 1. (optional) Select a profile with the [`profile`](#managing-profiles) command
 1. Run the `update` command from the directory containing the [configuration file](#configuration-file), which will begin the update wizard:
 

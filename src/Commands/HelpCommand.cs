@@ -24,7 +24,8 @@ namespace Xperience.Xman.Commands
             new ContinuousDeploymentCommand(),
             new MacroCommand(),
             new BuildCommand(),
-            new SettingsCommand()
+            new SettingsCommand(),
+            new CodeGenerateCommand()
         };
 
 

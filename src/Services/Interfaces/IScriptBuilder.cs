@@ -19,6 +19,13 @@ namespace Xperience.Xman.Services
 
 
         /// <summary>
+        /// Appends the namespace to use if the script is <see cref="ScriptType.GenerateCode"/> and <paramref name="nameSpace"/>
+        /// is not empty.
+        /// </summary>
+        public IScriptBuilder AppendNamespace(string? nameSpace);
+
+
+        /// <summary>
         /// Appends "--old-salt" or "--new-salt" to the script if the script is <see cref="ScriptType.ResignMacros"/>.
         /// </summary>
         /// <param name="salt">The salt value appended to the script. If not provided, the salt from appsettings is used.</param>
