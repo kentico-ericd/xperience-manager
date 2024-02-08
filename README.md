@@ -3,6 +3,8 @@
 
 # Xperience Manager (xman)
 
+:warning: **This repository has been moved [here](https://github.com/Kentico/xperience-manager)**
+
 This tool simplifies the process of installing and managing Xperience by Kentico instances by providing step-by-step wizards with default options provided.
 
 <img src="https://raw.githubusercontent.com/kentico-ericd/xperience-manager/master/img/screenshot.png" width="350" />
